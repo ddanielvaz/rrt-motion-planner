@@ -74,7 +74,7 @@ void RRT::build(void)
     double rand_st[3];
     while(i<max_nodes)
     {
-        if(uni() > 5)
+        if(uni() > 0.05)
         {
             biased_sampling(env->dim, rand_st);
             //cout << "RAND: " << rand_st[0] << " " << rand_st[1] << " " << rand_st[2] << endl;
@@ -99,7 +99,7 @@ void RRT::build(void)
 int RRT::extend(double *rand)
 {
     Node near = select_nearest_node(rand), added;
-    double expanded[3], temp=NULL, *choosed=NULL, *best_control=NULL;
+    double expanded[3], *pt=NULL, *choosed=NULL, *best_control=NULL, temp[3];
     bool new_node=false;
     double u[21][2]={{0.50, 0.00}, {0.50, 0.02}, {0.50, 0.07}, {0.50, 0.12}, {0.50, 0.17},
                      {0.50, 0.23}, {0.50, 0.28}, {0.50, 0.33}, {0.50, 0.38},
@@ -117,18 +117,18 @@ int RRT::extend(double *rand)
         if (new_node)
         {
             aux = metric(expanded, rand);
-            cout << "aux: " << aux << " State: " << expanded[0] << " " << expanded[1] << " " << expanded[2] << endl;
+            //cout << "aux: " << aux << " State: " << expanded[0] << " " << expanded[1] << " " << expanded[2] << endl;
             if(aux < d)
             {
-                cout << aux << " D: " << d<<endl;
                 d = aux;
-                temp = expanded;
+                memcpy(temp, expanded, sizeof(double) * 3);
+                pt = temp;
                 best_control = u[i];
             }
         }
     }
     
-    if (temp)
+    if (pt)
     {
         //cout << "BEST CONTROL U: " << best_control[0] << " " << best_control[1] << endl;
         choosed = (double*) malloc(sizeof(double) * 3);
@@ -154,7 +154,7 @@ Node RRT::select_nearest_node(double *rand)
     for(Graph::NodeIt n(g); n != INVALID; ++n)
     {
         aux = metric((*states)[n], rand);
-        cout << aux << " " << (*states)[n][0] << " " << (*states)[n][1] << " " << (*states)[n][2] << endl;
+        //cout << aux << " " << (*states)[n][0] << " " << (*states)[n][1] << " " << (*states)[n][2] << endl;
         if (aux < min_distance)
         {
             min_distance = aux;
@@ -191,7 +191,7 @@ bool RRT::generate_path(const double *near_node, const double *u, const double t
         in_collision = env->is_vehicle_in_collision(trans, rot);
         if (in_collision)
         {
-            cout << "collision detected" << endl;
+            //cout << "collision detected" << endl;
             return false;
         }
         memcpy(aux, temp, sizeof(double) * 3);

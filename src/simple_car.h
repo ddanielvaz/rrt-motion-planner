@@ -1,5 +1,5 @@
-#ifndef _MODEL_SIMPLE_CAR_
-#define _MODEL_SIMPLE_CAR_
+#ifndef _MODEL_SIMPLE_CAR_H_
+#define _MODEL_SIMPLE_CAR_H_
 
 #include <math.h>
 #include <string.h>

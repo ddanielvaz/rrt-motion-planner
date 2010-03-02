@@ -19,6 +19,7 @@ typedef ListDigraph Graph;
 typedef Graph::Node Node;
 typedef Graph::ArcMap<int> ArcMapInt;
 typedef Graph::NodeMap<double*> NodeMapState;
+
 class RRT
 {
     public:
@@ -30,6 +31,7 @@ class RRT
         void get_control_inputs(double u[][2], double*);
         bool generate_path(const double*, const double*, const double,
                            ModelCar*, double*);
+        int check_duplicate_node(double *);
         ~RRT();
     private:
         Node initial_node, goal_node;
@@ -108,6 +110,7 @@ int RRT::extend(double *rand)
                      {-0.50, 0.33}, {-0.50, 0.38}, {-0.50, 0.44}, {-0.50, 0.49}
                     };
     double d=1e7, aux;
+    int duplicated_node;
     //get_control_inputs(u, near);
     //cout << "NEAR NODE:" << (*states)[near][0] << " " << (*states)[near][1] << " "
     //<< (*states)[near][2] << endl;
@@ -130,13 +133,21 @@ int RRT::extend(double *rand)
     
     if (pt)
     {
-        //cout << "BEST CONTROL U: " << best_control[0] << " " << best_control[1] << endl;
+        duplicated_node = check_duplicate_node(temp);
+        if (duplicated_node >= 0)
+        {
+            cout << "Node already exists, do not adding new node" << endl;
+            Node n = g.nodeFromId(duplicated_node);
+            g.addArc(near, n);
+            return -1;
+        }
         choosed = (double*) malloc(sizeof(double) * 3);
         memcpy(choosed, temp, sizeof(double) * 3);
         added = g.addNode();
         (*states)[added] = choosed;
+        g.addArc(near, added);
         //cout << "no adicionado: " << expanded[0] << " " << expanded[1] << " " << expanded[2] << endl;
-        cout << expanded[0] << " " << expanded[1] << endl;
+        cout << temp[0] << " " << temp[1] << endl;
         if(goal_state_reached((*states)[added], goal_state))
         {
             cout << "GOAL STATE REACHED - FINISH" << endl;
@@ -198,6 +209,20 @@ bool RRT::generate_path(const double *near_node, const double *u, const double t
     }
     memcpy(new_state, aux, sizeof(double) * 3);
     return true;
+}
+
+int RRT::check_duplicate_node(double *adding)
+{
+    double aux;
+    for(Graph::NodeIt n(g); n != INVALID; ++n)
+    {
+        aux = metric((*states)[n], adding);
+        if (aux < 1e-2)
+        {
+            return g.id(n);
+        }
+    }
+    return -1;
 }
 
 #endif

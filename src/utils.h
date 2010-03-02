@@ -1,5 +1,5 @@
-#ifndef _UTILS_COMMOM_H
-#define _UTILS_COMMOM_H
+#ifndef _UTILS_COMMOM_H_
+#define _UTILS_COMMOM_H_
 
 #include <math.h>
 #include <iostream>
@@ -19,7 +19,7 @@ boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(gener
 //5 graus
 #define ROTATIONAL_TOLERANCE 0.087
 //10 graus
-#define MAX_ROTATIONAL_TOLERANCE 3.15//0.1745
+#define MAX_ROTATIONAL_TOLERANCE 0.1745
 //mudanca maxima de angulo de estercamento em rad (3 graus)
 #define MAX_STEER_DIFF 0.05235
 //angulo maximo de estercamento em rad (30 graus)

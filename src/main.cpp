@@ -14,7 +14,7 @@ int main()
     double f[]={6.0, 3.0, 0.0, 0.0, 0.0};
     ModelCar veh(q, 2.5, 2.0);
     World w;
-    RRT plan(q, f, 50, &veh, &w);
+    RRT plan(q, f, 150, &veh, &w);
     w.create_env_model();
     w.create_veh_model(&veh);
     plan.build();

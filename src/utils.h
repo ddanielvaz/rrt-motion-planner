@@ -30,7 +30,9 @@ boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(gener
 #define MAX_SPEED 1.0
 
 #define DELTA_T 0.05
-#define TIME_STEP 1.0
+#define INTEGRATION_TIME 1.0
+
+#define GOAL_BIAS 0.05
 
 #define N_STATES 3
 #define N_CONTROLS 11

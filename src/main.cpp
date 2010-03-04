@@ -1,5 +1,4 @@
 #include <iostream>
-#include <string>
 
 #include "simple_car.h"
 #include "rrt.h"
@@ -10,14 +9,17 @@ using namespace std;
 
 
 
-int main()
+
+int main(int argc, char *argv[])
 {
     double q[]={3.0, 3.0, 0.0, 0.0, 0.0};
     double f[]={6.0, 3.0, 0.0, 0.0, 0.0};
     char logfile[] = "results.log";
     ModelCar veh(q, 2.5, 2.0);
     World w;
-    RRT plan(q, f, 150, &veh, &w, logfile);
+    RRT plan(q, f, 1500, &veh, &w, logfile);
+    cvInitSystem(argc, argv);
+    setlocale(LC_NUMERIC, "C");
     w.create_env_model();
     w.create_veh_model(&veh);
     plan.build();

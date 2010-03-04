@@ -55,28 +55,27 @@ void Graphics::plot()
         cout << temp << endl;
         x = strtod(temp, &ps);
         nxt = ps;
-        cout << "X: " << x << endl;
+        //cout << "X: " << x << endl;
         
         
         y = strtod(nxt, &ps);
         nxt = ps;
-        cout << "Y: " << y << endl;
+        //cout << "Y: " << y << endl;
 
         phi = strtod(nxt, &ps);
         nxt = ps;
-        cout << "PHI: " << phi << endl;
+        //cout << "PHI: " << phi << endl;
 
         v = strtod(nxt, &ps);
-        v = strtod("12.9", NULL);
         nxt = ps;
-        cout << "v: " << v << endl;
+        //cout << "v: " << v << endl;
 
         w = strtod(nxt, &ps);
         nxt = ps;
-        cout << "W: " << w << endl;
+        //cout << "W: " << w << endl;
 
         t = strtod(nxt, NULL);
-        cout << "T: " << t << endl;
+        //cout << "T: " << t << endl;
         draw(img1, x, y, phi, v, w, t);
         i += 1;
     }

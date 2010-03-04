@@ -77,7 +77,7 @@ void RRT::build(void)
     {
         //Se amostra maior que GOAL_BIAS, ponto aleatorio eh escolhido para expandir
         //arvore. Caso contrario eh escolhido o destino para a expansao.
-        if(uni() > GOAL_BIAS+2)
+        if(uni() > GOAL_BIAS)
             biased_sampling(env->dim, rand_st);
         else
             memcpy(rand_st, goal_state, sizeof(double) * 3);

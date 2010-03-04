@@ -1,12 +1,14 @@
 #ifndef _Rapidly_Random_Tree_H_
 #define _Rapidly_Random_Tree_H_
 
+#include <fstream>
 #include <iostream>
 #include <list>
+#include <stdlib.h>
+
 #include <lemon/list_graph.h>
 #include <lemon/dijkstra.h>
 #include <lemon/path.h>
-#include <stdlib.h>
 
 #include "simple_car.h"
 #include "utils.h"
@@ -23,7 +25,7 @@ typedef Graph::NodeMap<double*> NodeMapState;
 class RRT
 {
     public:
-        RRT(double *, double *, int, ModelCar*, World*);
+        RRT(double *, double *, int, ModelCar*, World*, char*);
         void build(void);
         int extend(double*);
         double* select_best_input(double*);
@@ -32,6 +34,7 @@ class RRT
         bool check_no_collision_path(const double*, const double*, double*);
         int check_duplicate_node(double *);
         void print_path(const double*, const double*);
+        void close_logfile(void);
         ~RRT();
     private:
         Node initial_node, goal_node;
@@ -39,12 +42,13 @@ class RRT
         int max_nodes;
         ModelCar *veh;
         World *env;
+        ofstream fp;
         Graph g;
         ArcMapInt *cost;
         NodeMapState *states;
 };
 
-RRT::RRT(double *init, double *goal, int n, ModelCar *car, World *w)
+RRT::RRT(double *init, double *goal, int n, ModelCar *car, World *w, char *fname)
 {
     cout << "Criando instancia da classe RRT" << endl;
     states = new NodeMapState(g);
@@ -56,6 +60,7 @@ RRT::RRT(double *init, double *goal, int n, ModelCar *car, World *w)
     max_nodes = n;
     veh = car;
     env = w;
+    fp.open(fname);
     initiate_rand_number_generator();
 }
 
@@ -72,7 +77,7 @@ void RRT::build(void)
     {
         //Se amostra maior que GOAL_BIAS, ponto aleatorio eh escolhido para expandir
         //arvore. Caso contrario eh escolhido o destino para a expansao.
-        if(uni() > GOAL_BIAS)
+        if(uni() > GOAL_BIAS+2)
             biased_sampling(env->dim, rand_st);
         else
             memcpy(rand_st, goal_state, sizeof(double) * 3);
@@ -88,14 +93,7 @@ void RRT::build(void)
     }
 }
 
-/* Esta função recebe um estado aleatório e tenta crescer a árvore em direção a
-esse estado. Para isso ela escolhe o nó da árvore mais próximo ao estado
-aleatório e então aplica várias entradas de controle para estimar o estado
-futuro.
-A função retorna 1 caso houver sucesso em adicionar um novo nó na árvore. Caso o
-nó seja adicionado e ainda esteja próximo o suficiente do objetivo, a função
-retorna 2. Caso não consiga adicionar um novo nó na árvore retorna -1.
-*/
+
 int RRT::extend(double *rand)
 {
     Node near = select_nearest_node(rand), added;
@@ -127,14 +125,16 @@ int RRT::extend(double *rand)
     
     if (pt)
     {
-        print_path((*states)[near], best_control);
         duplicated_node_id = check_duplicate_node(temp);
+        //cout << "ID: " << duplicated_node_id << " ";
         if (duplicated_node_id >= 0)
         {
+            //cout << "Duplicated NODE detect ID: " << duplicated_node_id << endl;
             Node n = g.nodeFromId(duplicated_node_id);
             g.addArc(near, n);
             return -1;
         }
+        print_path((*states)[near], best_control);
         choosed = (double*) malloc(sizeof(double) * 3);
         memcpy(choosed, temp, sizeof(double) * 3);
         added = g.addNode();
@@ -197,14 +197,13 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
     return true;
 }
 
-/* Essa função checa se o nó a ser adicionado na árvore é duplicado, caso seja
-retorna o ID do nó. Caso contrário retorna -1.
-*/
+
 int RRT::check_duplicate_node(double *adding)
 {
     double aux;
     for(Graph::NodeIt n(g); n != INVALID; ++n)
     {
+        //cout << 
         aux = metric((*states)[n], adding);
         if (aux < 1e-2)
         {
@@ -216,7 +215,7 @@ int RRT::check_duplicate_node(double *adding)
 
 void RRT::print_path(const double *near_node, const double *best_control)
 {
-    cout << near_node[0] << " " << near_node[1] << " " << near_node[2] << " "
+    fp << near_node[0] << " " << near_node[1] << " " << near_node[2] << " "
     << best_control[0] << " " << best_control[1] << " " << INTEGRATION_TIME << endl;
     /*double aux[3], temp[3], it;
     memcpy(aux, near_node, sizeof(double) * 3);
@@ -226,6 +225,11 @@ void RRT::print_path(const double *near_node, const double *best_control)
         veh->EstimateNewState(DELTA_T, aux, best_control, temp);
         memcpy(aux, temp, sizeof(double) * 3);
     }*/
+}
+
+void RRT::close_logfile(void)
+{
+    fp.close();
 }
 
 #endif

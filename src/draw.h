@@ -30,7 +30,7 @@ class Graphics
 Graphics::Graphics(char *filename, ModelCar *car)
 {
     CvSize s = cvSize(200,200);
-    fp.open(filename, ios::in);
+    fp.open(filename);
     img1 = cvCreateImage(s, IPL_DEPTH_32F, 3);
     cvNamedWindow("win1", CV_WINDOW_AUTOSIZE);
     veh = car;
@@ -40,11 +40,12 @@ Graphics::~Graphics()
 {
     cout << "Destruindo instancia da classe Graphics" << endl;
     cvReleaseImage(&img1);
+    fp.close();
 }
 
 void Graphics::plot()
 {
-    char temp[100], *ps;
+    char temp[100], *ps, *nxt;
     int i;
     float x, y, phi, v, w, t;
     cout << "Lendo pontos do arquivo. " << endl;
@@ -52,29 +53,30 @@ void Graphics::plot()
     while(fp.getline(temp, 100))
     {
         cout << temp << endl;
-        ps = strtok(temp, " ");
-        x = 10.0*atof(ps);
+        x = strtod(temp, &ps);
+        nxt = ps;
         cout << "X: " << x << endl;
-
-        ps = strtok(NULL, " ");
-        y = 10.0*atof(ps);
+        
+        
+        y = strtod(nxt, &ps);
+        nxt = ps;
         cout << "Y: " << y << endl;
 
-        ps = strtok(NULL, " ");
-        phi = atof(ps);
+        phi = strtod(nxt, &ps);
+        nxt = ps;
         cout << "PHI: " << phi << endl;
 
-        ps = strtok(NULL, " ");
-        v = atof(ps);
+        v = strtod(nxt, &ps);
+        v = strtod("12.9", NULL);
+        nxt = ps;
         cout << "v: " << v << endl;
 
-        ps = strtok(NULL, " ");
-        w = atof(ps);
+        w = strtod(nxt, &ps);
+        nxt = ps;
         cout << "W: " << w << endl;
 
-        ps = strtok(NULL, " ");
-        t = atof(ps);
-        cout << "T: " << ps << endl;
+        t = strtod(nxt, NULL);
+        cout << "T: " << t << endl;
         draw(img1, x, y, phi, v, w, t);
         i += 1;
     }
@@ -91,7 +93,7 @@ void Graphics::draw(IplImage *img, const double x, const double y,
     for (i=0; i<=t; i=i+dt)
     {
         veh->EstimateNewState(DELTA_T, aux, u, temp);
-        cvLine(img, cvPoint(aux[0],aux[1]), cvPoint(temp[0],temp[1]), CV_RGB(255,0,0), 1, 8, 0);
+        cvLine(img, cvPoint(aux[0]*10.0,aux[1]*10.0), cvPoint(temp[0]*10.0,temp[1]*10.0), CV_RGB(255,0,0), 1, 8, 0);
         memcpy(aux, temp, sizeof(double) * 3);
     }
     //cvRectangle(img, cvPoint(x-1,y-1), cvPoint(x+1,y+1),CV_RGB(0,255,0), 1, 8, 0);

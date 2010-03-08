@@ -3,7 +3,6 @@
 
 #include <math.h>
 #include <iostream>
-using namespace std;
 
 #include <PQP/PQP.h>
 
@@ -12,7 +11,10 @@ using namespace std;
 PQP_REAL IDENTITY_MATRIX[3][3] = {{1.0, 0.0, 0.0},
                                   {0.0, 1.0, 0.0},
                                   {0.0, 0.0, 1.0}};
+
 PQP_REAL ORIGIN[3] = {0.0, 0.0, 0.0};
+
+using namespace std;
 
 class World
 {
@@ -67,14 +69,40 @@ void World::create_env_model()
 
 void World::create_veh_model(ModelCar *car)
 {
-    double w, l, x, y, *ini_pos;
-    l = car->get_body_length();
+    double w, h, l, xo, yo, theta, *ini_pos;
+    double xrt, yrt, xlt, ylt, xrb, yrb, xlb, ylb;
+    double rot_mat[4];
+    l = car->get_between_axes_length();
     w = car->get_body_width();
+    h = car->get_body_height();
     ini_pos = car->get_initial_position();
-    x = ini_pos[STATE_X] + 0.2;
-    y = ini_pos[STATE_Y] + 0.2;
-    PQP_REAL p0[3]={x, y, 0}, p1[3]={x+l, y, 0}, p2[3]={x+l, y+w, 0};
-    PQP_REAL p3[3]={x, y, 0}, p4[3]={x, y+w, 0}, p5[3]={x+l, y+w, 0};
+    xo = ini_pos[STATE_X];
+    yo = ini_pos[STATE_Y];
+    theta = ini_pos[STATE_THETA];
+    rot_mat[0] = cos(theta);
+    rot_mat[1] = -sin(theta);
+    rot_mat[2] = sin(theta);
+    rot_mat[3] = cos(theta);
+    
+    xrt=xo + l + (w-l)/2.0;
+    yrt=yo + h/2.0;
+    xrt = xrt * rot_mat[0] + yrt * rot_mat[1];
+    yrt = xrt * rot_mat[2] + yrt * rot_mat[3];
+    
+    xlt=xo - (w-l)/2.0;
+    ylt=yrt;
+    xlt = xlt * rot_mat[0] + ylt * rot_mat[1];
+    
+    xlb=xlt;
+    ylb=yo - h/2.0;
+    ylb = xlb * rot_mat[2] + ylb * rot_mat[3];
+    
+    xrb=xrt;
+    yrb=ylb;
+    
+    PQP_REAL p0[3]={xlt, ylt, 0}, p1[3]={xrt, yrt, 0}, p2[3]={xrb, yrb, 0};
+    PQP_REAL p3[3]={xlt, ylt, 0}, p4[3]={xlb, ylb, 0}, p5[3]={xrb, yrb, 0};
+    
     veh.BeginModel();
     veh.AddTri(p0, p1, p2, 0);
     veh.AddTri(p3, p4, p5, 1);

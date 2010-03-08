@@ -13,9 +13,9 @@ class ModelCar
 {
     private:
         double m_one_over_bodyLength;
-        double initial[N_STATES], curr_speed, curr_steering, length, width;
+        double initial[N_STATES], curr_speed, curr_steering, length, width, height;
     public:
-        ModelCar(double *, double, double);
+        ModelCar(double *, double, double, double);
         ~ModelCar();
         /**
           *@author Erion Plaku
@@ -33,12 +33,13 @@ class ModelCar
         double get_current_steering(void);
         void set_current_speed(double);
         void set_current_steering(double);
-        double get_body_length();
+        double get_between_axes_length();
         double get_body_width();
+        double get_body_height();
         double* get_initial_position();
 };
 
-ModelCar::ModelCar(double *position, double bodyLength, double w)
+ModelCar::ModelCar(double *position, double bodyLength, double w, double h)
 {
     cout << "Criando instancia da classe ModelCar" << endl;
     initial[STATE_X] = position[0];
@@ -127,7 +128,7 @@ void ModelCar::set_current_steering(double steer)
     curr_steering = steer;
 }
 
-double ModelCar::get_body_length()
+double ModelCar::get_between_axes_length()
 {
     return length;
 }
@@ -135,6 +136,11 @@ double ModelCar::get_body_length()
 double ModelCar::get_body_width()
 {
     return width;
+}
+
+double ModelCar::get_body_height()
+{
+    return height;
 }
 
 double* ModelCar::get_initial_position()

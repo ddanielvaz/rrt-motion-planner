@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     double q[]={3.0, 3.0, 0.0, 0.0, 0.0};
     double f[]={6.0, 3.0, 0.0, 0.0, 0.0};
     char logfile[] = "results.log";
-    ModelCar veh(q, 2.5, 2.0);
+    ModelCar veh(q, 2.0, 1.0, 1.5);
     World w;
     RRT plan(q, f, 1500, &veh, &w, logfile);
     cvInitSystem(argc, argv);

@@ -82,14 +82,14 @@ void RRT::build(void)
         else
             memcpy(rand_st, goal_state, sizeof(double) * 3);
         finished = extend(rand_st);
-        if(finished == 2)
+        if(finished == 1)
+            i++;
+        else if(finished == 2)
         {
             cout << "[" << i << "] Objetivo alcancado." << endl;
             //print_nodes(nodes);
             break;
         }
-        else if(finished == 1)
-            i++;
     }
 }
 

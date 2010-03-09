@@ -166,7 +166,7 @@ Node RRT::select_nearest_node(double *rand)
 
 bool RRT::check_no_collision_path(const double *near_node, const double *u, double *new_state)
 {
-    double it, aux[3], temp[3], dtheta, x0, y0, theta0;
+    double it, aux[3], temp[3], x, y, theta;
     bool in_collision;
     PQP_REAL trans[3], rot[3][3];
     trans[2] = 0.0;
@@ -174,21 +174,26 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
     rot[0][2] = rot[1][2] = 0.0;
     rot[2][2] = 1.0;
     memcpy(aux, near_node, sizeof(double) * 3);
-    x0 = initial_state[STATE_X];
+    /*x0 = initial_state[STATE_X];
     y0 = initial_state[STATE_Y];
-    theta0 = initial_state[STATE_THETA];
+    theta0 = initial_state[STATE_THETA];*/
     for (it=0.0; it<=INTEGRATION_TIME; it+=DELTA_T)
     {
         veh->EstimateNewState(DELTA_T, aux, u, temp);
-        trans[STATE_X] = temp[STATE_X] - x0;
+        /*trans[STATE_X] = temp[STATE_X] - x0;
         trans[STATE_Y] = temp[STATE_Y] - y0;
         dtheta = normalize_angle(temp[STATE_THETA] - theta0);
         rot[1][1] = rot[0][0] = cos(dtheta);
         rot[1][0] = sin(dtheta);
         rot[0][1] = -rot[1][0];
-        in_collision = env->is_vehicle_in_collision(trans, rot);
+        in_collision = env->is_vehicle_in_collision(trans, rot);*/
+        x = temp[STATE_X];
+        y = temp[STATE_Y];
+        theta = normalize_angle(temp[STATE_THETA]);
+        in_collision = env->is_vehicle_in_collision(x, y, theta);
         if (in_collision)
         {
+            cout << "COLLISION" << endl;
             return false;
         }
         memcpy(aux, temp, sizeof(double) * 3);

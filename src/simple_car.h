@@ -47,6 +47,7 @@ ModelCar::ModelCar(double *position, double bodyLength, double w, double h)
     initial[STATE_THETA] = position[2];
     length = bodyLength;
     width = w;
+    height = h;
     m_one_over_bodyLength = 1.0/bodyLength;
     curr_speed = 0.0;
     curr_steering = 0.0;
@@ -86,26 +87,6 @@ void ModelCar::EstimateNewState(const double dt, const double *x,
 
     for(i=0; i<3; i++)
         dx[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
-    
-    /*memcpy(dx, x, sizeof(double) * 3);
-    for (it=0.0; it<=t; it+=dt)
-    {
-        dflow(dx, u, w1);
-        for(i=0;i<3;i++)
-            wtemp[i] = dx[i] + 0.5 * dt * w1[i];
-        dflow(wtemp, u, w2);
-
-        for(i=0;i<3;i++)
-            wtemp[i] = dx[i] + 0.5 * dt * w2[i];
-        dflow(wtemp, u, w3);
-
-        for(i=0;i<3;i++)
-            wtemp[i] = dx[i] + dt * w3[i];
-        dflow(wtemp, u, w4);
-
-        for(i=0;i<3;i++)
-            dx[i] = dx[i] + dt/6.0*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
-    }*/
 }
 
 double ModelCar::get_current_speed(void)

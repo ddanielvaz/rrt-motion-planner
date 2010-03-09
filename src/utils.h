@@ -32,7 +32,7 @@ boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(gener
 #define DELTA_T 0.05
 #define INTEGRATION_TIME 1.0
 
-#define GOAL_BIAS 0.05
+#define GOAL_BIAS 0.1
 
 #define N_STATES 3
 #define N_CONTROLS 11

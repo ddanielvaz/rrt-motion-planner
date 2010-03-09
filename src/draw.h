@@ -12,12 +12,53 @@
 
 using namespace std;
 
+class Obstacles
+{
+    public:
+        //Obstacles();
+        //~Obstacles();
+        void plot_obstacles(IplImage *img);
+        void draw(IplImage* img);
+    private:
+        CvPoint triang[3];
+        CvPoint *fig[1];
+};
+
+void Obstacles::draw(IplImage* img)
+{
+    int npts=3, ncurves=1;
+    CvScalar red = CV_RGB(255,0,0);
+    cvPolyLine(img, fig, &npts, ncurves, 1, red);
+}
+
+void Obstacles::plot_obstacles(IplImage *img)
+{
+    ifstream obs("obstacles.txt");
+    char temp[100], *ps, *nxt;
+    double v[9];
+    while(obs.getline(temp, 100))
+    {
+        v[0] = strtod(temp, &ps);
+        nxt = ps;
+        for (int i=1; i<9; i++)
+        {
+            v[i] = strtod(nxt, &ps);
+            nxt = ps;
+        }
+        triang[0] = cvPoint(10.0 * v[0],10.0 * v[1]);
+        triang[1] = cvPoint(10.0 * v[3],10.0 * v[4]);
+        triang[2] = cvPoint(10.0 * v[6],10.0 * v[7]);
+        fig[0] = triang;
+        draw(img);
+    }
+    obs.close();
+}
+
 /*
 L distancia entre os eixos
 H comprimento total
 W largura do carro
 */
-
 class Carro
 {
     private:
@@ -33,7 +74,6 @@ class Carro
         void draw(IplImage*);
 };
 
-//Carro::Carro(double width, double height, double axes_len, double x, double y,double theta)
 
 Carro::Carro(double x, double y, double theta)
 {
@@ -98,6 +138,7 @@ class Graphics
         void draw(IplImage *, const double, const double, const double,
                    const double, const double, const double);
         void show(void);
+        void read_obstacles(void);
     private:
         ModelCar *veh;
         ifstream fp;
@@ -108,10 +149,12 @@ Graphics::Graphics(char *filename, ModelCar *car)
 {
     CvSize s = cvSize(400, 400);
     CvScalar white = CV_RGB(255, 255, 255);
+    Obstacles my_env;
     fp.open(filename);
     img1 = cvCreateImage(s, IPL_DEPTH_32F, 3);
     cvNamedWindow("win1", CV_WINDOW_AUTOSIZE);
     cvRectangle(img1, cvPoint(0,0), cvPoint(400,400), white, -1, 8, 0);
+    my_env.plot_obstacles(img1);
     veh = car;
 }
 
@@ -167,6 +210,7 @@ void Graphics::draw(IplImage *img, const double x, const double y,
 {
     double i, dt=0.05, temp[3], aux[3], u[2];
     Carro car(10*x, 10*y, phi);
+    CvScalar green = CV_RGB(0,255,0);
     u[0] = v; u[1] = w;
     aux[0] = x; aux[1] = y; aux[2] = phi;
     
@@ -174,7 +218,7 @@ void Graphics::draw(IplImage *img, const double x, const double y,
     for (i=0; i<=t; i=i+dt)
     {
         veh->EstimateNewState(DELTA_T, aux, u, temp);
-        cvLine(img, cvPoint(aux[0]*10.0,aux[1]*10.0), cvPoint(temp[0]*10.0,temp[1]*10.0), CV_RGB(255,0,0), 1, 8, 0);
+        cvLine(img, cvPoint(aux[0]*10.0,aux[1]*10.0), cvPoint(temp[0]*10.0,temp[1]*10.0), green, 1, 8, 0);
         memcpy(aux, temp, sizeof(double) * 3);
     }
 }

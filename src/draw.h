@@ -9,10 +9,11 @@
 #include <highgui.h>
 
 #include "simple_car.h"
+#include "world.h"
 
 using namespace std;
 
-class Obstacles
+/*class Obstacles
 {
     public:
         //Obstacles();
@@ -53,7 +54,7 @@ void Obstacles::plot_obstacles(IplImage *img)
     }
     obs.close();
 }
-
+*/
 /*
 L distancia entre os eixos
 H comprimento total
@@ -132,7 +133,7 @@ void Carro::draw(IplImage* img)
 class Graphics
 {
     public:
-        Graphics(char *filename, ModelCar*);
+        Graphics(char *filename, ModelCar *, World *);
         ~Graphics();
         void plot(void);
         void draw(IplImage *, const double, const double, const double,
@@ -141,28 +142,31 @@ class Graphics
         void read_obstacles(void);
     private:
         ModelCar *veh;
+        World *world;
         ifstream fp;
         IplImage* img1;
 };
 
-Graphics::Graphics(char *filename, ModelCar *car)
+Graphics::Graphics(char *filename, ModelCar *car, World *wrl)
 {
+    cout << "Criando instancia da classe Graphics" << endl;
     CvSize s = cvSize(400, 400);
     CvScalar white = CV_RGB(255, 255, 255);
-    Obstacles my_env;
+    //Obstacles my_env;
     fp.open(filename);
     img1 = cvCreateImage(s, IPL_DEPTH_32F, 3);
     cvNamedWindow("win1", CV_WINDOW_AUTOSIZE);
     cvRectangle(img1, cvPoint(0,0), cvPoint(400,400), white, -1, 8, 0);
-    my_env.plot_obstacles(img1);
-    veh = car;
+    world = wrl;
+    wrl->env->plot_obstacles(img1);
+    //veh = car;
 }
 
 Graphics::~Graphics()
 {
     cout << "Destruindo instancia da classe Graphics" << endl;
     cvReleaseImage(&img1);
-    fp.close();
+    //fp.close();
 }
 
 void Graphics::plot()

@@ -180,20 +180,13 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
     for (it=0.0; it<=INTEGRATION_TIME; it+=DELTA_T)
     {
         veh->EstimateNewState(DELTA_T, aux, u, temp);
-        /*trans[STATE_X] = temp[STATE_X] - x0;
-        trans[STATE_Y] = temp[STATE_Y] - y0;
-        dtheta = normalize_angle(temp[STATE_THETA] - theta0);
-        rot[1][1] = rot[0][0] = cos(dtheta);
-        rot[1][0] = sin(dtheta);
-        rot[0][1] = -rot[1][0];
-        in_collision = env->is_vehicle_in_collision(trans, rot);*/
         x = temp[STATE_X];
         y = temp[STATE_Y];
         theta = normalize_angle(temp[STATE_THETA]);
         in_collision = env->is_vehicle_in_collision(x, y, theta);
         if (in_collision)
         {
-            cout << "COLLISION" << endl;
+            //cout << "COLLISION" << endl;
             return false;
         }
         memcpy(aux, temp, sizeof(double) * 3);

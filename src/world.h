@@ -3,8 +3,11 @@
 
 #include <math.h>
 #include <iostream>
+#include <vector>
 
 #include <PQP/PQP.h>
+#include <cv.h>
+#include <highgui.h>
 
 #include "simple_car.h"
 
@@ -16,45 +19,27 @@ PQP_REAL ORIGIN[3] = {0.0, 0.0, 0.0};
 
 using namespace std;
 
-class World
+class EnvModel
 {
     public:
-        World(ModelCar*);
-        ~World();
-        void create_veh_model(ModelCar*);
-        void create_env_model(void);
-        //bool is_vehicle_in_collision(PQP_REAL [3], PQP_REAL [][3]);
-        bool is_vehicle_in_collision(double, double, double);
-        double dim[2];
-    private:
-        PQP_Model env;
-        double l, w, h; 
+        EnvModel(char *);
+        void draw(IplImage *);
+        void plot_obstacles(IplImage *);
+        ~EnvModel();
+        PQP_Model obstacles;
+        vector<CvPoint3D64f> triangs;
 };
 
-World::World(ModelCar* car)
+EnvModel::EnvModel(char *filename)
 {
-    cout << "Criando instancia da classe World." << endl;
-    l = car->get_between_axes_length();
-    w = car->get_body_width();
-    h = car->get_body_height();
-    dim[0] = 20.0;
-    dim[1] = 20.0;
-}
-
-World::~World()
-{
-    cout << "Destruindo instancia da classe World." << endl;
-}
-
-void World::create_env_model()
-{
-    ifstream obs("obstacles.txt");
+    cout << "Criando instancia da classe EnvModel" << endl;
+    ifstream fp(filename);
     char temp[100], *ps, *nxt;
     double v[9];
     int i,j, tri_count=0;
     PQP_REAL p0[3], p1[3], p2[3];
-    env.BeginModel();
-    while(obs.getline(temp, 100))
+    obstacles.BeginModel();
+    while(fp.getline(temp, 100))
     {
         v[0] = strtod(temp, &ps);
         nxt = ps;
@@ -69,123 +54,266 @@ void World::create_env_model()
             p1[j]=v[i];
         for(j=0; j<3; j++,i++)
             p2[j]=v[i];
-        env.AddTri(p0, p1, p2, tri_count);
+        for(i=0;i<9;i=i+3)
+            triangs.push_back(cvPoint3D64f(v[i], v[i+1], v[i+2]));
+        obstacles.AddTri(p0, p1, p2, tri_count);
         tri_count++;
     }
-    env.EndModel();
+    obstacles.EndModel();
+    fp.close();
 }
 
-void World::create_veh_model(ModelCar *car)
+void EnvModel::plot_obstacles(IplImage *img)
 {
-    PQP_Model veh;
-    double xo, yo, theta, *ini_pos;
-    double xrt, yrt, xlt, ylt, xrb, yrb, xlb, ylb, x_aux, y_aux;
+    CvPoint triang[3];
+    CvPoint *fig[1];
+    int npts=3, ncurves=1;
+    CvScalar red = CV_RGB(255,0,0);
+    for (vector<CvPoint3D64f>::iterator i = triangs.begin(); i != triangs.end(); ){
+        triang[0] = cvPoint(10.0 * i->x,10.0 * i->y);
+        ++i;
+        triang[1] = cvPoint(10.0 * i->x,10.0 * i->y);
+        ++i;
+        triang[2] = cvPoint(10.0 * i->x,10.0 * i->y);
+        ++i;
+        fig[0] = triang;
+        cvPolyLine(img, fig, &npts, ncurves, 1, red);
+    }
+}
+
+EnvModel::~EnvModel()
+{
+    cout << "Destruindo instancia da classe EnvModel" << endl;
+}
+
+class CarroModel
+{
+    public:
+        CarroModel(ModelCar *, double, double, double);
+        PQP_Model veiculo;
+        ~CarroModel();        
+};
+
+
+CarroModel::CarroModel(ModelCar *car, double x, double y, double theta)
+{
+    //cout << "Criando instancia da classe Carro." << endl;
+    double xrt, yrt, xlt, ylt, xlb, ylb, xrb, yrb, xc, yc, aux_x, aux_y, l, h, w;
     double rot_mat[4];
-    ini_pos = car->get_initial_position();
-    xo = ini_pos[STATE_X];
-    yo = ini_pos[STATE_Y];
-    theta = ini_pos[STATE_THETA];
-    rot_mat[0] = cos(theta);
-    rot_mat[1] = -sin(theta);
+    PQP_REAL p0[3], p1[3], p2[3], p3[3], p4[3], p5[3];
+    l = car->get_between_axes_length();
+    h = car->get_body_width();
+    w = car->get_body_height();
+    rot_mat[3] = rot_mat[0] = cos(theta);
     rot_mat[2] = sin(theta);
-    rot_mat[3] = cos(theta);
+    rot_mat[1] = -rot_mat[2];
+
+    xc=x + l + (w-l)/2.0;
+    yc=y + h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xrt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    yrt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+
+    xc=x - (w-l)/2.0;
+    yc=y + h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xlt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    ylt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+
+    xc=x - (w-l)/2.0;
+    yc=y - h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xlb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    ylb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+
+    xc=x + l + (w-l)/2.0;
+    yc=y - h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xrb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    yrb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
     
-    x_aux=xo + l + (w-l)/2.0;
-    y_aux=yo + h/2.0;
-    xrt = x_aux * rot_mat[0] + y_aux * rot_mat[1];
-    yrt = x_aux * rot_mat[2] + y_aux * rot_mat[3];
-    
-    x_aux=xo - (w-l)/2.0;
-    y_aux=yo + h/2.0;
-    xlt = x_aux * rot_mat[0] + y_aux * rot_mat[1];
-    ylt = x_aux * rot_mat[2] + y_aux * rot_mat[3];
-    
-    x_aux=xo - (w-l)/2.0;
-    y_aux=yo - h/2.0;
-    xlb=x_aux * rot_mat[0] + y_aux * rot_mat[1];
-    ylb=x_aux * rot_mat[2] + y_aux * rot_mat[3];
-    
-    x_aux=xo + l + (w-l)/2.0;
-    y_aux=yo - h/2.0;
-    xrb=x_aux * rot_mat[0] + y_aux * rot_mat[1];
-    yrb=x_aux * rot_mat[2] + y_aux * rot_mat[3];
-    
-    PQP_REAL p0[3]={xlt, ylt, 0}, p1[3]={xrt, yrt, 0}, p2[3]={xrb, yrb, 0};
-    PQP_REAL p3[3]={xlt, ylt, 0}, p4[3]={xrb, yrb, 0}, p5[3]={xlb, ylb, 0};
-    
-    veh.BeginModel();
-    veh.AddTri(p0, p1, p2, 0);
-    veh.AddTri(p3, p4, p5, 1);
-    veh.EndModel();    
+    p0[2] = p1[2] = p2[2] = p3[2] = p4[2] = p5[2] = 0.0;
+    // Primeiro triangulo
+    p0[0] = xlt; p0[1] = ylt;
+    p1[0] = xrb; p1[1] = yrb;
+    p2[0] = xlb; p2[1] = ylb;
+    // Segundo triangulo
+    p3[0] = xlt; p3[1] = ylt;
+    p4[0] = xrb; p4[1] = yrb;
+    p5[0] = xrt; p5[1] = yrt;
+    veiculo.BeginModel();
+    veiculo.AddTri(p0, p1, p2, 0);
+    veiculo.AddTri(p3, p4, p5, 1);
+    veiculo.EndModel();
 }
 
-/*bool World::is_vehicle_in_collision(PQP_REAL trans[3], PQP_REAL rot[][3])
+CarroModel::~CarroModel()
 {
-    PQP_CollideResult cres;
-    PQP_DistanceResult dres;
-    double rel_err = 0.0, abs_err = 0.0, distance = 0.0;
-    int colliding;
-    PQP_Collide(&cres, IDENTITY_MATRIX, ORIGIN, &env, rot, trans, &veh);
-    colliding = cres.Colliding();
-    //cout << "Colliding env and car: " << colliding << endl;
-    PQP_Distance(&dres, IDENTITY_MATRIX, ORIGIN, &env, rot, trans, &veh,
-                 rel_err, abs_err);
-    distance = dres.Distance();
-    //cout << "Distance between env and car: " << distance << endl;
-    if (colliding)
-        return true;
-    return false;
-}*/
+    //cout << "Destruindo instancia da classe Carro." << endl;
+}
+
+class World
+{
+    public:
+        World(char *, ModelCar *);
+        ~World();
+        bool is_vehicle_in_collision(double, double, double);
+        void create_vehicle(double, double, double, PQP_Model *);
+        double dim[2];
+        ModelCar *veh_state_model;
+        EnvModel *env;
+};
+
+World::World(char *envfilename, ModelCar* car)
+{
+    cout << "Criando instancia da classe World." << endl;
+    env = new EnvModel(envfilename);
+    dim[0] = 20.0;
+    dim[1] = 20.0;
+    veh_state_model = car;
+}
 
 bool World::is_vehicle_in_collision(double x, double y, double theta)
 {
-    PQP_Model veh;
-    double rot_mat[4], xrt, yrt, xlt, ylt, xrb, yrb, xlb, ylb, x_aux, y_aux;
     PQP_CollideResult cres;
-    PQP_DistanceResult dres;
-    double rel_err = 0.0, abs_err = 0.0, distance = 0.0;
+//    PQP_DistanceResult dres;
+    PQP_Model *col_model_env, carro;
+    
+  //  double rel_err = 0.0, abs_err = 0.0, distance = 0.0;
     int colliding;
-    rot_mat[0] = cos(theta);
-    rot_mat[1] = -sin(theta);
+    
+   /* 
+    double xrt, yrt, xlt, ylt, xlb, ylb, xrb, yrb, xc, yc, aux_x, aux_y, l, h, w;
+    double rot_mat[4];
+    PQP_REAL p0[3], p1[3], p2[3], p3[3], p4[3], p5[3];
+    l = veh_state_model->get_between_axes_length();
+    h = veh_state_model->get_body_width();
+    w = veh_state_model->get_body_height();
+    rot_mat[3] = rot_mat[0] = cos(theta);
     rot_mat[2] = sin(theta);
-    rot_mat[3] = cos(theta);
+    rot_mat[1] = -rot_mat[2];
+
+    xc=x + l + (w-l)/2.0;
+    yc=y + h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xrt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    yrt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+
+    xc=x - (w-l)/2.0;
+    yc=y + h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xlt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    ylt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+
+    xc=x - (w-l)/2.0;
+    yc=y - h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xlb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    ylb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+
+    xc=x + l + (w-l)/2.0;
+    yc=y - h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xrb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    yrb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
     
-    x_aux=x + l + (w-l)/2.0;
-    y_aux=y + h/2.0;
-    xrt = x_aux * rot_mat[0] + y_aux * rot_mat[1];
-    yrt = x_aux * rot_mat[2] + y_aux * rot_mat[3];
+    p0[2] = p1[2] = p2[2] = p3[2] = p4[2] = p5[2] = 0.0;
+    // Primeiro triangulo
+    p0[0] = xlt; p0[1] = ylt;
+    p1[0] = xrb; p1[1] = yrb;
+    p2[0] = xlb; p2[1] = ylb;
+    // Segundo triangulo
+    p3[0] = xlt; p3[1] = ylt;
+    p4[0] = xrb; p4[1] = yrb;
+    p5[0] = xrt; p5[1] = yrt;
+    carro.BeginModel();
+    carro.AddTri(p0, p1, p2, 0);
+    carro.AddTri(p3, p4, p5, 1);
+    carro.EndModel();
+    */
     
-    x_aux=x - (w-l)/2.0;
-    y_aux=y + h/2.0;
-    xlt = x_aux * rot_mat[0] + y_aux * rot_mat[1];
-    ylt = x_aux * rot_mat[2] + y_aux * rot_mat[3];
-    
-    x_aux=x - (w-l)/2.0;
-    y_aux=y - h/2.0;
-    xlb=x_aux * rot_mat[0] + y_aux * rot_mat[1];
-    ylb=x_aux * rot_mat[2] + y_aux * rot_mat[3];
-    
-    x_aux=x + l + (w-l)/2.0;
-    y_aux=y - h/2.0;
-    xrb=x_aux * rot_mat[0] + y_aux * rot_mat[1];
-    yrb=x_aux * rot_mat[2] + y_aux * rot_mat[3];
-    
-    PQP_REAL p0[3]={xlt, ylt, 0}, p1[3]={xrt, yrt, 0}, p2[3]={xrb, yrb, 0};
-    PQP_REAL p3[3]={xlt, ylt, 0}, p4[3]={xrb, yrb, 0}, p5[3]={xlb, ylb, 0};
-    
-    veh.BeginModel();
-    veh.AddTri(p0, p1, p2, 0);
-    veh.AddTri(p3, p4, p5, 1);
-    veh.EndModel();
-    PQP_Collide(&cres, IDENTITY_MATRIX, ORIGIN, &env, IDENTITY_MATRIX, ORIGIN, &veh);
+    create_vehicle(x, y, theta, &carro);
+    col_model_env = &(env->obstacles);
+    PQP_Collide(&cres, IDENTITY_MATRIX, ORIGIN, col_model_env,
+                IDENTITY_MATRIX, ORIGIN, &carro);
     colliding = cres.Colliding();
     //cout << "Colliding env and car: " << colliding << endl;
-    PQP_Distance(&dres, IDENTITY_MATRIX, ORIGIN, &env, IDENTITY_MATRIX, ORIGIN, &veh,
+    /*PQP_Distance(&dres, IDENTITY_MATRIX, ORIGIN, col_model_env,
+                 IDENTITY_MATRIX, ORIGIN, &carro,
                  rel_err, abs_err);
-    distance = dres.Distance();
+    distance = dres.Distance();*/
     //cout << "Distance between env and car: " << distance << endl;
     if (colliding)
         return true;
     return false;
 }
+
+void World::create_vehicle(double x, double y, double theta, PQP_Model *veh)
+{
+    double xrt, yrt, xlt, ylt, xlb, ylb, xrb, yrb, xc, yc, aux_x, aux_y, l, h, w;
+    double rot_mat[4];
+    PQP_REAL p0[3], p1[3], p2[3], p3[3], p4[3], p5[3];
+    l = veh_state_model->get_between_axes_length();
+    h = veh_state_model->get_body_width();
+    w = veh_state_model->get_body_height();
+    rot_mat[3] = rot_mat[0] = cos(theta);
+    rot_mat[2] = sin(theta);
+    rot_mat[1] = -rot_mat[2];
+
+    xc=x + l + (w-l)/2.0;
+    yc=y + h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xrt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    yrt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+
+    xc=x - (w-l)/2.0;
+    yc=y + h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xlt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    ylt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+
+    xc=x - (w-l)/2.0;
+    yc=y - h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xlb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    ylb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+
+    xc=x + l + (w-l)/2.0;
+    yc=y - h/2.0;
+    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
+    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
+    xrb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
+    yrb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
+    
+    p0[2] = p1[2] = p2[2] = p3[2] = p4[2] = p5[2] = 0.0;
+    // Primeiro triangulo
+    p0[0] = xlt; p0[1] = ylt;
+    p1[0] = xrb; p1[1] = yrb;
+    p2[0] = xlb; p2[1] = ylb;
+    // Segundo triangulo
+    p3[0] = xlt; p3[1] = ylt;
+    p4[0] = xrb; p4[1] = yrb;
+    p5[0] = xrt; p5[1] = yrt;
+    veh->BeginModel();
+    veh->AddTri(p0, p1, p2, 0);
+    veh->AddTri(p3, p4, p5, 1);
+    veh->EndModel();
+}
+
+World::~World()
+{
+    cout << "Destruindo instancia da classe World." << endl;
+}
+
 #endif

@@ -21,6 +21,7 @@ typedef ListDigraph Graph;
 typedef Graph::Node Node;
 typedef Graph::ArcMap<int> ArcMapInt;
 typedef Graph::NodeMap<double*> NodeMapState;
+typedef Graph::ArcMap<double*> ArcMapControl;
 
 class RRT
 {
@@ -46,6 +47,7 @@ class RRT
         Graph g;
         ArcMapInt *cost;
         NodeMapState *states;
+        ArcMapControl *control_map;
 };
 
 RRT::RRT(double *init, double *goal, int n, ModelCar *car, World *w, char *fname)
@@ -53,6 +55,7 @@ RRT::RRT(double *init, double *goal, int n, ModelCar *car, World *w, char *fname
     cout << "Criando instancia da classe RRT" << endl;
     states = new NodeMapState(g);
     cost = new ArcMapInt(g);
+    control_map = new ArcMapControl(g);
     initial_node = g.addNode();
     (*states)[initial_node] = init;
     memcpy(goal_state, goal, sizeof(double) * 3);
@@ -123,15 +126,36 @@ int RRT::extend(double *rand)
         }
     }
     
+    for(int i=0; i<21; i++)
+    {
+        u[i][1] *= -1.0;
+        not_collided = check_no_collision_path((*states)[near], u[i], expanded);
+        if (not_collided)
+        {
+            aux = metric(expanded, rand);
+            if(aux < d)
+            {
+                d = aux;
+                memcpy(temp, expanded, sizeof(double) * 3);
+                pt = temp;
+                best_control = u[i];
+            }
+        }
+    }
+    
     if (pt)
     {
+        double *arcmap_best_control;
+        arcmap_best_control = (double *) malloc(sizeof(double) * 2);
+        memcpy(arcmap_best_control, best_control, sizeof(double) * 2);
         duplicated_node_id = check_duplicate_node(temp);
         //cout << "ID: " << duplicated_node_id << " ";
         if (duplicated_node_id >= 0)
         {
             //cout << "Duplicated NODE detect ID: " << duplicated_node_id << endl;
             Node n = g.nodeFromId(duplicated_node_id);
-            g.addArc(near, n);
+            Graph::Arc arc = g.addArc(near, n);
+            (*control_map)[arc] = arcmap_best_control;
             return -1;
         }
         print_path((*states)[near], best_control);
@@ -139,7 +163,8 @@ int RRT::extend(double *rand)
         memcpy(choosed, temp, sizeof(double) * 3);
         added = g.addNode();
         (*states)[added] = choosed;
-        g.addArc(near, added);
+        Graph::Arc arc = g.addArc(near, added);
+        (*control_map)[arc] = arcmap_best_control;
         if(goal_state_reached((*states)[added], goal_state))
             return 2;
         else
@@ -201,7 +226,6 @@ int RRT::check_duplicate_node(double *adding)
     double aux;
     for(Graph::NodeIt n(g); n != INVALID; ++n)
     {
-        //cout << 
         aux = metric((*states)[n], adding);
         if (aux < 1e-2)
         {
@@ -215,14 +239,6 @@ void RRT::print_path(const double *near_node, const double *best_control)
 {
     fp << near_node[0] << " " << near_node[1] << " " << near_node[2] << " "
     << best_control[0] << " " << best_control[1] << " " << INTEGRATION_TIME << endl;
-    /*double aux[3], temp[3], it;
-    memcpy(aux, near_node, sizeof(double) * 3);
-    for (it=0.0; it<=INTEGRATION_TIME; it+=DELTA_T)
-    {
-        cout << aux[0] << " " << aux[1] << endl;
-        veh->EstimateNewState(DELTA_T, aux, best_control, temp);
-        memcpy(aux, temp, sizeof(double) * 3);
-    }*/
 }
 
 void RRT::close_logfile(void)

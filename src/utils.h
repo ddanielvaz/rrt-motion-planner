@@ -19,7 +19,7 @@ boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(gener
 //5 graus
 #define ROTATIONAL_TOLERANCE 0.087
 //10 graus
-#define MAX_ROTATIONAL_TOLERANCE 0.1745
+#define MAX_ROTATIONAL_TOLERANCE 2 * 0.1745
 //mudanca maxima de angulo de estercamento em rad (3 graus)
 #define MAX_STEER_DIFF 0.05235
 //angulo maximo de estercamento em rad (30 graus)
@@ -77,7 +77,7 @@ double metric(const double *state0, const double *state)
     dy = state0[STATE_Y] - state[STATE_Y];
     angle = normalize_angle(state0[STATE_THETA] - state[STATE_THETA]);
     //return sqrt(dx*dx + dy*dy) + sqrt(fabs(angle));
-    return sqrt(dx*dx + dy*dy) + fabs(angle)/2.0;
+    return sqrt(dx*dx + dy*dy) + fabs(angle)*1.5;
 }
 
 bool goal_state_reached(const double *state, const double *goal)

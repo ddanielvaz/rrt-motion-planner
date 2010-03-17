@@ -21,11 +21,9 @@ int main(int argc, char *argv[])
     plan.build();
     plan.close_logfile();
     plan.path_finder();
-    Graphics fig(logfile, &veh, &w);
-    fig.read_and_plot();
+    Graphics fig(logfile, pathfile, &veh, &w);
+    fig.read_and_plot_everything();
+    fig.read_and_plot_best_path();
     fig.show();
-    Graphics fig1(pathfile, &veh, &w);
-    fig1.read_and_plot();
-    fig1.show();
     return 0;
 }

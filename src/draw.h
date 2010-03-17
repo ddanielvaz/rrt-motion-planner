@@ -89,9 +89,10 @@ void Carro::draw(IplImage* img)
 class Graphics
 {
     public:
-        Graphics(char *filename, ModelCar *, World *);
+        Graphics(char *, char *, ModelCar *, World *);
         ~Graphics();
-        void read_and_plot(void);
+        void read_and_plot_everything(void);
+        void read_and_plot_best_path(void);
         void draw(IplImage *, const double, const double, const double,
                    const double, const double, const double);
         void show(void);
@@ -99,40 +100,47 @@ class Graphics
     private:
         ModelCar *veh;
         World *world;
-        ifstream fp;
-        IplImage* img1;
+        ifstream resultsfp, pathfp;
+        IplImage *everything, *best_path ;
 };
 
-Graphics::Graphics(char *filename, ModelCar *car, World *wrl)
+Graphics::Graphics(char *resultsfile, char *pathfile, ModelCar *car, World *wrl)
 {
     cout << "Criando instancia da classe Graphics" << endl;
     CvSize s = cvSize(400, 400);
     CvScalar white = CV_RGB(255, 255, 255);
     //Obstacles my_env;
-    fp.open(filename);
-    img1 = cvCreateImage(s, IPL_DEPTH_32F, 3);
+    resultsfp.open(resultsfile);
+    pathfp.open(pathfile);
+    everything = cvCreateImage(s, IPL_DEPTH_32F, 3);
+    best_path = cvCreateImage(s, IPL_DEPTH_32F, 3);
     cvNamedWindow("win1", CV_WINDOW_AUTOSIZE);
-    cvRectangle(img1, cvPoint(0,0), cvPoint(400,400), white, -1, 8, 0);
+    cvNamedWindow("win2", CV_WINDOW_AUTOSIZE);
+    cvRectangle(everything, cvPoint(0,0), cvPoint(400,400), white, -1, 8, 0);
+    cvRectangle(best_path, cvPoint(0,0), cvPoint(400,400), white, -1, 8, 0);
     world = wrl;
-    wrl->env->plot_obstacles(img1);
+    wrl->env->plot_obstacles(everything);
+    wrl->env->plot_obstacles(best_path);
     veh = car;
 }
 
 Graphics::~Graphics()
 {
     cout << "Destruindo instancia da classe Graphics" << endl;
-    cvReleaseImage(&img1);
-    //fp.close();
+    cvReleaseImage(&everything);
+    cvReleaseImage(&best_path);
+    resultsfp.close();
+    pathfp.close();
 }
 
-void Graphics::read_and_plot()
+void Graphics::read_and_plot_everything()
 {
     char temp[100], *ps, *nxt;
     int i;
     float x, y, phi, v, w, t;
     cout << "Lendo pontos do arquivo. " << endl;
     i = 0;
-    while(fp.getline(temp, 100))
+    while(resultsfp.getline(temp, 100))
     {
         //cout << temp << endl;
         x = strtod(temp, &ps);
@@ -158,7 +166,46 @@ void Graphics::read_and_plot()
 
         t = strtod(nxt, NULL);
         //cout << "T: " << t << endl;
-        draw(img1, x, y, phi, v, w, t);
+        draw(everything, x, y, phi, v, w, t);
+        i += 1;
+    }
+    cout << i << " pontos lidos." << endl;
+}
+
+void Graphics::read_and_plot_best_path()
+{
+    char temp[100], *ps, *nxt;
+    int i;
+    float x, y, phi, v, w, t;
+    cout << "Lendo pontos do arquivo. " << endl;
+    i = 0;
+    while(pathfp.getline(temp, 100))
+    {
+        //cout << temp << endl;
+        x = strtod(temp, &ps);
+        nxt = ps;
+        //cout << "X: " << x << endl;
+        
+        
+        y = strtod(nxt, &ps);
+        nxt = ps;
+        //cout << "Y: " << y << endl;
+
+        phi = strtod(nxt, &ps);
+        nxt = ps;
+        //cout << "PHI: " << phi << endl;
+
+        v = strtod(nxt, &ps);
+        nxt = ps;
+        //cout << "v: " << v << endl;
+
+        w = strtod(nxt, &ps);
+        nxt = ps;
+        //cout << "W: " << w << endl;
+
+        t = strtod(nxt, NULL);
+        //cout << "T: " << t << endl;
+        draw(best_path, x, y, phi, v, w, t);
         i += 1;
     }
     cout << i << " pontos lidos." << endl;
@@ -188,7 +235,8 @@ void Graphics::draw(IplImage *img, const double x, const double y,
 
 void Graphics::show(void)
 {
-    cvShowImage("win1", img1);
+    cvShowImage("win1", everything);
+    cvShowImage("win2", best_path);
     cvWaitKey(0);
 }
 

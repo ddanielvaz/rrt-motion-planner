@@ -3,7 +3,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <list>
 #include <stdlib.h>
 
 #include <lemon/list_graph.h>
@@ -19,9 +18,10 @@ using namespace lemon;
 
 typedef ListDigraph Graph;
 typedef Graph::Node Node;
-typedef Graph::ArcMap<int> ArcMapInt;
+typedef Graph::ArcMap<double> ArcMapWeight;
 typedef Graph::NodeMap<double*> NodeMapState;
 typedef Graph::ArcMap<double*> ArcMapControl;
+typedef Path<Graph> MyPath;
 
 class RRT
 {
@@ -36,6 +36,7 @@ class RRT
         int check_duplicate_node(double *);
         void print_path(const double*, const double*);
         void close_logfile(void);
+        void path_finder(void);
         ~RRT();
     private:
         Node initial_node, goal_node;
@@ -45,7 +46,7 @@ class RRT
         World *env;
         ofstream fp;
         Graph g;
-        ArcMapInt *cost;
+        ArcMapWeight *cost;
         NodeMapState *states;
         ArcMapControl *control_map;
 };
@@ -53,13 +54,13 @@ class RRT
 RRT::RRT(double *init, double *goal, int n, ModelCar *car, World *w, char *fname)
 {
     cout << "Criando instancia da classe RRT" << endl;
-    states = new NodeMapState(g);
-    cost = new ArcMapInt(g);
-    control_map = new ArcMapControl(g);
-    initial_node = g.addNode();
-    (*states)[initial_node] = init;
     memcpy(goal_state, goal, sizeof(double) * 3);
     memcpy(initial_state, init, sizeof(double) * 3);
+    states = new NodeMapState(g);
+    cost = new ArcMapWeight(g);
+    control_map = new ArcMapControl(g);
+    initial_node = g.addNode();
+    (*states)[initial_node] = initial_state;
     max_nodes = n;
     veh = car;
     env = w;
@@ -90,6 +91,7 @@ void RRT::build(void)
         else if(finished == 2)
         {
             cout << "[" << i << "] Objetivo alcancado." << endl;
+            path_finder();
             //print_nodes(nodes);
             break;
         }
@@ -156,6 +158,7 @@ int RRT::extend(double *rand)
             Node n = g.nodeFromId(duplicated_node_id);
             Graph::Arc arc = g.addArc(near, n);
             (*control_map)[arc] = arcmap_best_control;
+            (*cost)[arc] = d;
             return -1;
         }
         print_path((*states)[near], best_control);
@@ -165,6 +168,7 @@ int RRT::extend(double *rand)
         (*states)[added] = choosed;
         Graph::Arc arc = g.addArc(near, added);
         (*control_map)[arc] = arcmap_best_control;
+        (*cost)[arc] = d;
         if(goal_state_reached((*states)[added], goal_state))
             return 2;
         else
@@ -246,4 +250,34 @@ void RRT::close_logfile(void)
     fp.close();
 }
 
+void RRT::path_finder(void)
+{
+    Dijkstra<Graph, ArcMapWeight> ss(g, (*cost));
+    Node closest_goal;
+    MyPath p;
+    double distance;
+    ofstream pathfile("path.log");
+    closest_goal = select_nearest_node(goal_state);
+    cout << (*states)[closest_goal][0] << " " << (*states)[closest_goal][1] << " " << (*states)[closest_goal][2] << endl;
+    distance = metric((*states)[closest_goal], goal_state);
+    cout << "Distancia entre no mais proximo de goal: " << distance << endl;
+    ss.run(initial_node);
+    p = ss.path(closest_goal);
+    for (MyPath::ArcIt a(p); a != INVALID; ++a)
+    {
+        Node s = g.source(a);
+        Node t = g.target(a);
+        cout << "From State: " << (*states)[s][0] <<" "<< (*states)[s][1] <<" " << (*states)[s][2] << endl;
+        cout << "To State: " << (*states)[t][0] <<" "<< (*states)[t][1] <<" " << (*states)[t][2] << endl;
+        cout << "Control map: " << (*control_map)[a][0] << " " << (*control_map)[a][1] << endl;
+        cout << "Arc cost: " << (*cost)[a] << endl;
+        pathfile << (*states)[s][0] << " " << (*states)[s][1] << " "
+                 << (*states)[s][2] << " " << (*control_map)[a][0] << " "
+                 << (*control_map)[a][1] << " " << INTEGRATION_TIME << endl;
+    }
+    pathfile.close();
+    //goal_node = g.addNode();
+    //(*states)[goal_node] = goal_state;
+    
+}
 #endif

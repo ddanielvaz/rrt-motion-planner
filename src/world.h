@@ -162,7 +162,6 @@ class World
         World(char *, ModelCar *);
         ~World();
         bool is_vehicle_in_collision(double, double, double);
-        void create_vehicle(double, double, double, PQP_Model *);
         double dim[2];
         ModelCar *veh_state_model;
         EnvModel *env;
@@ -180,13 +179,10 @@ World::World(char *envfilename, ModelCar* car)
 bool World::is_vehicle_in_collision(double x, double y, double theta)
 {
     PQP_CollideResult cres;
-//    PQP_DistanceResult dres;
+//     PQP_DistanceResult dres;
     PQP_Model *col_model_env, carro;
-    
-  //  double rel_err = 0.0, abs_err = 0.0, distance = 0.0;
+//     double rel_err = 0.0, abs_err = 0.0, distance = 0.0;
     int colliding;
-    
-   /* 
     double xrt, yrt, xlt, ylt, xlb, ylb, xrb, yrb, xc, yc, aux_x, aux_y, l, h, w;
     double rot_mat[4];
     PQP_REAL p0[3], p1[3], p2[3], p3[3], p4[3], p5[3];
@@ -238,9 +234,7 @@ bool World::is_vehicle_in_collision(double x, double y, double theta)
     carro.AddTri(p0, p1, p2, 0);
     carro.AddTri(p3, p4, p5, 1);
     carro.EndModel();
-    */
-    
-    create_vehicle(x, y, theta, &carro);
+
     col_model_env = &(env->obstacles);
     PQP_Collide(&cres, IDENTITY_MATRIX, ORIGIN, col_model_env,
                 IDENTITY_MATRIX, ORIGIN, &carro);
@@ -254,61 +248,6 @@ bool World::is_vehicle_in_collision(double x, double y, double theta)
     if (colliding)
         return true;
     return false;
-}
-
-void World::create_vehicle(double x, double y, double theta, PQP_Model *veh)
-{
-    double xrt, yrt, xlt, ylt, xlb, ylb, xrb, yrb, xc, yc, aux_x, aux_y, l, h, w;
-    double rot_mat[4];
-    PQP_REAL p0[3], p1[3], p2[3], p3[3], p4[3], p5[3];
-    l = veh_state_model->get_between_axes_length();
-    h = veh_state_model->get_body_width();
-    w = veh_state_model->get_body_height();
-    rot_mat[3] = rot_mat[0] = cos(theta);
-    rot_mat[2] = sin(theta);
-    rot_mat[1] = -rot_mat[2];
-
-    xc=x + l + (w-l)/2.0;
-    yc=y + h/2.0;
-    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
-    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
-    xrt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
-    yrt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
-
-    xc=x - (w-l)/2.0;
-    yc=y + h/2.0;
-    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
-    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
-    xlt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
-    ylt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
-
-    xc=x - (w-l)/2.0;
-    yc=y - h/2.0;
-    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
-    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
-    xlb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
-    ylb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
-
-    xc=x + l + (w-l)/2.0;
-    yc=y - h/2.0;
-    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
-    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
-    xrb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
-    yrb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
-    
-    p0[2] = p1[2] = p2[2] = p3[2] = p4[2] = p5[2] = 0.0;
-    // Primeiro triangulo
-    p0[0] = xlt; p0[1] = ylt;
-    p1[0] = xrb; p1[1] = yrb;
-    p2[0] = xlb; p2[1] = ylb;
-    // Segundo triangulo
-    p3[0] = xlt; p3[1] = ylt;
-    p4[0] = xrb; p4[1] = yrb;
-    p5[0] = xrt; p5[1] = yrt;
-    veh->BeginModel();
-    veh->AddTri(p0, p1, p2, 0);
-    veh->AddTri(p3, p4, p5, 1);
-    veh->EndModel();
 }
 
 World::~World()

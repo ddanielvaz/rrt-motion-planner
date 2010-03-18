@@ -91,7 +91,7 @@ void RRT::build(void)
         else if(finished == 2)
         {
             cout << "[" << i << "] Objetivo alcancado." << endl;
-            path_finder();
+            //path_finder();
             //print_nodes(nodes);
             break;
         }

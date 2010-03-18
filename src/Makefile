@@ -8,7 +8,7 @@ SRCS    = main.cpp
 
 OBJECTS = main.o
 
-TARGET = car
+TARGET = planning
 
 CLEAN   = $(OBJECTS) $(TARGET)
 

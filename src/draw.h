@@ -9,6 +9,7 @@
 #include <highgui.h>
 
 #include "simple_car.h"
+#include "utils.h"
 #include "world.h"
 
 using namespace std;
@@ -21,7 +22,7 @@ class Carro
         Carro(ModelCar*, double, double, double);
         ~Carro();
         void transform(CvPoint, CvPoint, double);
-        void draw(IplImage*);
+        void draw(IplImage*, CvScalar);
 };
 
 
@@ -79,164 +80,109 @@ Carro::~Carro()
     //cout << "Destruindo instancia da classe Carro." << endl;
 }
 
-void Carro::draw(IplImage* img)
+void Carro::draw(IplImage* img, CvScalar color)
 {
     int npts=4, ncurves = 1;
-    CvScalar blue = CV_RGB(0,0,255);
-    cvPolyLine(img, fig, &npts, ncurves, 1, blue);
+    cvPolyLine(img, fig, &npts, ncurves, 1, color);
 }
 
 class Graphics
 {
     public:
-        Graphics(char *, char *, ModelCar *, World *);
+        Graphics(ModelCar *, World *);
         ~Graphics();
-        void read_and_plot_everything(void);
-        void read_and_plot_best_path(void);
-        void draw(IplImage *, const double, const double, const double,
-                   const double, const double, const double);
+        void read_and_plot(char *, int);
+        void draw(const double, const double, const double, const double,
+                  const double, const int);
         void show(void);
-        void read_obstacles(void);
+        void draw_initial_and_goal(double *initial, double *goal);
     private:
         ModelCar *veh;
         World *world;
-        ifstream resultsfp, pathfp;
-        IplImage *everything, *best_path ;
+        IplImage* img1;
 };
 
-Graphics::Graphics(char *resultsfile, char *pathfile, ModelCar *car, World *wrl)
+Graphics::Graphics(ModelCar *car, World *wrl)
 {
     cout << "Criando instancia da classe Graphics" << endl;
     CvSize s = cvSize(400, 400);
-    CvScalar white = CV_RGB(255, 255, 255);
-    //Obstacles my_env;
-    resultsfp.open(resultsfile);
-    pathfp.open(pathfile);
-    everything = cvCreateImage(s, IPL_DEPTH_32F, 3);
-    best_path = cvCreateImage(s, IPL_DEPTH_32F, 3);
+    CvScalar white = colors[c_white];
+    img1 = cvCreateImage(s, IPL_DEPTH_32F, 3);
     cvNamedWindow("win1", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("win2", CV_WINDOW_AUTOSIZE);
-    cvRectangle(everything, cvPoint(0,0), cvPoint(400,400), white, -1, 8, 0);
-    cvRectangle(best_path, cvPoint(0,0), cvPoint(400,400), white, -1, 8, 0);
+    cvRectangle(img1, cvPoint(0,0), cvPoint(400,400), white, -1, 8, 0);
     world = wrl;
-    wrl->env->plot_obstacles(everything);
-    wrl->env->plot_obstacles(best_path);
+    wrl->env->plot_obstacles(img1);
     veh = car;
 }
 
 Graphics::~Graphics()
 {
     cout << "Destruindo instancia da classe Graphics" << endl;
-    cvReleaseImage(&everything);
-    cvReleaseImage(&best_path);
-    resultsfp.close();
-    pathfp.close();
+    cvReleaseImage(&img1);
 }
 
-void Graphics::read_and_plot_everything()
+void Graphics::draw_initial_and_goal(double *initial, double *goal)
+{
+    CvScalar green = colors[c_green], red = colors[c_red];
+    double x, y, r=5.0;
+    x = initial[0] * 10.0;
+    y = initial[1] * 10.0;
+    cvCircle(img1, cvPoint(x,y), r, red, -1, 8, 0);
+    x = goal[0] * 10.0;
+    y = goal[1] * 10.0;
+    cvCircle(img1, cvPoint(x,y), r, green, -1, 8, 0);
+}
+
+void Graphics::read_and_plot(char *filename, int color)
 {
     char temp[100], *ps, *nxt;
     int i;
-    float x, y, phi, v, w, t;
+    float x, y, theta, v, phi, t;
+    ifstream fp(filename);
     cout << "Lendo pontos do arquivo. " << endl;
     i = 0;
-    while(resultsfp.getline(temp, 100))
+    while(fp.getline(temp, 100))
     {
-        //cout << temp << endl;
         x = strtod(temp, &ps);
         nxt = ps;
-        //cout << "X: " << x << endl;
-        
-        
+
         y = strtod(nxt, &ps);
         nxt = ps;
-        //cout << "Y: " << y << endl;
 
-        phi = strtod(nxt, &ps);
+        theta = strtod(nxt, &ps);
         nxt = ps;
-        //cout << "PHI: " << phi << endl;
 
         v = strtod(nxt, &ps);
         nxt = ps;
-        //cout << "v: " << v << endl;
-
-        w = strtod(nxt, &ps);
-        nxt = ps;
-        //cout << "W: " << w << endl;
-
-        t = strtod(nxt, NULL);
-        //cout << "T: " << t << endl;
-        draw(everything, x, y, phi, v, w, t);
-        i += 1;
-    }
-    cout << i << " pontos lidos." << endl;
-}
-
-void Graphics::read_and_plot_best_path()
-{
-    char temp[100], *ps, *nxt;
-    int i;
-    float x, y, phi, v, w, t;
-    cout << "Lendo pontos do arquivo. " << endl;
-    i = 0;
-    while(pathfp.getline(temp, 100))
-    {
-        //cout << temp << endl;
-        x = strtod(temp, &ps);
-        nxt = ps;
-        //cout << "X: " << x << endl;
-        
-        
-        y = strtod(nxt, &ps);
-        nxt = ps;
-        //cout << "Y: " << y << endl;
 
         phi = strtod(nxt, &ps);
         nxt = ps;
-        //cout << "PHI: " << phi << endl;
-
-        v = strtod(nxt, &ps);
-        nxt = ps;
-        //cout << "v: " << v << endl;
-
-        w = strtod(nxt, &ps);
-        nxt = ps;
-        //cout << "W: " << w << endl;
 
         t = strtod(nxt, NULL);
-        //cout << "T: " << t << endl;
-        draw(best_path, x, y, phi, v, w, t);
+        draw(x, y, theta, v, phi, color);
         i += 1;
     }
     cout << i << " pontos lidos." << endl;
+    fp.close();
 }
 
-void Graphics::draw(IplImage *img, const double x, const double y,
-                    const double phi, const double v, const double w,
-                    const double t)
+void Graphics::draw(const double x, const double y, const double theta,
+                    const double v, const double phi, const int color_id)
 {
-    double i, dt=0.05, temp[3], aux[3], u[2];
-    Carro car(veh, x, y, phi);
-    CvScalar green = CV_RGB(0,255,0);
-    CvPoint p0, p1;
-    u[0] = v; u[1] = w;
-    aux[0] = x; aux[1] = y; aux[2] = phi;
-    car.draw(img);
-    for (i=0; i<=t; i=i+dt)
-    {
-        veh->EstimateNewState(DELTA_T, aux, u, temp);
-        p0 = cvPoint(aux[0] * 10.0, aux[1] * 10.0);
-        p1 = cvPoint(temp[0] * 10.0, temp[1] * 10.0);
-        cvLine(img, p0, p1, green, 1, 8, 0);
-        memcpy(aux, temp, sizeof(double) * 3);
-    }
+    double aux[3], u[2], temp[3];
+    u[0] = v; u[1] = phi;
+    aux[0] = x; aux[1] = y; aux[2] = theta;
+    Carro car(veh, x, y, theta);
+    CvScalar color = colors[color_id];
+    car.draw(img1, color);
+    veh->EstimateNewState(INTEGRATION_TIME, aux, u, temp);
+    Carro carf(veh, temp[0], temp[1], temp[2]);
+    carf.draw(img1, color);
 }
-
 
 void Graphics::show(void)
 {
-    cvShowImage("win1", everything);
-    cvShowImage("win2", best_path);
+    cvShowImage("win1", img1);
     cvWaitKey(0);
 }
 

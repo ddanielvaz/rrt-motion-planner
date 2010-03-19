@@ -35,10 +35,12 @@ boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(gener
 #define DELTA_T 0.05
 #define INTEGRATION_TIME 1.0
 
-#define GOAL_BIAS 0.3
+#define GOAL_BIAS 0.25
 
 #define N_STATES 3
 #define N_CONTROLS 11
+
+#define SCALE_FACTOR 15.0
 
 enum
 {
@@ -89,8 +91,9 @@ double metric(const double *state0, const double *state)
     dy = state0[STATE_Y] - state[STATE_Y];
     d = sqrt(dx*dx + dy*dy);
     angle = normalize_angle(state0[STATE_THETA] - state[STATE_THETA]);
-    return d + fabs(angle)*3.0;
-    //return d + fabs(angle)*(1.0 + d/2.0);
+    return d + fabs(angle)*(1.5/(d+0.001));
+    //return d + fabs(angle)*1.5;
+    //return d + fabs(angle)*(1.0 + d/3.0);
 }
 
 bool goal_state_reached(const double *state, const double *goal)

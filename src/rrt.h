@@ -36,7 +36,7 @@ class RRT
         int check_duplicate_node(double *);
         void print_path(const double*, const double*);
         void close_logfile(void);
-        void path_finder(void);
+        void path_to_closest_goal(void);
         ~RRT();
     private:
         Node initial_node, goal_node;
@@ -98,7 +98,6 @@ void RRT::build(void)
     }
 }
 
-
 int RRT::extend(double *rand)
 {
     Node near = select_nearest_node(rand), added;
@@ -127,7 +126,7 @@ int RRT::extend(double *rand)
             }
         }
     }
-    
+
     for(int i=0; i<21; i++)
     {
         u[i][1] *= -1.0;
@@ -144,7 +143,7 @@ int RRT::extend(double *rand)
             }
         }
     }
-    
+
     if (pt)
     {
         double *arcmap_best_control;
@@ -250,7 +249,7 @@ void RRT::close_logfile(void)
     fp.close();
 }
 
-void RRT::path_finder(void)
+void RRT::path_to_closest_goal(void)
 {
     Dijkstra<Graph, ArcMapWeight> ss(g, (*cost));
     Node closest_goal;

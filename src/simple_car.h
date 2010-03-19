@@ -29,17 +29,13 @@ class ModelCar
         void dflow(const double *x, const double *u, double *dx);
         void EstimateNewState(const double dt, const double *x,
                               const double *u, double *dx);
-        double get_current_speed(void);
-        double get_current_steering(void);
-        void set_current_speed(double);
-        void set_current_steering(double);
         double get_between_axes_length();
         double get_body_width();
         double get_body_height();
         double* get_initial_position();
 };
 
-ModelCar::ModelCar(double *position, double bodyLength, double w, double h)
+ModelCar::ModelCar(double *position, double w, double h, double bodyLength)
 {
     cout << "Criando instancia da classe ModelCar" << endl;
     initial[STATE_X] = position[0];
@@ -87,26 +83,6 @@ void ModelCar::EstimateNewState(const double dt, const double *x,
 
     for(i=0; i<3; i++)
         dx[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
-}
-
-double ModelCar::get_current_speed(void)
-{
-    return curr_speed;
-}
-
-double ModelCar::get_current_steering(void)
-{
-    return curr_steering;
-}
-
-void ModelCar::set_current_speed(double spd)
-{
-    curr_speed = spd;
-}
-
-void ModelCar::set_current_steering(double steer)
-{
-    curr_steering = steer;
 }
 
 double ModelCar::get_between_axes_length()

@@ -17,65 +17,22 @@ using namespace std;
 class Carro
 {
     public:
+        Carro(CarGeometry*);
+        void draw(IplImage*, CvScalar);
+    private:
         CvPoint retangulo[4];
         CvPoint *fig[1];
-        Carro(ModelCar*, double, double, double);
-        ~Carro();
-        void transform(CvPoint, CvPoint, double);
-        void draw(IplImage*, CvScalar);
 };
 
 
-Carro::Carro(ModelCar *car, double x, double y, double theta)
+Carro::Carro(CarGeometry *car)
 {
     //cout << "Criando instancia da classe Carro." << endl;
-    double xrt, yrt, xlt, ylt, xlb, ylb, xrb, yrb, xc, yc, aux_x, aux_y, l, h, w;
-    double rot_mat[4];
-    w = car->get_body_width();
-    h = car->get_body_height();
-    l = car->get_between_axes_length();
-    rot_mat[3] = rot_mat[0] = cos(theta);
-    rot_mat[2] = sin(theta);
-    rot_mat[1] = -rot_mat[2];
-
-    xc=x + l + (w-l)/2.0;
-    yc=y + h/2.0;
-    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
-    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
-    xrt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
-    yrt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
-
-    xc=x - (w-l)/2.0;
-    yc=y + h/2.0;
-    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
-    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
-    xlt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
-    ylt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
-
-    xc=x - (w-l)/2.0;
-    yc=y - h/2.0;
-    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
-    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
-    xlb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
-    ylb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
-
-    xc=x + l + (w-l)/2.0;
-    yc=y - h/2.0;
-    aux_x = xc * rot_mat[0] + yc * rot_mat[1];
-    aux_y = xc * rot_mat[2] + yc * rot_mat[3];
-    xrb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
-    yrb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
-    
-    retangulo[0] = cvPoint(SCALE_FACTOR * xlt, SCALE_FACTOR * ylt);
-    retangulo[1] = cvPoint(SCALE_FACTOR * xrt, SCALE_FACTOR * yrt);
-    retangulo[2] = cvPoint(SCALE_FACTOR * xrb, SCALE_FACTOR * yrb);
-    retangulo[3] = cvPoint(SCALE_FACTOR * xlb, SCALE_FACTOR * ylb);
+    retangulo[0] = cvPoint(SCALE_FACTOR * car->xlt, SCALE_FACTOR * car->ylt);
+    retangulo[1] = cvPoint(SCALE_FACTOR * car->xrt, SCALE_FACTOR * car->yrt);
+    retangulo[2] = cvPoint(SCALE_FACTOR * car->xrb, SCALE_FACTOR * car->yrb);
+    retangulo[3] = cvPoint(SCALE_FACTOR * car->xlb, SCALE_FACTOR * car->ylb);
     fig[0] = retangulo;
-}
-
-Carro::~Carro()
-{
-    //cout << "Destruindo instancia da classe Carro." << endl;
 }
 
 void Carro::draw(IplImage* img, CvScalar color)
@@ -135,7 +92,7 @@ void Obstacles::draw(IplImage *img)
 class Graphics
 {
     public:
-        Graphics(ModelCar *);
+        Graphics(ModelCar *, CarGeometry *);
         ~Graphics();
         void plot_states(char *, int);
         void plot_obstacles(char *);
@@ -145,18 +102,20 @@ class Graphics
         void draw_initial_and_goal(double *initial, double *goal);
     private:
         ModelCar *veh;
+        CarGeometry *veh_geom;
         IplImage* img1;
 };
 
-Graphics::Graphics(ModelCar *car)
+Graphics::Graphics(ModelCar *car, CarGeometry *car_geom)
 {
     cout << "Criando instancia da classe Graphics" << endl;
-    CvSize s = cvSize(400, 400);
+    CvSize s = cvSize(410, 410);
     CvScalar white = colors[c_white];
     img1 = cvCreateImage(s, IPL_DEPTH_32F, 3);
     cvNamedWindow("win1", CV_WINDOW_AUTOSIZE);
-    cvRectangle(img1, cvPoint(0,0), cvPoint(400,400), white, -1, 8, 0);
+    cvRectangle(img1, cvPoint(0,0), cvPoint(410,410), white, -1, 8, 0);
     veh = car;
+    veh_geom = car_geom;
 }
 
 Graphics::~Graphics()
@@ -216,11 +175,13 @@ void Graphics::draw(const double x, const double y, const double theta,
     double aux[3], u[2], temp[3];
     u[0] = v; u[1] = phi;
     aux[0] = x; aux[1] = y; aux[2] = theta;
-    Carro car(veh, x, y, theta);
+    veh_geom->position(x, y, theta);
+    Carro car(veh_geom);
     CvScalar color = colors[color_id];
     car.draw(img1, color);
     veh->EstimateNewState(INTEGRATION_TIME, aux, u, temp);
-    Carro carf(veh, temp[0], temp[1], temp[2]);
+    veh_geom->position(temp[0], temp[1], temp[2]);
+    Carro carf(veh_geom);
     carf.draw(img1, color);
 }
 

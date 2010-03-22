@@ -40,7 +40,7 @@ boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(gener
 #define N_STATES 3
 #define N_CONTROLS 11
 
-#define SCALE_FACTOR 15.0
+#define SCALE_FACTOR 20.0
 
 enum
 {

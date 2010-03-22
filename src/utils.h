@@ -5,18 +5,11 @@
 #include <iostream>
 #include <ctime>
 
-#include <boost/random/linear_congruential.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
-
 #include <cv.h>
+#include <lemon/random.h>
 
 using namespace std;
-
-typedef boost::minstd_rand base_generator_type;
-base_generator_type generator(time(NULL));
-boost::uniform_real<> uni_dist(0,1);
-boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(generator, uni_dist);
+using namespace lemon;
 
 #define GOAL_TRANSLATIONAL_TOLERANCE 0.5
 //5 graus
@@ -35,7 +28,7 @@ boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(gener
 #define DELTA_T 0.05
 #define INTEGRATION_TIME 1.0
 
-#define GOAL_BIAS 0.25
+#define GOAL_BIAS 0.15
 
 #define N_STATES 3
 #define N_CONTROLS 11
@@ -111,21 +104,15 @@ bool goal_state_reached(const double *state, const double *goal)
 
 void biased_sampling(const double *bounds, double *rand_state)
 {
-    double w=bounds[0], h=bounds[1], rand;
-    rand = uni();
-    //cout << "[1] RAND: " << rand;
-    rand_state[STATE_X] = w*rand;
-    rand = uni();
-    //cout << " [2] RAND: " << rand << endl;
-    rand_state[STATE_Y] = h*rand;
-    rand_state[STATE_THETA] = (2.0 * rand - 1.0) * M_PI;
+    double w=bounds[0], h=bounds[1];
+    rand_state[STATE_X] = rnd(0.0, w);
+    rand_state[STATE_Y] = rnd(0.0, h);
+    rand_state[STATE_THETA] = rnd(-M_PI, M_PI);
 }
 
 void initiate_rand_number_generator()
 {
-    generator.seed(time(NULL));
-    for(int i = 0; i < 10; i++)
-        uni();
+    rnd.seedFromFile();
     return;
 }
 

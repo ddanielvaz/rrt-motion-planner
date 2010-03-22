@@ -2,7 +2,7 @@
 
 CC = g++
 CFLAGS  = -Wall -O2 `pkg-config --cflags opencv`
-LDLIBS  = -lm -lPQP `pkg-config --libs opencv`
+LDLIBS  = -lm -lPQP `pkg-config --libs opencv` -lemon
 
 SRCS    = main.cpp
 
@@ -13,7 +13,7 @@ TARGET = planning
 CLEAN   = $(OBJECTS) $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS) $(LDLIBS)
+	$(CC) $(OBJECTS) -o $(TARGET) $(LDLIBS)
 
 .cpp.o:
 	$(CC) ${CFLAGS} -c $<

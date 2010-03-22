@@ -8,6 +8,7 @@
 #include <lemon/list_graph.h>
 #include <lemon/dijkstra.h>
 #include <lemon/path.h>
+#include <lemon/random.h>
 
 #include "simple_car.h"
 #include "utils.h"
@@ -77,14 +78,19 @@ void RRT::build(void)
 {
     int finished=0, i=0;
     double rand_st[3];
+    int prev=0, j=0;
     while(i < max_nodes)
     {
+        j++;
         //Se amostra maior que GOAL_BIAS, ponto aleatorio eh escolhido para expandir
         //arvore. Caso contrario eh escolhido o destino para a expansao.
-        if(uni() > GOAL_BIAS)
+        if(rnd() > GOAL_BIAS)
             biased_sampling(env->dim, rand_st);
         else
+        {
+            prev++;
             memcpy(rand_st, goal_state, sizeof(double) * 3);
+        }
         finished = extend(rand_st);
         if(finished == 1)
             i++;
@@ -96,6 +102,7 @@ void RRT::build(void)
             break;
         }
     }
+    cout << "Tentivas de adicionar nos: " << i<< " Previlegiou: " << prev << endl;
 }
 
 int RRT::extend(double *rand)

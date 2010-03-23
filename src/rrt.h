@@ -77,21 +77,28 @@ RRT::~RRT()
 void RRT::build(void)
 {
     int finished=0, i=0;
-    double rand_st[3];
-    int prev=0, j=0;
+    double random_state[3];
+    int prev=0, j=0, collided;
     while(i < max_nodes)
     {
+        collided=1;
         j++;
         //Se amostra maior que GOAL_BIAS, ponto aleatorio eh escolhido para expandir
         //arvore. Caso contrario eh escolhido o destino para a expansao.
         if(rnd() > GOAL_BIAS)
-            biased_sampling(env->dim, rand_st);
+        {
+            while(collided)
+            {
+                biased_sampling(env->dim, random_state);
+                collided = env->is_vehicle_in_collision(random_state[0], random_state[1], random_state[2]);
+            }
+        }
         else
         {
             prev++;
-            memcpy(rand_st, goal_state, sizeof(double) * 3);
+            memcpy(random_state, goal_state, sizeof(double) * 3);
         }
-        finished = extend(rand_st);
+        finished = extend(random_state);
         if(finished == 1)
             i++;
         else if(finished == 2)
@@ -110,15 +117,22 @@ int RRT::extend(double *rand)
     Node near = select_nearest_node(rand), added;
     double expanded[3], *pt=NULL, *choosed=NULL, *best_control=NULL, temp[3];
     bool not_collided;
-    double u[21][2]={{0.50, 0.00}, {0.50, 0.02}, {0.50, 0.07}, {0.50, 0.12}, {0.50, 0.17},
-                     {0.50, 0.23}, {0.50, 0.28}, {0.50, 0.33}, {0.50, 0.38},
-                     {0.50, 0.44}, {0.50, 0.49}, {-0.50, 0.00}, {-0.50, 0.07},
-                     {-0.50, 0.12}, {-0.50, 0.17}, {-0.50, 0.23}, {-0.50, 0.28},
-                     {-0.50, 0.33}, {-0.50, 0.38}, {-0.50, 0.44}, {-0.50, 0.49}
+    double u[42][2]={{0.50, 0.00}, {0.50, 0.02}, {0.50, 0.07}, {0.50, 0.12},
+                     {0.50, 0.17}, {0.50, 0.23}, {0.50, 0.28}, {0.50, 0.33},
+                     {0.50, 0.38}, {0.50, 0.44}, {0.50, 0.49}, {-0.50, 0.00},
+                     {-0.50, 0.02}, {-0.50, 0.07}, {-0.50, 0.12}, {-0.50, 0.17},
+                     {-0.50, 0.23}, {-0.50, 0.28}, {-0.50, 0.33}, {-0.50, 0.38},
+                     {-0.50, 0.44}, {-0.50, 0.49}, {0.50, -0.02}, {0.50, -0.07},
+                     {0.50, -0.12}, {0.50, -0.17}, {0.50, -0.23}, {0.50, -0.28},
+                     {0.50, -0.33}, {0.50, -0.38}, {0.50, -0.44}, {0.50, -0.49},
+                     {-0.50, -0.02}, {-0.50, -0.07}, {-0.50, -0.12},
+                     {-0.50, -0.17}, {-0.50, -0.23}, {-0.50, -0.28},
+                     {-0.50, -0.33}, {-0.50, -0.38}, {-0.50, -0.44},
+                     {-0.50, -0.49}
                     };
     double d=1e7, aux;
     int duplicated_node_id;
-    for(int i=0; i<21; i++)
+    for(int i=0; i<42; i++)
     {
         not_collided = check_no_collision_path((*states)[near], u[i], expanded);
         if (not_collided)
@@ -133,24 +147,6 @@ int RRT::extend(double *rand)
             }
         }
     }
-
-    for(int i=0; i<21; i++)
-    {
-        u[i][1] *= -1.0;
-        not_collided = check_no_collision_path((*states)[near], u[i], expanded);
-        if (not_collided)
-        {
-            aux = metric(expanded, rand);
-            if(aux < d)
-            {
-                d = aux;
-                memcpy(temp, expanded, sizeof(double) * 3);
-                pt = temp;
-                best_control = u[i];
-            }
-        }
-    }
-
     if (pt)
     {
         double *arcmap_best_control;
@@ -203,15 +199,7 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
 {
     double it, aux[3], temp[3], x, y, theta;
     bool in_collision;
-    PQP_REAL trans[3], rot[3][3];
-    trans[2] = 0.0;
-    rot[2][0] = rot[2][1] = 0.0;
-    rot[0][2] = rot[1][2] = 0.0;
-    rot[2][2] = 1.0;
     memcpy(aux, near_node, sizeof(double) * 3);
-    /*x0 = initial_state[STATE_X];
-    y0 = initial_state[STATE_Y];
-    theta0 = initial_state[STATE_THETA];*/
     for (it=0.0; it<=INTEGRATION_TIME; it+=DELTA_T)
     {
         veh->EstimateNewState(DELTA_T, aux, u, temp);
@@ -286,4 +274,5 @@ void RRT::path_to_closest_goal(void)
     //(*states)[goal_node] = goal_state;
     
 }
+   
 #endif

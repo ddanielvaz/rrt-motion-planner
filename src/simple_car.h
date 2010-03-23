@@ -92,7 +92,13 @@ CarGeometry::CarGeometry(double width, double height, double length)
     h = height;
     l = length;
 }
-
+/**
+ * A partir de um ponto de rotação (x,y) e de um ângulo de rotação theta,
+ * gera os vertices de um retangulo de largura w, altura h.
+ * @param x coordenada x, do ponto em torno do qual o retangulo será rotacionado.
+ * @param y coordenada y, do ponto em torno do qual o retangulo será rotacionado.
+ * @param theta ângulo de rotação.
+*/
 void CarGeometry::position(double x, double y, double theta)
 {
     double rot_mat[4], xc, yc, aux_x, aux_y;
@@ -100,7 +106,7 @@ void CarGeometry::position(double x, double y, double theta)
     rot_mat[2] = sin(theta);
     rot_mat[1] = -rot_mat[2];
 
-    xc=x + l + (w-l)/2.0;
+    xc=x + (w+l)/2.0;
     yc=y + h/2.0;
     aux_x = xc * rot_mat[0] + yc * rot_mat[1];
     aux_y = xc * rot_mat[2] + yc * rot_mat[3];
@@ -121,7 +127,7 @@ void CarGeometry::position(double x, double y, double theta)
     xlb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
     ylb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
 
-    xc=x + l + (w-l)/2.0;
+    xc=x + (w+l)/2.0;
     yc=y - h/2.0;
     aux_x = xc * rot_mat[0] + yc * rot_mat[1];
     aux_y = xc * rot_mat[2] + yc * rot_mat[3];

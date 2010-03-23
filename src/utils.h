@@ -84,9 +84,10 @@ double metric(const double *state0, const double *state)
     dy = state0[STATE_Y] - state[STATE_Y];
     d = sqrt(dx*dx + dy*dy);
     angle = normalize_angle(state0[STATE_THETA] - state[STATE_THETA]);
-    return d + fabs(angle)*(1.5/(d+0.001));
-    //return d + fabs(angle)*1.5;
-    //return d + fabs(angle)*(1.0 + d/3.0);
+    if (3.0 - d > 0)
+        return d + fabs(angle)*1.5;
+    else
+        return d + fabs(angle);
 }
 
 bool goal_state_reached(const double *state, const double *goal)

@@ -173,6 +173,7 @@ void Graphics::draw(const double x, const double y, const double theta,
                     const double v, const double phi, const int color_id)
 {
     double aux[3], u[2], temp[3];
+    cvCircle(img1, cvPoint(x * SCALE_FACTOR,y * SCALE_FACTOR), 1.0, colors[c_red], -1, 8, 0);
     u[0] = v; u[1] = phi;
     aux[0] = x; aux[1] = y; aux[2] = theta;
     veh_geom->position(x, y, theta);
@@ -183,6 +184,7 @@ void Graphics::draw(const double x, const double y, const double theta,
     veh_geom->position(temp[0], temp[1], temp[2]);
     Carro carf(veh_geom);
     carf.draw(img1, color);
+    
 }
 
 void Graphics::plot_obstacles(char *filename)

@@ -68,7 +68,7 @@ class World
     public:
         World(char *, CarGeometry *);
         ~World();
-        bool is_vehicle_in_collision(double, double, double);
+        int is_vehicle_in_collision(double, double, double);
         double dim[2];
         CarGeometry *veh_geometry;
         EnvModel *env;
@@ -83,7 +83,7 @@ World::World(char *envfilename, CarGeometry* car_geom)
     veh_geometry = car_geom;
 }
 
-bool World::is_vehicle_in_collision(double x, double y, double theta)
+int World::is_vehicle_in_collision(double x, double y, double theta)
 {
     PQP_CollideResult cres;
 //     PQP_DistanceResult dres;
@@ -116,9 +116,7 @@ bool World::is_vehicle_in_collision(double x, double y, double theta)
                  rel_err, abs_err);
     distance = dres.Distance();*/
     //cout << "Distance between env and car: " << distance << endl;
-    if (colliding)
-        return true;
-    return false;
+    return colliding;
 }
 
 World::~World()

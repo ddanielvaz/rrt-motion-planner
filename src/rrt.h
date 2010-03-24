@@ -200,7 +200,7 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
     double it, aux[3], temp[3], x, y, theta;
     bool in_collision;
     memcpy(aux, near_node, sizeof(double) * 3);
-    for (it=0.0; it<=INTEGRATION_TIME; it+=DELTA_T)
+    for (it=0.0; it<INTEGRATION_TIME; it+=DELTA_T)
     {
         veh->EstimateNewState(DELTA_T, aux, u, temp);
         x = temp[STATE_X];

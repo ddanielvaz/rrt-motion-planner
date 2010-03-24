@@ -25,15 +25,18 @@ using namespace lemon;
 //velocidade maxima
 #define MAX_SPEED 1.0
 
-#define DELTA_T 0.05
+#define DELTA_T 0.2
 #define INTEGRATION_TIME 1.0
 
-#define GOAL_BIAS 0.15
+#define GOAL_BIAS 0.05
 
 #define N_STATES 3
 #define N_CONTROLS 11
 
 #define SCALE_FACTOR 20.0
+
+#define COLLISION_TOLERANCE 0.25
+#define COLLIDED 1
 
 enum
 {

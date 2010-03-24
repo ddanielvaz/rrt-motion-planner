@@ -85,11 +85,11 @@ World::World(char *envfilename, CarGeometry* car_geom)
 
 int World::is_vehicle_in_collision(double x, double y, double theta)
 {
-    PQP_CollideResult cres;
-//     PQP_DistanceResult dres;
+//     PQP_CollideResult cres;
+    PQP_DistanceResult dres;
     PQP_Model *col_model_env, carro;
-//     double rel_err = 0.0, abs_err = 0.0, distance = 0.0;
-    int colliding;
+    double rel_err = 0.0, abs_err = 0.0, distance = 0.0;
+//     int colliding;
     PQP_REAL p0[3], p1[3], p2[3], p3[3], p4[3], p5[3];
     veh_geometry->position(x, y, theta);
     p0[2] = p1[2] = p2[2] = p3[2] = p4[2] = p5[2] = 0.0;
@@ -107,16 +107,17 @@ int World::is_vehicle_in_collision(double x, double y, double theta)
     carro.EndModel();
 
     col_model_env = &(env->obstacles);
-    PQP_Collide(&cres, IDENTITY_MATRIX, ORIGIN, col_model_env,
+/*    PQP_Collide(&cres, IDENTITY_MATRIX, ORIGIN, col_model_env,
                 IDENTITY_MATRIX, ORIGIN, &carro);
-    colliding = cres.Colliding();
+    colliding = cres.Colliding();*/
     //cout << "Colliding env and car: " << colliding << endl;
-    /*PQP_Distance(&dres, IDENTITY_MATRIX, ORIGIN, col_model_env,
-                 IDENTITY_MATRIX, ORIGIN, &carro,
-                 rel_err, abs_err);
-    distance = dres.Distance();*/
+    PQP_Distance(&dres, IDENTITY_MATRIX, ORIGIN, col_model_env,
+                 IDENTITY_MATRIX, ORIGIN, &carro, rel_err, abs_err);
+    distance = dres.Distance();
+    if(distance < COLLISION_TOLERANCE)
+        return COLLIDED;
     //cout << "Distance between env and car: " << distance << endl;
-    return colliding;
+    return !COLLIDED;
 }
 
 World::~World()

@@ -27,7 +27,7 @@ typedef Path<Graph> MyPath;
 class RRT
 {
     public:
-        RRT(double *, double *, int, ModelCar*, World*, char*);
+        RRT(double *, double *, int, RobotModel*, World*, char*);
         void build(void);
         int extend(double*);
         double* select_best_input(double*);
@@ -43,7 +43,7 @@ class RRT
         Node initial_node, goal_node;
         double goal_state[3], initial_state[3];
         int max_nodes;
-        ModelCar *veh;
+        RobotModel *veh;
         World *env;
         ofstream fp;
         Graph g;
@@ -52,7 +52,7 @@ class RRT
         ArcMapControl *control_map;
 };
 
-RRT::RRT(double *init, double *goal, int n, ModelCar *car, World *w, char *fname)
+RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w, char *fname)
 {
     cout << "Criando instancia da classe RRT" << endl;
     memcpy(goal_state, goal, sizeof(double) * 3);

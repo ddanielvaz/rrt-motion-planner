@@ -92,7 +92,7 @@ void Obstacles::draw(IplImage *img)
 class Graphics
 {
     public:
-        Graphics(ModelCar *, CarGeometry *);
+        Graphics(RobotModel *, CarGeometry *);
         ~Graphics();
         void plot_states(char *, int);
         void plot_obstacles(char *);
@@ -101,12 +101,12 @@ class Graphics
         void show(void);
         void draw_initial_and_goal(double *initial, double *goal);
     private:
-        ModelCar *veh;
+        RobotModel *veh;
         CarGeometry *veh_geom;
         IplImage* img1;
 };
 
-Graphics::Graphics(ModelCar *car, CarGeometry *car_geom)
+Graphics::Graphics(RobotModel *car, CarGeometry *car_geom)
 {
     cout << "Criando instancia da classe Graphics" << endl;
     CvSize s = cvSize(410, 410);

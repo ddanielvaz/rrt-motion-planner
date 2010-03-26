@@ -9,13 +9,32 @@
 
 using namespace std;
 
-class ModelCar
+class RobotModel
+{
+    public:
+        virtual void dflow(const double *x, const double *u, double *dx);
+        virtual void EstimateNewState(const double dt, const double *x,
+                                      const double *u, double *dx);
+};
+
+void RobotModel::dflow(const double *x, const double *u, double *dx)
+{
+    cout << "VIRTUAL METHOD dflow." << endl;
+}
+
+void RobotModel::EstimateNewState(const double dt, const double *x,
+                                          const double *u, double *dx)
+{
+    cout << "VIRTUAL METHOD EstimateNewState." << endl;
+}
+
+class CarLikeModel : public RobotModel
 {
     private:
         double m_one_over_bodyLength;
     public:
-        ModelCar(double);
-        ~ModelCar();
+        CarLikeModel(double);
+        ~CarLikeModel();
         /**
           *@author Erion Plaku
           *@brief Definition of the differential flow as a set of ODEs
@@ -30,25 +49,25 @@ class ModelCar
                               const double *u, double *dx);
 };
 
-ModelCar::ModelCar(double bodyLength)
+CarLikeModel::CarLikeModel(double bodyLength)
 {
-    cout << "Criando instancia da classe ModelCar" << endl;
+    cout << "Criando instancia da classe CarLikeModel" << endl;
     m_one_over_bodyLength = 1.0/bodyLength;
 }
 
-ModelCar::~ModelCar()
+CarLikeModel::~CarLikeModel()
 {
-    cout << "Destruindo instancia da classe ModelCar" << endl;
+    cout << "Destruindo instancia da classe CarLikeModel" << endl;
 }
 
-void ModelCar::dflow(const double *x, const double *u, double *dx)
+void CarLikeModel::dflow(const double *x, const double *u, double *dx)
 {
     dx[STATE_X] = u[CONTROL_VELOCITY] * cos(x[STATE_THETA]);
     dx[STATE_Y] = u[CONTROL_VELOCITY] * sin(x[STATE_THETA]);
     dx[STATE_THETA] = u[CONTROL_VELOCITY] * m_one_over_bodyLength * tan(u[CONTROL_STEERING_ANGLE]);
 }
 
-void ModelCar::EstimateNewState(const double dt, const double *x,
+void CarLikeModel::EstimateNewState(const double dt, const double *x,
                                 const double *u, double *dx)
 {
     double w1[3], w2[3], w3[3], w4[3], wtemp[3];
@@ -155,7 +174,7 @@ CarGeometry::~CarGeometry()
     cout << "Destruindo instancia da classe CarGeometry" << endl;
 }
 
-class SkidSteerModel
+class SkidSteerModel : public RobotModel
 {
     public:
         SkidSteerModel();
@@ -169,7 +188,7 @@ class SkidSteerModel
 
 SkidSteerModel::SkidSteerModel()
 {
-    cout << "Criando instancia da classe ModelSkidSteer." << endl;
+    cout << "Criando instancia da classe SkidSteerModel." << endl;
 }
 
 void SkidSteerModel::dflow(const double *x, const double *u, double *dx)
@@ -204,7 +223,7 @@ void SkidSteerModel::EstimateNewState(const double dt, const double *x,
 
 SkidSteerModel::~SkidSteerModel()
 {
-    cout << "Destruindo instancia da classe ModelSkidSteer." << endl;
+    cout << "Destruindo instancia da classe SkidSteerModel." << endl;
 }
 
 #endif

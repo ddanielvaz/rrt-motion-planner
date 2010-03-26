@@ -25,8 +25,8 @@ using namespace lemon;
 //velocidade maxima
 #define MAX_SPEED 1.0
 
-#define DELTA_T 0.2
-#define INTEGRATION_TIME 1.0
+#define DELTA_T 0.1
+#define INTEGRATION_TIME 0.5
 
 #define GOAL_BIAS 0.05
 

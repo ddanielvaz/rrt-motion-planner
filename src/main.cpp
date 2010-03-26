@@ -11,11 +11,12 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     double q[]={2.0, 6.5, 0.0, 0.0, 0.0};
-    double f[]={12, 9.0, 0.0, 0.0, 0.0};
+    double f[]={12, 8.0, 0.0, 0.0, 0.0};
     double width = 2.5, height = 1.5, body_length = 2.0;
     char logfile[] = "results.log", obstacles_file[]="obstacles.txt",
          pathfile[] = "path.log";
-    ModelCar veh(body_length);
+    CarLikeModel veh(body_length);
+    //SkidSteerModel veh;
     CarGeometry geom_car(width, height, body_length);
     World w(obstacles_file, &geom_car);
     RRT plan(q, f, 500, &veh, &w, logfile);

@@ -30,8 +30,6 @@ void RobotModel::EstimateNewState(const double dt, const double *x,
 
 class CarLikeModel : public RobotModel
 {
-    private:
-        double m_one_over_bodyLength;
     public:
         CarLikeModel(double);
         ~CarLikeModel();
@@ -47,6 +45,8 @@ class CarLikeModel : public RobotModel
         void dflow(const double *x, const double *u, double *dx);
         void EstimateNewState(const double dt, const double *x,
                               const double *u, double *dx);
+    private:
+        double m_one_over_bodyLength;
 };
 
 CarLikeModel::CarLikeModel(double bodyLength)

@@ -9,7 +9,7 @@
 #include <cv.h>
 #include <highgui.h>
 
-#include "simple_car.h"
+#include "robots.h"
 
 PQP_REAL IDENTITY_MATRIX[3][3] = {{1.0, 0.0, 0.0},
                                   {0.0, 1.0, 0.0},

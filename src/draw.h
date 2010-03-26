@@ -8,7 +8,7 @@
 #include <cv.h>
 #include <highgui.h>
 
-#include "simple_car.h"
+#include "robots.h"
 #include "utils.h"
 #include "world.h"
 

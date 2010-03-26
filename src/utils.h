@@ -50,6 +50,11 @@ enum
 
 enum
 {
+    VX_SPEED=0, ANGULAR_SPEED
+};
+
+enum
+{
     c_red=0, c_green, c_blue, c_yellow, c_light_green, c_black, c_white
 };
 

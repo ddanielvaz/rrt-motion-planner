@@ -155,4 +155,56 @@ CarGeometry::~CarGeometry()
     cout << "Destruindo instancia da classe CarGeometry" << endl;
 }
 
+class SkidSteerModel
+{
+    public:
+        SkidSteerModel();
+        void dflow(const double *x, const double *u, double *dx);
+        void EstimateNewState(const double dt, const double *x,
+                              const double *u, double *dx);
+        ~SkidSteerModel();
+    private:
+        static const double xcir = 0.008;
+};
+
+SkidSteerModel::SkidSteerModel()
+{
+    cout << "Criando instancia da classe ModelSkidSteer." << endl;
+}
+
+void SkidSteerModel::dflow(const double *x, const double *u, double *dx)
+{
+    dx[STATE_X] = u[VX_SPEED] * cos(x[STATE_THETA]) + xcir * sin(x[STATE_THETA]) * u[ANGULAR_SPEED];
+    dx[STATE_Y] = u[VX_SPEED] * sin(x[STATE_THETA]) - xcir * cos(x[STATE_THETA]) * u[ANGULAR_SPEED];
+    dx[STATE_THETA] = u[ANGULAR_SPEED];
+}
+
+void SkidSteerModel::EstimateNewState(const double dt, const double *x,
+                                      const double *u, double *dx)
+{
+    double w1[3], w2[3], w3[3], w4[3], wtemp[3];
+    int i;
+
+    dflow(x, u, w1);
+    for(i=0;i<3;i++)
+        wtemp[i] = x[i] + 0.5 * dt * w1[i];
+    dflow(wtemp, u, w2);
+
+    for(i=0;i<3;i++)
+        wtemp[i] = x[i] + 0.5 * dt * w2[i];
+    dflow(wtemp, u, w3);
+
+    for(i=0;i<3;i++)
+        wtemp[i] = x[i] + dt * w3[i];
+    dflow(wtemp, u, w4);
+
+    for(i=0; i<3; i++)
+        dx[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+}
+
+SkidSteerModel::~SkidSteerModel()
+{
+    cout << "Destruindo instancia da classe ModelSkidSteer." << endl;
+}
+
 #endif

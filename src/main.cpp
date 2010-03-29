@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "draw.h"
+#include "geometry.h"
 #include "rrt.h"
 #include "robots.h"
 #include "utils.h"

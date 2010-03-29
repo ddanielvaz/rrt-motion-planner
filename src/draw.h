@@ -8,6 +8,7 @@
 #include <cv.h>
 #include <highgui.h>
 
+#include "geometry.h"
 #include "robots.h"
 #include "utils.h"
 #include "world.h"

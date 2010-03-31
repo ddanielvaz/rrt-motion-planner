@@ -38,9 +38,11 @@ using namespace lemon;
 #define COLLISION_TOLERANCE 0.25
 #define COLLIDED 1
 
+#define GRAVITY 9.81
+
 enum
 {
-    STATE_X=0, STATE_Y, STATE_THETA
+    STATE_X=0, STATE_Y, STATE_THETA, STATE_V, STATE_W
 };
 
 enum
@@ -50,7 +52,12 @@ enum
 
 enum
 {
-    VX_SPEED=0, ANGULAR_SPEED
+    VX_SPEED=0, ANGULAR_SPEED, TORQUE_LEFT, TORQUE_RIGHT
+};
+
+enum
+{
+    LINEAR_ACCEL=0, ANGULAR_ACCEL
 };
 
 enum
@@ -133,6 +140,15 @@ inline double limit_steering(double steering)
 inline double limit_speed(double speed)
 {
     return (fabs(speed) < MAX_SPEED) ? speed:MAX_SPEED;
+}
+
+inline double sgn(double x)
+{
+    if(x>0)
+        return 1.0;
+    else if(x<0)
+        return -1.0;
+    return 0.0;
 }
 
 #endif

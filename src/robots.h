@@ -143,4 +143,144 @@ SkidSteerModel::~SkidSteerModel()
     cout << "Destruindo instancia da classe SkidSteerModel." << endl;
 }
 
+class SkidSteerDynamicModel : public RobotModel
+{
+    public:
+        SkidSteerDynamicModel(double *, double *);
+        void dflow(const double *x, const double *u, double *dx);
+        void EstimateNewState(const double dt, const double *x,
+                              const double *u, double *dx);
+        void control_velocities_dflow(const double *x, const double *u, double *dx);
+        void EstimateControlVelocities(const double dt, const double *x,
+                                const double *u, double *dx);
+        ~SkidSteerDynamicModel();
+    private:
+        double Kt, Ke, n, R, I, m, fr, mu, xcir, a, b, c, r;
+};
+
+SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot_params)
+{
+    cout << "Criando instancia da classe SkidSteerDynamicModel." << endl;
+    Kt = motor_params[0];
+    Ke = motor_params[1];
+    n = motor_params[2];
+    R = motor_params[3];
+    I = robot_params[0];
+    m = robot_params[1];
+    fr = robot_params[2];
+    mu = robot_params[3];
+    xcir = robot_params[4];
+    a = robot_params[5];
+    b = robot_params[6];
+    c = robot_params[7];
+    r = robot_params[8];
+}
+
+void SkidSteerDynamicModel::dflow(const double *x, const double *u, double *dx)
+{
+    dx[STATE_X] = 0.0;
+    dx[STATE_Y] = 0.0;
+    dx[STATE_THETA] = 0.0;
+    /*dx[STATE_V] = -xcir * dx[STATE_THETA] * x[STATE_W];
+    dx[STATE_W] = (m*xcir*dx[STATE_THETA]*x[STATE_V])/(m*xcir*xcir+I) -
+                  (Mr-xcir*Fy)/(m*xcir*xcir+I) -
+                  (c*torque_left)/((m*xcir*xcir+I)*r) +
+                  (c*torque_right)/((m*xcir*xcir+I)*r);*/
+}
+
+void SkidSteerDynamicModel::EstimateNewState(const double dt, const double *x,
+                                             const double *ctl, double *dx)
+{
+    double w1[3], w2[3], w3[3], w4[3], wtemp[3];
+    double velocities[2], u_control[2];
+    double w_left, w_right, torque_left, torque_right;
+    int i;
+    EstimateControlVelocities(dt, x, ctl, velocities);
+    // Montando vetor de entrada de controle
+    u_control[0] = velocities[VX_SPEED];
+    u_control[1] = velocities[ANGULAR_SPEED];
+    // Calculando w_left e w_right
+    w_left = velocities[VX_SPEED]/r - c*velocities[ANGULAR_SPEED]/r;
+    w_right = velocities[VX_SPEED]/r + c*velocities[ANGULAR_SPEED]/r;
+    // Calculando torque_left e torque_right
+    torque_left = 2 * n * Kt * (u - n * Ke * w_left);
+    torque_right = 2 * n * Kt * (u - n * Ke * w_right);
+
+    dflow(x, u, w1);
+    for(i=0;i<3;i++)
+        wtemp[i] = x[i] + 0.5 * dt * w1[i];
+    dflow(wtemp, u, w2);
+
+    for(i=0;i<3;i++)
+        wtemp[i] = x[i] + 0.5 * dt * w2[i];
+    dflow(wtemp, u, w3);
+
+    for(i=0;i<3;i++)
+        wtemp[i] = x[i] + dt * w3[i];
+    dflow(wtemp, u, w4);
+
+    for(i=0; i<3; i++)
+        dx[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+}
+
+void SkidSteerDynamicModel::velocities_dflow(const double *x,
+                                             const double *ctl,
+                                             double *dx)
+{
+    double Rx, Fy, Mr, vx1, vx2, vy1, vy3;
+    vx1 = ctl[VX_SPEED] - c * ctl[ANGULAR_SPEED];
+    vx2 = ctl[VX_SPEED] + c * ctl[ANGULAR_SPEED];
+    vy1 = 
+    vy3 = 
+    Fy = mu*((m*GRAVITY)/(a+b))*(b*sgn(vy1)+a*sgn(vy3));
+    Mr = mu*((a*b*m*GRAVITY)/(a+b))*(sgn(vy1)-sgn(vy3))+fr*c*m*GRAVITY*(sgn(vx2)-sgn(vx1));
+    Rx = fr*m*GRAVITY*(sgn(vx1)+sgn(vx2));
+    dx[VX_SPEED] = -xcir * dtheta * wr - Rx/m + torque_left/(m*r) + torque_right/(m*r);
+    dx[ANGULAR_SPEED] = (m*xcir*dx[STATE_THETA]*x[STATE_V])/(m*xcir*xcir+I) -
+                        (Mr-xcir*Fy)/(m*xcir*xcir+I)
+                        - (c*torque_left)/((m*xcir*xcir+I)*r)
+                        + (c*torque_right)/((m*xcir*xcir+I)*r);
+}
+
+
+void SkidSteerDynamicModel::control_velocities_dflow(const double *x,
+                                                     const double *u,
+                                                     double *dx)
+{
+    dx[VX_SPEED] = u[LINEAR_ACCEL];
+    dx[ANGULAR_SPEED] = u[ANGULAR_ACCEL];
+}
+
+void SkidSteerDynamicModel::EstimateControlVelocities(const double dt,
+                                                      const double *x,
+                                                      const double *u_accel,
+                                                      double *speeds)
+{
+    double w1[2], w2[2], w3[2], w4[2], wtemp[2];
+    double old_velocities[2];
+    int i;
+    memcpy(old_velocities, x+3, sizeof(double)*2);
+
+    control_velocities_dflow(x, u_accel, w1);
+    for(i=0;i<2;i++)
+        wtemp[i] = x[i] + 0.5 * dt * w1[i];
+    control_velocities_dflow(wtemp, u_accel, w2);
+
+    for(i=0;i<2;i++)
+        wtemp[i] = x[i] + 0.5 * dt * w2[i];
+    control_velocities_dflow(wtemp, u_accel, w3);
+
+    for(i=0;i<2;i++)
+        wtemp[i] = x[i] + dt * w3[i];
+    control_velocities_dflow(wtemp, u_accel, w4);
+
+    for(i=0; i<2; i++)
+        speeds[i] = old_velocities[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+}
+
+SkidSteerDynamicModel::~SkidSteerDynamicModel()
+{
+    cout << "Destruindo instancia da classe SkidSteerDynamicModel." << endl;
+}
+
 #endif

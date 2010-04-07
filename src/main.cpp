@@ -11,19 +11,17 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    double q[]={0.0, 0.0, 0.0, 3.0, -.50};
+    double q[]={0.0, 0.0, 0.0, 0.0, 0.0};
     double f[]={12, 8.0, 0.0, 0.0, 0.0};
     double width = 2.5, height = 1.5, body_length = 2.0;
     char logfile[] = "results.log", obstacles_file[]="obstacles.txt",
          pathfile[] = "path.log";
-    double temp[5], speeds[2], u[]={-1.0, 1.0};
+    double temp[5], speeds[2], u[]={0.0, 0.0};
     double motor[] = {0.0230, 0.0230, 38.3, 0.71};
-    double robot[] = {0.413, 40, 0.043, 0.506, 0.008, 0.122, 0.138, 0.1975, 0.4}
-    SkidSteerDynamicModel p3at;
+    double robot[] = {0.413, 40, 0.043, 0.506, 0.008, 0.122, 0.138, 0.1975, 0.4};
+    SkidSteerDynamicModel p3at(motor, robot);
     bzero(temp, sizeof(double)*5);
-    p3at.EstimateControlVelocities(1.0, q, u, speeds);
-    cout << "testando EstimateVelocities." << endl;
-    cout << "v: " << speeds[0] << " w: " << speeds[1] << endl;
+    p3at.EstimateNewState(1.0, q, u, speeds);
     /*cout << "x: " << temp[0] << " y: " << temp[1] << " theta: " << temp[2]
          << " v: " << temp[3] << " w: " << temp[4] << endl;*/
     /*CarLikeModel veh(body_length);

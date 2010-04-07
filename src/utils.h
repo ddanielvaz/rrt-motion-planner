@@ -52,7 +52,12 @@ enum
 
 enum
 {
-    VX_SPEED=0, ANGULAR_SPEED, TORQUE_LEFT, TORQUE_RIGHT
+    VX_SPEED=0, ANGULAR_SPEED
+};
+
+enum
+{
+    TORQUE_R=0, TORQUE_L
 };
 
 enum

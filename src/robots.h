@@ -147,12 +147,15 @@ class SkidSteerDynamicModel : public RobotModel
 {
     public:
         SkidSteerDynamicModel(double *, double *);
-        void dflow(const double *x, const double *u, double *dx);
-        void EstimateNewState(const double dt, const double *x,
-                              const double *u, double *dx);
-        void control_velocities_dflow(const double *x, const double *u, double *dx);
-        void EstimateControlVelocities(const double dt, const double *x,
-                                const double *u, double *dx);
+        void dflow(const double *, const double *, double *);
+        void EstimateNewState(const double , const double *,
+                              const double *, double *);
+        void control_velocities_dflow(const double *, const double *, double *);
+        void velocities_dflow(const double *, const double *, double *);
+        void EstimateControlVelocities(const double , const double *,
+                                const double *, double *);
+        void EstimateVelocities(const double , const double *,
+                                const double *, double *);
         ~SkidSteerDynamicModel();
     private:
         double Kt, Ke, n, R, I, m, fr, mu, xcir, a, b, c, r;
@@ -176,7 +179,7 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     r = robot_params[8];
 }
 
-void SkidSteerDynamicModel::dflow(const double *x, const double *u, double *dx)
+void SkidSteerDynamicModel::dflow(const double *x, const double *ctl, double *dx)
 {
     dx[STATE_X] = 0.0;
     dx[STATE_Y] = 0.0;
@@ -192,21 +195,28 @@ void SkidSteerDynamicModel::EstimateNewState(const double dt, const double *x,
                                              const double *ctl, double *dx)
 {
     double w1[3], w2[3], w3[3], w4[3], wtemp[3];
-    double velocities[2], u_control[2];
-    double w_left, w_right, torque_left, torque_right;
+    double ctrl_vel[2], vel[2], u_control[2], curr_vel[2];
+    double w_left, w_right, torque_left, torque_right, u=12;
     int i;
-    EstimateControlVelocities(dt, x, ctl, velocities);
-    // Montando vetor de entrada de controle
-    u_control[0] = velocities[VX_SPEED];
-    u_control[1] = velocities[ANGULAR_SPEED];
+    memcpy(curr_vel, x+3, sizeof(double) * 2);
+    EstimateControlVelocities(dt, curr_vel, ctl, ctrl_vel);
+    cout << "v_ctrl: " << ctrl_vel[0] << endl;
+    cout << "w_ctrl: " << ctrl_vel[1] << endl;
     // Calculando w_left e w_right
-    w_left = velocities[VX_SPEED]/r - c*velocities[ANGULAR_SPEED]/r;
-    w_right = velocities[VX_SPEED]/r + c*velocities[ANGULAR_SPEED]/r;
+    w_left = ctrl_vel[VX_SPEED]/r - c*ctrl_vel[ANGULAR_SPEED]/r;
+    w_right = ctrl_vel[VX_SPEED]/r + c*ctrl_vel[ANGULAR_SPEED]/r;
     // Calculando torque_left e torque_right
     torque_left = 2 * n * Kt * (u - n * Ke * w_left);
     torque_right = 2 * n * Kt * (u - n * Ke * w_right);
-
-    dflow(x, u, w1);
+    cout << "torque_left: " << torque_left << endl;
+    cout << "torque_right: " << torque_right << endl;
+    u_control[TORQUE_R] = torque_right;
+    u_control[TORQUE_L] = torque_left;
+    EstimateVelocities(dt, curr_vel, u_control, vel);
+    cout << "v: " << vel[0] << endl;
+    cout << "w: " << vel[1] << endl;
+    
+    /*dflow(x, u, w1);
     for(i=0;i<3;i++)
         wtemp[i] = x[i] + 0.5 * dt * w1[i];
     dflow(wtemp, u, w2);
@@ -220,23 +230,27 @@ void SkidSteerDynamicModel::EstimateNewState(const double dt, const double *x,
     dflow(wtemp, u, w4);
 
     for(i=0; i<3; i++)
-        dx[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+        dx[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);*/
 }
 
 void SkidSteerDynamicModel::velocities_dflow(const double *x,
                                              const double *ctl,
                                              double *dx)
 {
-    double Rx, Fy, Mr, vx1, vx2, vy1, vy3;
-    vx1 = ctl[VX_SPEED] - c * ctl[ANGULAR_SPEED];
-    vx2 = ctl[VX_SPEED] + c * ctl[ANGULAR_SPEED];
-    vy1 = 
-    vy3 = 
+    double Rx, Fy, Mr, vx1, vx2, vy1, vy3, w, dtheta, vx, torque_left, torque_right;
+    torque_right = ctl[TORQUE_R];
+    torque_left = ctl[TORQUE_L];
+    vx = x[STATE_V];
+    w = dtheta = x[STATE_W];
+    vx1 = vx - c * w;
+    vx2 = vx + c * w;
+    vy1 = (-xcir + b) * w;
+    vy3 = (-xcir - a) * w;
     Fy = mu*((m*GRAVITY)/(a+b))*(b*sgn(vy1)+a*sgn(vy3));
     Mr = mu*((a*b*m*GRAVITY)/(a+b))*(sgn(vy1)-sgn(vy3))+fr*c*m*GRAVITY*(sgn(vx2)-sgn(vx1));
     Rx = fr*m*GRAVITY*(sgn(vx1)+sgn(vx2));
-    dx[VX_SPEED] = -xcir * dtheta * wr - Rx/m + torque_left/(m*r) + torque_right/(m*r);
-    dx[ANGULAR_SPEED] = (m*xcir*dx[STATE_THETA]*x[STATE_V])/(m*xcir*xcir+I) -
+    dx[VX_SPEED] = -xcir * dtheta * w - Rx/m + torque_left/(m*r) + torque_right/(m*r);
+    dx[ANGULAR_SPEED] = (m*xcir*dtheta*vx)/(m*xcir*xcir+I) -
                         (Mr-xcir*Fy)/(m*xcir*xcir+I)
                         - (c*torque_left)/((m*xcir*xcir+I)*r)
                         + (c*torque_right)/((m*xcir*xcir+I)*r);
@@ -257,9 +271,7 @@ void SkidSteerDynamicModel::EstimateControlVelocities(const double dt,
                                                       double *speeds)
 {
     double w1[2], w2[2], w3[2], w4[2], wtemp[2];
-    double old_velocities[2];
     int i;
-    memcpy(old_velocities, x+3, sizeof(double)*2);
 
     control_velocities_dflow(x, u_accel, w1);
     for(i=0;i<2;i++)
@@ -275,7 +287,31 @@ void SkidSteerDynamicModel::EstimateControlVelocities(const double dt,
     control_velocities_dflow(wtemp, u_accel, w4);
 
     for(i=0; i<2; i++)
-        speeds[i] = old_velocities[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+        speeds[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+}
+
+void SkidSteerDynamicModel::EstimateVelocities(const double dt, const double *x,
+                                               const double *u_torque,
+                                               double *speeds)
+{
+    double w1[2], w2[2], w3[2], w4[2], wtemp[2];
+    int i;
+
+    velocities_dflow(x, u_torque, w1);
+    for(i=0;i<2;i++)
+        wtemp[i] = x[i] + 0.5 * dt * w1[i];
+    velocities_dflow(wtemp, u_torque, w2);
+
+    for(i=0;i<2;i++)
+        wtemp[i] = x[i] + 0.5 * dt * w2[i];
+    velocities_dflow(wtemp, u_torque, w3);
+
+    for(i=0;i<2;i++)
+        wtemp[i] = x[i] + dt * w3[i];
+    velocities_dflow(wtemp, u_torque, w4);
+
+    for(i=0; i<2; i++)
+        speeds[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
 }
 
 SkidSteerDynamicModel::~SkidSteerDynamicModel()

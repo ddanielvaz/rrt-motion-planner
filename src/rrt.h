@@ -27,7 +27,7 @@ typedef Path<Graph> MyPath;
 class RRT
 {
     public:
-        RRT(double *, double *, int, RobotModel*, World*, char*);
+        RRT(double *, double *, int, RobotModel*, World*, char*, char*);
         void build(void);
         int extend(double*);
         double* select_best_input(double*);
@@ -41,22 +41,25 @@ class RRT
         ~RRT();
     private:
         Node initial_node, goal_node;
-        double goal_state[3], initial_state[3];
+        double *goal_state, *initial_state;
         int max_nodes;
         RobotModel *veh;
         World *env;
-        ofstream fp;
+        ofstream fp, controlfp;
         Graph g;
         ArcMapWeight *cost;
         NodeMapState *states;
         ArcMapControl *control_map;
 };
 
-RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w, char *fname)
+RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w,
+         char *fname, char *ctrl_fname)
 {
     cout << "Criando instancia da classe RRT" << endl;
-    memcpy(goal_state, goal, sizeof(double) * 3);
-    memcpy(initial_state, init, sizeof(double) * 3);
+    goal_state = (double*) malloc(sizeof(double) * car->n_states);
+    initial_state = (double*) malloc(sizeof(double) * car->n_states);
+    memcpy(goal_state, goal, sizeof(double) * car->n_states);
+    memcpy(initial_state, init, sizeof(double) * car->n_states);
     states = new NodeMapState(g);
     cost = new ArcMapWeight(g);
     control_map = new ArcMapControl(g);
@@ -66,6 +69,7 @@ RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w, char *fna
     veh = car;
     env = w;
     fp.open(fname);
+    controlfp.open(ctrl_fname);
     initiate_rand_number_generator();
 }
 
@@ -77,7 +81,7 @@ RRT::~RRT()
 void RRT::build(void)
 {
     int finished=0, i=0;
-    double random_state[3];
+    double random_state[veh->n_states];
     int prev=0, j=0, collided;
     while(i < max_nodes)
     {
@@ -96,7 +100,7 @@ void RRT::build(void)
         else
         {
             prev++;
-            memcpy(random_state, goal_state, sizeof(double) * 3);
+            memcpy(random_state, goal_state, sizeof(double) * veh->n_states);
         }
         finished = extend(random_state);
         if(finished == 1)
@@ -109,15 +113,15 @@ void RRT::build(void)
             break;
         }
     }
-    cout << "Tentivas de adicionar nos: " << i<< " Previlegiou: " << prev << endl;
+    cout << "Tentativas de adicionar nos: " << i<< " Previlegiou: " << prev << endl;
 }
 
 int RRT::extend(double *rand)
 {
     Node near = select_nearest_node(rand), added;
-    double expanded[3], *pt=NULL, *choosed=NULL, *best_control=NULL, temp[3];
+    double expanded[veh->n_states], *pt=NULL, *choosed=NULL, *best_control=NULL, temp[veh->n_states];
     bool not_collided;
-    double u[42][2]={{0.50, 0.00}, {0.50, 0.02}, {0.50, 0.07}, {0.50, 0.12},
+    /*double u[42][2]={{0.50, 0.00}, {0.50, 0.02}, {0.50, 0.07}, {0.50, 0.12},
                      {0.50, 0.17}, {0.50, 0.23}, {0.50, 0.28}, {0.50, 0.33},
                      {0.50, 0.38}, {0.50, 0.44}, {0.50, 0.49}, {-0.50, 0.00},
                      {-0.50, 0.02}, {-0.50, 0.07}, {-0.50, 0.12}, {-0.50, 0.17},
@@ -129,10 +133,11 @@ int RRT::extend(double *rand)
                      {-0.50, -0.17}, {-0.50, -0.23}, {-0.50, -0.28},
                      {-0.50, -0.33}, {-0.50, -0.38}, {-0.50, -0.44},
                      {-0.50, -0.49}
-                    };
+                    };*/
+    double u[3][2] = {{5.0,5.0}, {-5.0, 5.0}, {5.0, -5.0}};
     double d=1e7, aux;
     int duplicated_node_id;
-    for(int i=0; i<42; i++)
+    for(int i=0; i<3; i++)
     {
         not_collided = check_no_collision_path((*states)[near], u[i], expanded);
         if (not_collided)
@@ -141,7 +146,7 @@ int RRT::extend(double *rand)
             if(aux < d)
             {
                 d = aux;
-                memcpy(temp, expanded, sizeof(double) * 3);
+                memcpy(temp, expanded, sizeof(double) * veh->n_states);
                 pt = temp;
                 best_control = u[i];
             }
@@ -164,8 +169,8 @@ int RRT::extend(double *rand)
             return -1;
         }
         print_path((*states)[near], best_control);
-        choosed = (double*) malloc(sizeof(double) * 3);
-        memcpy(choosed, temp, sizeof(double) * 3);
+        choosed = (double*) malloc(sizeof(double) * veh->n_states);
+        memcpy(choosed, temp, sizeof(double) * veh->n_states);
         added = g.addNode();
         (*states)[added] = choosed;
         Graph::Arc arc = g.addArc(near, added);
@@ -197,9 +202,9 @@ Node RRT::select_nearest_node(double *rand)
 
 bool RRT::check_no_collision_path(const double *near_node, const double *u, double *new_state)
 {
-    double it, aux[3], temp[3], x, y, theta;
+    double it, aux[veh->n_states], temp[veh->n_states], x, y, theta;
     bool in_collision;
-    memcpy(aux, near_node, sizeof(double) * 3);
+    memcpy(aux, near_node, sizeof(double) * veh->n_states);
     for (it=0.0; it<INTEGRATION_TIME; it+=DELTA_T)
     {
         veh->EstimateNewState(DELTA_T, aux, u, temp);
@@ -212,9 +217,9 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
             //cout << "COLLISION" << endl;
             return false;
         }
-        memcpy(aux, temp, sizeof(double) * 3);
+        memcpy(aux, temp, sizeof(double) * veh->n_states);
     }
-    memcpy(new_state, aux, sizeof(double) * 3);
+    memcpy(new_state, aux, sizeof(double) * veh->n_states);
     return true;
 }
 
@@ -235,8 +240,10 @@ int RRT::check_duplicate_node(double *adding)
 
 void RRT::print_path(const double *near_node, const double *best_control)
 {
-    fp << near_node[0] << " " << near_node[1] << " " << near_node[2] << " "
-    << best_control[0] << " " << best_control[1] << " " << INTEGRATION_TIME << endl;
+    for(int i=0; i<veh->n_states; i++)
+        fp << near_node[i] << " ";
+    fp << endl;
+    controlfp << best_control[0] << " " << best_control[1] << " " << INTEGRATION_TIME << endl;
 }
 
 void RRT::close_logfile(void)
@@ -265,14 +272,14 @@ void RRT::path_to_closest_goal(void)
         cout << "To State: " << (*states)[t][0] <<" "<< (*states)[t][1] <<" " << (*states)[t][2] << endl;
         cout << "Control map: " << (*control_map)[a][0] << " " << (*control_map)[a][1] << endl;
         cout << "Arc cost: " << (*cost)[a] << endl;
-        pathfile << (*states)[s][0] << " " << (*states)[s][1] << " "
-                 << (*states)[s][2] << " " << (*control_map)[a][0] << " "
-                 << (*control_map)[a][1] << " " << INTEGRATION_TIME << endl;
+        for(int i=0; i<veh->n_states; i++)
+            pathfile << (*states)[s][i] << " ";
+        pathfile << (*control_map)[a][0] << " " << (*control_map)[a][1] << " "
+                 << INTEGRATION_TIME << endl;
     }
     pathfile.close();
     //goal_node = g.addNode();
     //(*states)[goal_node] = goal_state;
-    
 }
    
 #endif

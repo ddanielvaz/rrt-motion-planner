@@ -97,8 +97,7 @@ class Graphics
         ~Graphics();
         void plot_states(char *, int);
         void plot_obstacles(char *);
-        void draw(const double, const double, const double, const double,
-                  const double, const int);
+        void draw(double, double, double, int);
         void show(void);
         void draw_initial_and_goal(double *initial, double *goal);
     private:
@@ -141,7 +140,7 @@ void Graphics::plot_states(char *filename, int color)
 {
     char temp[100], *ps, *nxt;
     int i;
-    float x, y, theta, v, phi, t;
+    float x, y, theta;
     ifstream fp(filename);
     cout << "Lendo pontos do arquivo. " << endl;
     i = 0;
@@ -155,37 +154,20 @@ void Graphics::plot_states(char *filename, int color)
 
         theta = strtod(nxt, &ps);
         nxt = ps;
-
-        v = strtod(nxt, &ps);
-        nxt = ps;
-
-        phi = strtod(nxt, &ps);
-        nxt = ps;
-
-        t = strtod(nxt, NULL);
-        draw(x, y, theta, v, phi, color);
-        i += 1;
+        draw(x, y, theta, color);
+        i++;
     }
     cout << i << " pontos lidos." << endl;
     fp.close();
 }
 
-void Graphics::draw(const double x, const double y, const double theta,
-                    const double v, const double phi, const int color_id)
+void Graphics::draw(double x, double y, double theta, int color_id)
 {
-    double aux[3], u[2], temp[3];
     cvCircle(img1, cvPoint(x * SCALE_FACTOR,y * SCALE_FACTOR), 1.0, colors[c_red], -1, 8, 0);
-    u[0] = v; u[1] = phi;
-    aux[0] = x; aux[1] = y; aux[2] = theta;
     veh_geom->position(x, y, theta);
     Carro car(veh_geom);
     CvScalar color = colors[color_id];
     car.draw(img1, color);
-    veh->EstimateNewState(INTEGRATION_TIME, aux, u, temp);
-    veh_geom->position(temp[0], temp[1], temp[2]);
-    Carro carf(veh_geom);
-    carf.draw(img1, color);
-    
 }
 
 void Graphics::plot_obstacles(char *filename)

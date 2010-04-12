@@ -15,6 +15,7 @@ class RobotModel
         virtual void dflow(const double *x, const double *u, double *dx);
         virtual void EstimateNewState(const double dt, const double *x,
                                       const double *u, double *dx);
+        int n_states;
 };
 
 void RobotModel::dflow(const double *x, const double *u, double *dx)
@@ -31,7 +32,7 @@ void RobotModel::EstimateNewState(const double dt, const double *x,
 class CarLikeModel : public RobotModel
 {
     public:
-        CarLikeModel(double);
+        CarLikeModel(double, int);
         ~CarLikeModel();
         /**
           *@author Erion Plaku
@@ -49,10 +50,11 @@ class CarLikeModel : public RobotModel
         double m_one_over_bodyLength;
 };
 
-CarLikeModel::CarLikeModel(double bodyLength)
+CarLikeModel::CarLikeModel(double bodyLength, int n_st)
 {
     cout << "Criando instancia da classe CarLikeModel" << endl;
     m_one_over_bodyLength = 1.0/bodyLength;
+    n_states = n_st;
 }
 
 CarLikeModel::~CarLikeModel()
@@ -94,7 +96,7 @@ void CarLikeModel::EstimateNewState(const double dt, const double *x,
 class SkidSteerModel : public RobotModel
 {
     public:
-        SkidSteerModel();
+        SkidSteerModel(int);
         void dflow(const double *x, const double *u, double *dx);
         void EstimateNewState(const double dt, const double *x,
                               const double *u, double *dx);
@@ -103,9 +105,10 @@ class SkidSteerModel : public RobotModel
         static const double xcir = 0.008;
 };
 
-SkidSteerModel::SkidSteerModel()
+SkidSteerModel::SkidSteerModel(int n_st)
 {
     cout << "Criando instancia da classe SkidSteerModel." << endl;
+    n_states = n_st;
 }
 
 void SkidSteerModel::dflow(const double *x, const double *u, double *dx)
@@ -146,7 +149,7 @@ SkidSteerModel::~SkidSteerModel()
 class SkidSteerDynamicModel : public RobotModel
 {
     public:
-        SkidSteerDynamicModel(double *, double *);
+        SkidSteerDynamicModel(double *, double *, int);
         void dflow(const double *, const double *, double *);
         void EstimateNewState(const double , const double *,
                               const double *, double *);
@@ -158,7 +161,7 @@ class SkidSteerDynamicModel : public RobotModel
         double Kt, Ke, n, R, I, m, fr, mu, xcir, a, b, c, r;
 };
 
-SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot_params)
+SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot_params, int n_st)
 {
     cout << "Criando instancia da classe SkidSteerDynamicModel." << endl;
     Kt = motor_params[0];
@@ -174,26 +177,48 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     b = robot_params[6];
     c = robot_params[7];
     r = robot_params[8];
+    n_states = n_st;
 }
 
 void SkidSteerDynamicModel::dflow(const double *x, const double *ctl, double *dx)
 {
-    dx[STATE_X] = 0.0;
-    dx[STATE_Y] = 0.0;
-    dx[STATE_THETA] = 0.0;
-    dx[STATE_V] = 0.0;
-    dx[STATE_W] = 0.0;
+    dx[STATE_X] = ctl[VX_SPEED]*cos(x[STATE_THETA]) + xcir * sin(x[STATE_THETA]) * ctl[ANGULAR_SPEED];
+    dx[STATE_Y] = ctl[VX_SPEED]*sin(x[STATE_THETA]) - xcir * cos(x[STATE_THETA]) * ctl[ANGULAR_SPEED];
+    dx[STATE_THETA] = ctl[ANGULAR_SPEED];
 }
 
 void SkidSteerDynamicModel::EstimateNewState(const double t, const double *x,
                                              const double *ctl, double *dx)
 {
-    double curr_vel[2], vel[2];
+    double curr_vel[2], new_vel[2], w1[3], w2[3], w3[3], w4[3], wtemp[3];
+    int i;
     memcpy(curr_vel, x+3, sizeof(double) * 2);
-    EstimateVelocities(t, curr_vel, ctl, vel);
-    memcpy(dx, vel, sizeof(double)*2);
-    cout << "FINAL v: " << vel[0] << endl;
-    cout << "FINAL w: " << vel[1] << endl;
+    EstimateVelocities(t, curr_vel, ctl, new_vel);
+    memcpy(dx+3, new_vel, sizeof(double)*2);
+//     cout << "FINAL v: " << new_vel[0] << endl;
+//     cout << "FINAL w: " << new_vel[1] << endl;
+//     cout << "Computing x, y, theta..." << endl;
+
+    dflow(x, new_vel, w1);
+    for(i=0;i<3;i++)
+        wtemp[i] = x[i] + 0.5 * t * w1[i];
+
+    dflow(wtemp, new_vel, w2);
+    for(i=0;i<3;i++)
+        wtemp[i] = x[i] + 0.5 * t * w2[i];
+
+    dflow(wtemp, new_vel, w3);
+    for(i=0;i<3;i++)
+        wtemp[i] = x[i] + t * w3[i];
+
+    dflow(wtemp, new_vel, w4);
+    for(i=0; i<3; i++)
+        dx[i] = x[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+    
+    //Newton-Euler
+/*    for(i=0; i<3; i++)
+       dx[i] = x[i] + w1[i]*t;*/
+     //cout << "FINAL x: " << dx[0] << " FINAL y: " << dx[1] << " FINAL theta: " << dx[2] << endl;
 }
 
 void SkidSteerDynamicModel::velocities_dflow(const double *x,
@@ -216,11 +241,6 @@ void SkidSteerDynamicModel::velocities_dflow(const double *x,
                         - (c*ctl[TORQUE_L])/((m*xcir*xcir+I)*r)
                         + (c*ctl[TORQUE_R])/((m*xcir*xcir+I)*r);
 }
-/*
-Dado o tempo total de integração, essa funcao estima a integral com t/DELTA_T
-passos de integração.
-O vetor x representa [v0, w0], velocidades iniciais (linear e angular).
-*/
 
 void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,
                                                const double *u_torque,
@@ -231,7 +251,6 @@ void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,
     bzero(speeds, sizeof(double)*2);
     memcpy(initial_state, x, sizeof(double) * 2);
     //Runge Kutta 4th
-    /*
     velocities_dflow(initial_state, u_torque, w1);
     for(i=0;i<2;i++)
         wtemp[i] = initial_state[i] + 0.5 * t * w1[i];
@@ -247,11 +266,10 @@ void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,
     velocities_dflow(wtemp, u_torque, w4);
     for(i=0; i<2; i++)
         speeds[i] = initial_state[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
-    */
     //Newton-Euler
-    velocities_dflow(initial_state, u_torque, w1);
+/*    velocities_dflow(initial_state, u_torque, w1);
     for(i=0; i<2; i++)
-        speeds[i] = initial_state[i] + w1[i]*t;
+       speeds[i] = initial_state[i] + w1[i]*t;*/
 }
 
 SkidSteerDynamicModel::~SkidSteerDynamicModel()

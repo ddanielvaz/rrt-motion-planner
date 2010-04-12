@@ -149,7 +149,7 @@ SkidSteerModel::~SkidSteerModel()
 class SkidSteerDynamicModel : public RobotModel
 {
     public:
-        SkidSteerDynamicModel(double *, double *, int);
+        SkidSteerDynamicModel(double *, double *, double *, int);
         void dflow(const double *, const double *, double *);
         void EstimateNewState(const double , const double *,
                               const double *, double *);
@@ -158,10 +158,10 @@ class SkidSteerDynamicModel : public RobotModel
                                 const double *, double *);
         ~SkidSteerDynamicModel();
     private:
-        double Kt, Ke, n, R, I, m, fr, mu, xcir, a, b, c, r;
+        double Kt, Ke, n, R, I, m, fr, mu, xcir, a, b, c, r, max_v, max_w;
 };
 
-SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot_params, int n_st)
+SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot_params, double *speeds_limit, int n_st)
 {
     cout << "Criando instancia da classe SkidSteerDynamicModel." << endl;
     Kt = motor_params[0];
@@ -177,6 +177,8 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     b = robot_params[6];
     c = robot_params[7];
     r = robot_params[8];
+    max_v = speeds_limit[0];
+    max_w = speeds_limit[1];
     n_states = n_st;
 }
 
@@ -194,10 +196,9 @@ void SkidSteerDynamicModel::EstimateNewState(const double t, const double *x,
     int i;
     memcpy(curr_vel, x+3, sizeof(double) * 2);
     EstimateVelocities(t, curr_vel, ctl, new_vel);
+    new_vel[0] = limit_speed(new_vel[0], max_v);
+    new_vel[1] = limit_speed(new_vel[1], max_w);
     memcpy(dx+3, new_vel, sizeof(double)*2);
-//     cout << "FINAL v: " << new_vel[0] << endl;
-//     cout << "FINAL w: " << new_vel[1] << endl;
-//     cout << "Computing x, y, theta..." << endl;
 
     dflow(x, new_vel, w1);
     for(i=0;i<3;i++)
@@ -218,7 +219,6 @@ void SkidSteerDynamicModel::EstimateNewState(const double t, const double *x,
     //Newton-Euler
 /*    for(i=0; i<3; i++)
        dx[i] = x[i] + w1[i]*t;*/
-     //cout << "FINAL x: " << dx[0] << " FINAL y: " << dx[1] << " FINAL theta: " << dx[2] << endl;
 }
 
 void SkidSteerDynamicModel::velocities_dflow(const double *x,

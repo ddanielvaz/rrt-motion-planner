@@ -142,11 +142,6 @@ inline double limit_steering(double steering)
     return (fabs(steering) < MAX_STEERING) ? steering:MAX_STEERING;
 }
 
-inline double limit_speed(double speed)
-{
-    return (fabs(speed) < MAX_SPEED) ? speed:MAX_SPEED;
-}
-
 inline double sgn(double x)
 {
     if(x>0)
@@ -154,6 +149,11 @@ inline double sgn(double x)
     else if(x<0)
         return -1.0;
     return 0.0;
+}
+
+inline double limit_speed(double speed, double max_speed)
+{
+    return (fabs(speed) < max_speed) ? speed:sgn(speed)*max_speed;
 }
 
 #endif

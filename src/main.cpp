@@ -18,7 +18,8 @@ int main(int argc, char *argv[])
          pathfile[] = "path.log", logcontrol[]="controls.log";
     double motor[] = {0.0230, 0.0230, 38.3, 0.71};
     double robot[] = {0.413, 40, 0.043, 0.506, 0.008, 0.122, 0.138, 0.1975, 0.4};
-    SkidSteerDynamicModel veh(motor, robot, 5);
+    double speeds_limits[] = {0.7, 2.44};
+    SkidSteerDynamicModel veh(motor, robot, speeds_limits, 5);
     //CarLikeModel veh(body_length, 3);
     //SkidSteerModel veh(3);
     CarGeometry geom_car(width, height, body_length);

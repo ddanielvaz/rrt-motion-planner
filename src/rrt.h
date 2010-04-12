@@ -134,10 +134,13 @@ int RRT::extend(double *rand)
                      {-0.50, -0.33}, {-0.50, -0.38}, {-0.50, -0.44},
                      {-0.50, -0.49}
                     };*/
-    double u[3][2] = {{5.0,5.0}, {-5.0, 5.0}, {5.0, -5.0}};
+    double u[16][2] = {{10, 10}, {-10, -10}, {-10, 10}, {10, -10},
+{10, 5}, {-10, -5}, {-10, 5}, {10, -5}, 
+{5, 10}, {-5,-10}, {-5, 10}, {5, -10},
+{5, 5}, {-5, -5}, {-5, 5}, {5, -5}};
     double d=1e7, aux;
     int duplicated_node_id;
-    for(int i=0; i<3; i++)
+    for(int i=0; i<16; i++)
     {
         not_collided = check_no_collision_path((*states)[near], u[i], expanded);
         if (not_collided)

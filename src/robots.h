@@ -9,6 +9,11 @@
 
 using namespace std;
 
+typedef struct
+{
+    double ctrl[2];
+}control_input;
+
 class RobotModel
 {
     public:
@@ -16,6 +21,7 @@ class RobotModel
         virtual void EstimateNewState(const double dt, const double *x,
                                       const double *u, double *dx);
         int n_states;
+        vector<control_input> inputs;
 };
 
 void RobotModel::dflow(const double *x, const double *u, double *dx)
@@ -55,6 +61,22 @@ CarLikeModel::CarLikeModel(double bodyLength, int n_st)
     cout << "Criando instancia da classe CarLikeModel" << endl;
     m_one_over_bodyLength = 1.0/bodyLength;
     n_states = n_st;
+    double u[42][2]={{0.50, 0.00}, {0.50, 0.02}, {0.50, 0.07}, {0.50, 0.12},
+                     {0.50, 0.17}, {0.50, 0.23}, {0.50, 0.28}, {0.50, 0.33},
+                     {0.50, 0.38}, {0.50, 0.44}, {0.50, 0.49}, {-0.50, 0.00},
+                     {-0.50, 0.02}, {-0.50, 0.07}, {-0.50, 0.12}, {-0.50, 0.17},
+                     {-0.50, 0.23}, {-0.50, 0.28}, {-0.50, 0.33}, {-0.50, 0.38},
+                     {-0.50, 0.44}, {-0.50, 0.49}, {0.50, -0.02}, {0.50, -0.07},
+                     {0.50, -0.12}, {0.50, -0.17}, {0.50, -0.23}, {0.50, -0.28},
+                     {0.50, -0.33}, {0.50, -0.38}, {0.50, -0.44}, {0.50, -0.49},
+                     {-0.50, -0.02}, {-0.50, -0.07}, {-0.50, -0.12},
+                     {-0.50, -0.17}, {-0.50, -0.23}, {-0.50, -0.28},
+                     {-0.50, -0.33}, {-0.50, -0.38}, {-0.50, -0.44},
+                     {-0.50, -0.49} };
+    control_input temp[42];
+    memcpy(temp, u, sizeof(double) * 2 * 42);
+    for (int i=0; i<42; i++)
+        inputs.push_back(temp[i]);
 }
 
 CarLikeModel::~CarLikeModel()
@@ -109,6 +131,22 @@ SkidSteerModel::SkidSteerModel(int n_st)
 {
     cout << "Criando instancia da classe SkidSteerModel." << endl;
     n_states = n_st;
+    double u[42][2]={{0.50, 0.00}, {0.50, 0.02}, {0.50, 0.07}, {0.50, 0.12},
+                     {0.50, 0.17}, {0.50, 0.23}, {0.50, 0.28}, {0.50, 0.33},
+                     {0.50, 0.38}, {0.50, 0.44}, {0.50, 0.49}, {-0.50, 0.00},
+                     {-0.50, 0.02}, {-0.50, 0.07}, {-0.50, 0.12}, {-0.50, 0.17},
+                     {-0.50, 0.23}, {-0.50, 0.28}, {-0.50, 0.33}, {-0.50, 0.38},
+                     {-0.50, 0.44}, {-0.50, 0.49}, {0.50, -0.02}, {0.50, -0.07},
+                     {0.50, -0.12}, {0.50, -0.17}, {0.50, -0.23}, {0.50, -0.28},
+                     {0.50, -0.33}, {0.50, -0.38}, {0.50, -0.44}, {0.50, -0.49},
+                     {-0.50, -0.02}, {-0.50, -0.07}, {-0.50, -0.12},
+                     {-0.50, -0.17}, {-0.50, -0.23}, {-0.50, -0.28},
+                     {-0.50, -0.33}, {-0.50, -0.38}, {-0.50, -0.44},
+                     {-0.50, -0.49} };
+    control_input temp[42];
+    memcpy(temp, u, sizeof(double) * 2 * 42);
+    for (int i=0; i<42; i++)
+        inputs.push_back(temp[i]);
 }
 
 void SkidSteerModel::dflow(const double *x, const double *u, double *dx)
@@ -180,6 +218,13 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
+    double u[16][2]={{10, 10}, {-10, -10}, {-10, 10}, {10, -10}, {10, 5},
+    {-10, -5}, {-10, 5}, {10, -5}, {5, 10}, {-5,-10}, {-5, 10}, {5, -10},
+    {5, 5}, {-5, -5}, {-5, 5}, {5, -5}};
+    control_input temp[16];
+    memcpy(temp, u, sizeof(double) * 16 * 2);
+    for(int i=0; i<16; i++)
+        inputs.push_back(temp[i]);
 }
 
 void SkidSteerDynamicModel::dflow(const double *x, const double *ctl, double *dx)

@@ -121,28 +121,12 @@ int RRT::extend(double *rand)
     Node near = select_nearest_node(rand), added;
     double expanded[veh->n_states], *pt=NULL, *choosed=NULL, *best_control=NULL, temp[veh->n_states];
     bool not_collided;
-    /*double u[42][2]={{0.50, 0.00}, {0.50, 0.02}, {0.50, 0.07}, {0.50, 0.12},
-                     {0.50, 0.17}, {0.50, 0.23}, {0.50, 0.28}, {0.50, 0.33},
-                     {0.50, 0.38}, {0.50, 0.44}, {0.50, 0.49}, {-0.50, 0.00},
-                     {-0.50, 0.02}, {-0.50, 0.07}, {-0.50, 0.12}, {-0.50, 0.17},
-                     {-0.50, 0.23}, {-0.50, 0.28}, {-0.50, 0.33}, {-0.50, 0.38},
-                     {-0.50, 0.44}, {-0.50, 0.49}, {0.50, -0.02}, {0.50, -0.07},
-                     {0.50, -0.12}, {0.50, -0.17}, {0.50, -0.23}, {0.50, -0.28},
-                     {0.50, -0.33}, {0.50, -0.38}, {0.50, -0.44}, {0.50, -0.49},
-                     {-0.50, -0.02}, {-0.50, -0.07}, {-0.50, -0.12},
-                     {-0.50, -0.17}, {-0.50, -0.23}, {-0.50, -0.28},
-                     {-0.50, -0.33}, {-0.50, -0.38}, {-0.50, -0.44},
-                     {-0.50, -0.49}
-                    };*/
-    double u[16][2] = {{10, 10}, {-10, -10}, {-10, 10}, {10, -10},
-{10, 5}, {-10, -5}, {-10, 5}, {10, -5}, 
-{5, 10}, {-5,-10}, {-5, 10}, {5, -10},
-{5, 5}, {-5, -5}, {-5, 5}, {5, -5}};
     double d=1e7, aux;
     int duplicated_node_id;
-    for(int i=0; i<16; i++)
+    vector<control_input>::iterator it;
+    for ( it=veh->inputs.begin() ; it < veh->inputs.end(); it++ )
     {
-        not_collided = check_no_collision_path((*states)[near], u[i], expanded);
+        not_collided = check_no_collision_path((*states)[near], (*it).ctrl, expanded);
         if (not_collided)
         {
             aux = metric(expanded, rand);
@@ -151,7 +135,7 @@ int RRT::extend(double *rand)
                 d = aux;
                 memcpy(temp, expanded, sizeof(double) * veh->n_states);
                 pt = temp;
-                best_control = u[i];
+                best_control = (*it).ctrl;
             }
         }
     }

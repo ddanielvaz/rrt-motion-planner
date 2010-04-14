@@ -25,6 +25,7 @@ class EnvModel
         EnvModel(char *);
         ~EnvModel();
         PQP_Model obstacles;
+        double dim[2];
 };
 
 EnvModel::EnvModel(char *filename)
@@ -35,6 +36,10 @@ EnvModel::EnvModel(char *filename)
     double v[9];
     int i,j, tri_count=0;
     PQP_REAL p0[3], p1[3], p2[3];
+    fp.getline(temp, 100);
+    dim[0] = strtod(temp, &ps);
+    nxt = ps;
+    dim[1] = strtod(nxt, NULL);
     obstacles.BeginModel();
     while(fp.getline(temp, 100))
     {
@@ -69,7 +74,6 @@ class World
         World(char *, CarGeometry *);
         ~World();
         int is_vehicle_in_collision(double, double, double);
-        double dim[2];
         CarGeometry *veh_geometry;
         EnvModel *env;
 };
@@ -78,8 +82,6 @@ World::World(char *envfilename, CarGeometry* car_geom)
 {
     cout << "Criando instancia da classe World." << endl;
     env = new EnvModel(envfilename);
-    dim[0] = 20.0;
-    dim[1] = 20.0;
     veh_geometry = car_geom;
 }
 

@@ -218,12 +218,12 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
-    double u[16][2]={{10, 10}, {-10, -10}, {-10, 10}, {10, -10}, {10, 5},
+    double u[12][2]={{10, 10}, {-10, -10}, {10, 5},
     {-10, -5}, {-10, 5}, {10, -5}, {5, 10}, {-5,-10}, {-5, 10}, {5, -10},
-    {5, 5}, {-5, -5}, {-5, 5}, {5, -5}};
-    control_input temp[16];
-    memcpy(temp, u, sizeof(double) * 16 * 2);
-    for(int i=0; i<16; i++)
+    {5, 5}, {-5, -5}};
+    control_input temp[12];
+    memcpy(temp, u, sizeof(double) * 12 * 2);
+    for(int i=0; i<12; i++)
         inputs.push_back(temp[i]);
 }
 

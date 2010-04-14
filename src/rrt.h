@@ -44,7 +44,7 @@ class RRT
         double *goal_state, *initial_state;
         int max_nodes;
         RobotModel *veh;
-        World *env;
+        World *world;
         ofstream fp, controlfp;
         Graph g;
         ArcMapWeight *cost;
@@ -67,7 +67,7 @@ RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w,
     (*states)[initial_node] = initial_state;
     max_nodes = n;
     veh = car;
-    env = w;
+    world = w;
     fp.open(fname);
     controlfp.open(ctrl_fname);
     initiate_rand_number_generator();
@@ -93,8 +93,8 @@ void RRT::build(void)
         {
             while(collided)
             {
-                biased_sampling(env->dim, random_state);
-                collided = env->is_vehicle_in_collision(random_state[0], random_state[1], random_state[2]);
+                biased_sampling(world->env->dim, random_state);
+                collided = world->is_vehicle_in_collision(random_state[0], random_state[1], random_state[2]);
             }
         }
         else
@@ -198,7 +198,7 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
         x = temp[STATE_X];
         y = temp[STATE_Y];
         theta = normalize_angle(temp[STATE_THETA]);
-        in_collision = env->is_vehicle_in_collision(x, y, theta);
+        in_collision = world->is_vehicle_in_collision(x, y, theta);
         if (in_collision)
         {
             //cout << "COLLISION" << endl;

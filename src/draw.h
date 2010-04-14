@@ -52,11 +52,13 @@ class Obstacles
 
 Obstacles::Obstacles(char *filename)
 {
-    cout << "Criando instancia da classe EnvModel" << endl;
+    cout << "Criando instancia da classe Obstacles" << endl;
     ifstream obs_fp(filename);
     char temp[100], *ps, *nxt;
     double v[9];
     int i;
+    // Descartando primeira linha de informação sobre dimensão do ambiente.
+    obs_fp.getline(temp, 100);
     while(obs_fp.getline(temp, 100))
     {
         v[0] = strtod(temp, &ps);

@@ -36,9 +36,10 @@ CarGeometry::CarGeometry(double width, double height, double length)
 void CarGeometry::position(double x, double y, double theta)
 {
     double rot_mat[4], xc, yc, aux_x, aux_y;
+    //Clockwise rotation
     rot_mat[3] = rot_mat[0] = cos(theta);
-    rot_mat[2] = sin(theta);
-    rot_mat[1] = -rot_mat[2];
+    rot_mat[1] = sin(theta);
+    rot_mat[2] = -sin(theta);
 
     xc=x + (w+l)/2.0;
     yc=y + h/2.0;

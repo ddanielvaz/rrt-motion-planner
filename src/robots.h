@@ -87,8 +87,8 @@ CarLikeModel::~CarLikeModel()
 void CarLikeModel::dflow(const double *x, const double *u, double *dx)
 {
     dx[STATE_X] = u[CONTROL_VELOCITY] * cos(x[STATE_THETA]);
-    dx[STATE_Y] = u[CONTROL_VELOCITY] * sin(x[STATE_THETA]);
-    dx[STATE_THETA] = u[CONTROL_VELOCITY] * m_one_over_bodyLength * tan(u[CONTROL_STEERING_ANGLE]);
+    dx[STATE_Y] = -u[CONTROL_VELOCITY] * sin(x[STATE_THETA]);
+    dx[STATE_THETA] = u[CONTROL_STEERING_ANGLE];//u[CONTROL_VELOCITY] * m_one_over_bodyLength * tan(u[CONTROL_STEERING_ANGLE]);
 }
 
 void CarLikeModel::EstimateNewState(const double dt, const double *x,
@@ -151,8 +151,8 @@ SkidSteerModel::SkidSteerModel(int n_st)
 
 void SkidSteerModel::dflow(const double *x, const double *u, double *dx)
 {
-    dx[STATE_X] = u[VX_SPEED] * cos(x[STATE_THETA]) + xcir * sin(x[STATE_THETA]) * u[ANGULAR_SPEED];
-    dx[STATE_Y] = u[VX_SPEED] * sin(x[STATE_THETA]) - xcir * cos(x[STATE_THETA]) * u[ANGULAR_SPEED];
+    dx[STATE_X] = u[VX_SPEED] * cos(x[STATE_THETA]) - xcir * sin(x[STATE_THETA]) * u[ANGULAR_SPEED];
+    dx[STATE_Y] = -u[VX_SPEED] * sin(x[STATE_THETA]) - xcir * cos(x[STATE_THETA]) * u[ANGULAR_SPEED];
     dx[STATE_THETA] = u[ANGULAR_SPEED];
 }
 

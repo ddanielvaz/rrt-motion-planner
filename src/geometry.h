@@ -38,32 +38,32 @@ void CarGeometry::position(double x, double y, double theta)
     double rot_mat[4], xc, yc, aux_x, aux_y;
     //Clockwise rotation
     rot_mat[3] = rot_mat[0] = cos(theta);
-    rot_mat[1] = sin(theta);
-    rot_mat[2] = -sin(theta);
+    rot_mat[1] = -sin(theta);
+    rot_mat[2] = sin(theta);
 
     xc=x + (w+l)/2.0;
-    yc=y + h/2.0;
+    yc=y - h/2.0;
     aux_x = xc * rot_mat[0] + yc * rot_mat[1];
     aux_y = xc * rot_mat[2] + yc * rot_mat[3];
     xrt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
     yrt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
 
     xc=x - (w-l)/2.0;
-    yc=y + h/2.0;
+    yc=y - h/2.0;
     aux_x = xc * rot_mat[0] + yc * rot_mat[1];
     aux_y = xc * rot_mat[2] + yc * rot_mat[3];
     xlt = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
     ylt = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
 
     xc=x - (w-l)/2.0;
-    yc=y - h/2.0;
+    yc=y + h/2.0;
     aux_x = xc * rot_mat[0] + yc * rot_mat[1];
     aux_y = xc * rot_mat[2] + yc * rot_mat[3];
     xlb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;
     ylb = aux_y + y - rot_mat[2]*x - rot_mat[3]*y;
 
     xc=x + (w+l)/2.0;
-    yc=y - h/2.0;
+    yc=y + h/2.0;
     aux_x = xc * rot_mat[0] + yc * rot_mat[1];
     aux_y = xc * rot_mat[2] + yc * rot_mat[3];
     xrb = aux_x + x - rot_mat[0]*x - rot_mat[1]*y;

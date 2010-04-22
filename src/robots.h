@@ -87,7 +87,7 @@ CarLikeModel::~CarLikeModel()
 void CarLikeModel::dflow(const double *x, const double *u, double *dx)
 {
     dx[STATE_X] = u[CONTROL_VELOCITY] * cos(x[STATE_THETA]);
-    dx[STATE_Y] = -u[CONTROL_VELOCITY] * sin(x[STATE_THETA]);
+    dx[STATE_Y] = u[CONTROL_VELOCITY] * sin(x[STATE_THETA]);
     dx[STATE_THETA] = u[CONTROL_STEERING_ANGLE];//u[CONTROL_VELOCITY] * m_one_over_bodyLength * tan(u[CONTROL_STEERING_ANGLE]);
 }
 
@@ -152,7 +152,7 @@ SkidSteerModel::SkidSteerModel(int n_st)
 void SkidSteerModel::dflow(const double *x, const double *u, double *dx)
 {
     dx[STATE_X] = u[VX_SPEED] * cos(x[STATE_THETA]) - xcir * sin(x[STATE_THETA]) * u[ANGULAR_SPEED];
-    dx[STATE_Y] = -u[VX_SPEED] * sin(x[STATE_THETA]) - xcir * cos(x[STATE_THETA]) * u[ANGULAR_SPEED];
+    dx[STATE_Y] = u[VX_SPEED] * sin(x[STATE_THETA]) + xcir * cos(x[STATE_THETA]) * u[ANGULAR_SPEED];
     dx[STATE_THETA] = u[ANGULAR_SPEED];
 }
 
@@ -218,19 +218,25 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
-    double u[12][2]={{10, 10}, {-10, -10}, {10, 5},
+    
+    /*double u[12][2]={{3, 3}, {-3, -3}, {5, 5}, {-5, -5}, {5, 3}, {-5, -3},
+    {5, -3}, {-5, 3}, {3, 5}, {-3, -5}, {3, -5}, {-3, 5}};*/
+    /*double u[12][2]={{10, 10}, {-10, -10}, {10, 5},
     {-10, -5}, {-10, 5}, {10, -5}, {5, 10}, {-5,-10}, {-5, 10}, {5, -10},
-    {5, 5}, {-5, -5}};
-    control_input temp[12];
-    memcpy(temp, u, sizeof(double) * 12 * 2);
-    for(int i=0; i<12; i++)
+    {5, 5}, {-5, -5}};*/
+    /*double u[12][2]={{10, 10}, {-10, -10}, {8, 8}, {-8, -8}, {8, 10}, {-8, -10}, {8, -10},
+    {-8, 10}, {10, 8}, {-10, -8}, {10, -8}, {-10, 8}};*/
+    double u[4][2]={{8, 8}, {6, 6}, {6, 8}, {8, 6}};
+    control_input temp[4];
+    memcpy(temp, u, sizeof(double) * 4 * 2);
+    for(int i=0; i<4; i++)
         inputs.push_back(temp[i]);
 }
 
 void SkidSteerDynamicModel::dflow(const double *x, const double *ctl, double *dx)
 {
-    dx[STATE_X] = ctl[VX_SPEED]*cos(x[STATE_THETA]) + xcir * sin(x[STATE_THETA]) * ctl[ANGULAR_SPEED];
-    dx[STATE_Y] = ctl[VX_SPEED]*sin(x[STATE_THETA]) - xcir * cos(x[STATE_THETA]) * ctl[ANGULAR_SPEED];
+    dx[STATE_X] = ctl[VX_SPEED]*cos(x[STATE_THETA]) - xcir * sin(x[STATE_THETA]) * ctl[ANGULAR_SPEED];
+    dx[STATE_Y] = ctl[VX_SPEED]*sin(x[STATE_THETA]) + xcir * cos(x[STATE_THETA]) * ctl[ANGULAR_SPEED];
     dx[STATE_THETA] = ctl[ANGULAR_SPEED];
 }
 
@@ -272,19 +278,19 @@ void SkidSteerDynamicModel::velocities_dflow(const double *x,
 {
     double Rx, Fy, Mr, vl, vr, vf, vb, dtheta;
     dtheta = x[ANGULAR_SPEED];
-    vl = x[VX_SPEED] - c * x[ANGULAR_SPEED];
-    vr = x[VX_SPEED] + c * x[ANGULAR_SPEED];
-    vf = (-xcir + b) * x[ANGULAR_SPEED];
-    vb = (-xcir - a) * x[ANGULAR_SPEED];
+    vl = x[VX_SPEED] + c * x[ANGULAR_SPEED];
+    vr = x[VX_SPEED] - c * x[ANGULAR_SPEED];
+    vf = (-xcir + a) * x[ANGULAR_SPEED];
+    vb = (-xcir - b) * x[ANGULAR_SPEED];
     Fy = mu*((m*GRAVITY)/(a+b))*(b*sgn(vf)+a*sgn(vb));
-    Mr = mu*((a*b*m*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+fr*c*m*GRAVITY*(sgn(vr)-sgn(vl));
+    Mr = mu*((a*b*m*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+fr*c*m*GRAVITY*(sgn(vl)-sgn(vr));
     Rx = fr*m*GRAVITY*(sgn(vl)+sgn(vr));
     //cout << Rx << endl;
-    dx[VX_SPEED] = -xcir * dtheta * x[ANGULAR_SPEED] - Rx/m + ctl[TORQUE_L]/(m*r) + ctl[TORQUE_R]/(m*r);
-    dx[ANGULAR_SPEED] = (m*xcir*dtheta*x[VX_SPEED])/(m*xcir*xcir+I) -
-                        (Mr-xcir*Fy)/(m*xcir*xcir+I)
-                        - (c*ctl[TORQUE_L])/((m*xcir*xcir+I)*r)
-                        + (c*ctl[TORQUE_R])/((m*xcir*xcir+I)*r);
+    dx[VX_SPEED] = xcir * dtheta * x[ANGULAR_SPEED] - Rx/m + ctl[TORQUE_L]/(m*r) + ctl[TORQUE_R]/(m*r);
+    dx[ANGULAR_SPEED] = -(m*xcir*x[ANGULAR_SPEED]*x[VX_SPEED])/(m*xcir*xcir+I)
+                        -(Mr+xcir*Fy)/(m*xcir*xcir+I)
+                        +(c*ctl[TORQUE_L])/((m*xcir*xcir+I)*r)
+                        -(c*ctl[TORQUE_R])/((m*xcir*xcir+I)*r);
 }
 
 void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,

@@ -26,7 +26,7 @@ using namespace lemon;
 #define MAX_SPEED 1.0
 
 #define DELTA_T 0.04
-#define INTEGRATION_TIME 0.5
+#define INTEGRATION_TIME 0.50
 
 #define GOAL_BIAS 0.05
 

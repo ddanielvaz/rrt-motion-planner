@@ -12,7 +12,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     double q[]={1.0, 1.0, 0.0, 0.0, 0.0};
-    double f[]={7, 7, 0.0, 0.0, 0.0};
+    double f[]={6, 1.0, 0.0, 0.0, 0.0};
     //Dimensoes para um veiculo
     //double width = 2.5, height = 1.5, body_length = 2.0;
     //Dimensoes para o pioneer 3at
@@ -22,12 +22,12 @@ int main(int argc, char *argv[])
     double motor[] = {0.0230, 0.0230, 38.3, 0.71};
     double robot[] = {0.413, 40, 0.043, 0.506, 0.008, 0.138, 0.122, 0.1975, 0.4};
     double speeds_limits[] = {0.7, 2.44};
-    //SkidSteerDynamicModel veh(motor, robot, speeds_limits, 5);
+    SkidSteerDynamicModel veh(motor, robot, speeds_limits, 5);
     //CarLikeModel veh(body_length, 3);
-    SkidSteerModel veh(3);
+    //SkidSteerModel veh(3);
     CarGeometry geom_car(width, height, body_length);
     World w(obstacles_file, &geom_car);
-    RRT plan(q, f, 1000, &veh, &w, logfile, logcontrol);
+    RRT plan(q, f, 500, &veh, &w, logfile, logcontrol);
     cvInitSystem(argc, argv);
     setlocale(LC_NUMERIC, "C");
     plan.build();

@@ -11,7 +11,7 @@
 using namespace std;
 using namespace lemon;
 
-#define GOAL_TRANSLATIONAL_TOLERANCE 0.5
+#define GOAL_TRANSLATIONAL_TOLERANCE 0.2
 //5 graus
 #define ROTATIONAL_TOLERANCE 0.087
 //10 graus
@@ -26,14 +26,14 @@ using namespace lemon;
 #define MAX_SPEED 1.0
 
 #define DELTA_T 0.04
-#define INTEGRATION_TIME 0.50
+#define INTEGRATION_TIME 0.48
 
 #define GOAL_BIAS 0.05
 
 #define N_STATES 3
 #define N_CONTROLS 11
 
-#define SCALE_FACTOR 20.0
+#define SCALE_FACTOR 50.0
 
 #define COLLISION_TOLERANCE 0.25
 #define COLLIDED 1

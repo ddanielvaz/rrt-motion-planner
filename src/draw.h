@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <math.h>
 
 #include <cv.h>
@@ -95,7 +96,7 @@ void Obstacles::draw(IplImage *img)
 class Graphics
 {
     public:
-        Graphics(RobotModel *, CarGeometry *);
+        Graphics(CarGeometry *);
         ~Graphics();
         void plot_states(char *, int);
         void plot_obstacles(char *);
@@ -103,12 +104,11 @@ class Graphics
         void show(void);
         void draw_initial_and_goal(double *initial, double *goal);
     private:
-        RobotModel *veh;
         CarGeometry *veh_geom;
         IplImage* img1;
 };
 
-Graphics::Graphics(RobotModel *car, CarGeometry *car_geom)
+Graphics::Graphics(CarGeometry *car_geom)
 {
     cout << "Criando instancia da classe Graphics" << endl;
     CvSize s = cvSize(410, 410);
@@ -116,7 +116,6 @@ Graphics::Graphics(RobotModel *car, CarGeometry *car_geom)
     img1 = cvCreateImage(s, IPL_DEPTH_32F, 3);
     cvNamedWindow("win1", CV_WINDOW_AUTOSIZE);
     cvRectangle(img1, cvPoint(0,0), cvPoint(410,410), white, -1, 8, 0);
-    veh = car;
     veh_geom = car_geom;
 }
 

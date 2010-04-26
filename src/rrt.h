@@ -251,6 +251,9 @@ void RRT::path_to_closest_goal(void)
     cout << "Distancia entre no mais proximo de goal: " << distance << endl;
     ss.run(initial_node);
     p = ss.path(closest_goal);
+    for(int i=0; i<veh->n_states; i++)
+            pathfile << (*states)[initial_node][i] << " ";
+    pathfile << "0.0 0.0 " << INTEGRATION_TIME << endl;
     for (MyPath::ArcIt a(p); a != INVALID; ++a)
     {
         Node s = g.source(a);
@@ -260,7 +263,7 @@ void RRT::path_to_closest_goal(void)
         cout << "Control map: " << (*control_map)[a][0] << " " << (*control_map)[a][1] << endl;
         cout << "Arc cost: " << (*cost)[a] << endl;
         for(int i=0; i<veh->n_states; i++)
-            pathfile << (*states)[s][i] << " ";
+            pathfile << (*states)[t][i] << " ";
         pathfile << (*control_map)[a][0] << " " << (*control_map)[a][1] << " "
                  << INTEGRATION_TIME << endl;
     }

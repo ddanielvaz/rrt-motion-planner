@@ -128,7 +128,7 @@ Graphics::~Graphics()
 void Graphics::draw_initial_and_goal(double *initial, double *goal)
 {
     CvScalar green = colors[c_green], red = colors[c_red];
-    double x, y, r=1.0;
+    double x, y, r=3.0;
     x = SCALE_FACTOR * initial[0];
     y = SCALE_FACTOR * initial[1];
     cvCircle(img1, cvPoint(x,y), r, red, -1, 8, 0);

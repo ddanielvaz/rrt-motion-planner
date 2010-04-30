@@ -217,7 +217,7 @@ int RRT::check_duplicate_node(double *adding)
     for(Graph::NodeIt n(g); n != INVALID; ++n)
     {
         aux = metric((*states)[n], adding);
-        if (aux < 1e-2)
+        if (aux < 1e-7)
         {
             return g.id(n);
         }
@@ -263,7 +263,7 @@ void RRT::path_to_closest_goal(void)
         cout << "Control map: " << (*control_map)[a][0] << " " << (*control_map)[a][1] << endl;
         cout << "Arc cost: " << (*cost)[a] << endl;
         for(int i=0; i<veh->n_states; i++)
-            pathfile << (*states)[t][i] << " ";
+            pathfile << (*states)[s][i] << " ";
         pathfile << (*control_map)[a][0] << " " << (*control_map)[a][1] << " "
                  << INTEGRATION_TIME << endl;
     }

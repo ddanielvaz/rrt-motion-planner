@@ -12,8 +12,8 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     double q[]={1.0, 1.5, 0.0, 0.0, 0.0};
-    double f[]={2.0, 3.7, 3.13, 0.0, 0.0};
-    //double f[]={2.0, 3.8, 1.57, 0.0, 0.0};
+    double f[]={4.40, 2.3, 0.0, 0.0, 0.0};
+    //double f[]={2.0, 3.7, 3.13, 0.0, 0.0};
     //Dimensoes para um veiculo
     //double width = 2.5, height = 1.5, body_length = 2.0;
     //Dimensoes para o pioneer 3at
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     //SkidSteerModel veh(3, xcir);
     CarGeometry geom_car(width, height, body_length);
     World w(obstacles_file, &geom_car);
-    RRT plan(q, f, 2000, &veh, &w, logfile, logcontrol);
+    RRT plan(q, f, 1200, &veh, &w, logfile, logcontrol);
     cvInitSystem(argc, argv);
     setlocale(LC_NUMERIC, "C");
     plan.build();

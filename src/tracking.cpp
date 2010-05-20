@@ -13,7 +13,9 @@ int main(int argc, char *argv[])
     if(argc > 1){
         strcpy(ip, argv[1]);
         track.control(pathfile, ip);
+        //track.control_kanayama(pathfile, ip);
     }
     else
         track.control(pathfile, NULL);
+        //track.control_kanayama(pathfile, NULL);
 }

@@ -16,12 +16,12 @@ using namespace lemon;
 #define ROTATIONAL_TOLERANCE 0.087
 //10 graus
 #define MAX_ROTATIONAL_TOLERANCE 2 * ROTATIONAL_TOLERANCE
-//mudanca maxima de angulo de estercamento em rad (3 graus)
-#define MAX_STEER_DIFF 0.05235
+//mudanca maxima de angulo de estercamento em rad (100 graus/(s*s))
+#define MAX_STEER_ACCEL 1.7453292519943295
 //angulo maximo de estercamento em rad (30 graus)
 #define MAX_STEERING 0.523598
 //mudanca maxima de velocidade
-#define MAX_SPEED_DIFF 0.3
+#define MAX_LIN_ACCEL 0.3
 //velocidade maxima
 #define MAX_SPEED 1.0
 
@@ -35,7 +35,7 @@ using namespace lemon;
 
 #define SCALE_FACTOR 50.0
 
-#define COLLISION_TOLERANCE 0.25
+#define COLLISION_TOLERANCE 0.15
 #define COLLIDED 1
 
 #define GRAVITY 9.81

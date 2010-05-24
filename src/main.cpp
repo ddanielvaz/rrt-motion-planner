@@ -30,18 +30,18 @@ int main(int argc, char *argv[])
     //SkidSteerModel veh(3, xcir);
     CarGeometry geom_car(width, height, body_length);
     World w(obstacles_file, &geom_car);
-    RRT plan(q, f, 1200, &veh, &w, logfile, logcontrol);
+    RRT plan(q, f, 3000, &veh, &w, logfile, logcontrol);
     cvInitSystem(argc, argv);
     setlocale(LC_NUMERIC, "C");
     plan.build();
     plan.close_logfile();
     plan.path_to_closest_goal();
-    Graphics fig(&geom_car);
+    /*Graphics fig(&geom_car);
     fig.plot_obstacles(obstacles_file);
     fig.plot_states(logfile, c_light_green);
     fig.draw_initial_and_goal(q,f);
     fig.show();
     fig.plot_states(pathfile, c_blue);
-    fig.show();
+    fig.show();*/
     return 0;
 }

@@ -180,7 +180,7 @@ void Tracking::control(char *log, char *ip)
     double x_diff, y_diff, angle_diff;
     double vx_control, va_control;
     double wp = 1;
-    double kp_trans=1.0*wp, kp_rot=0.8*wp;
+    double kp_trans=1.2*wp, kp_rot=1.2*wp;
     double p_trans_error, p_rot_error;
     Robot r0(ip);
     // Mudando modo como os dados são lidos do servidor.
@@ -235,8 +235,8 @@ void Tracking::control(char *log, char *ip)
         speed_error = calculate_speed(aux_dq, curr_pos.pa);
         p_trans_error = kp_trans * speed_error.px;
         p_rot_error = kp_rot * speed_error.pa;
-        vx_control = limit_speed(vx_path + p_trans_error, 0.3);
-        va_control = limit_speed(va_path + p_rot_error, 0.6);
+        vx_control = limit_speed(p_trans_error, 0.3);
+        va_control = limit_speed(p_rot_error, 0.6);
 
         // Logando informações
         data_fp << "x_path: " << path_log_pos.px << " y_path: "

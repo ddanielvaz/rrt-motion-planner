@@ -37,7 +37,7 @@ class RRT
         int check_duplicate_node(double *);
         void print_path(const double*, const double*);
         void close_logfile(void);
-        void path_to_closest_goal(void);
+        void path_to_closest_goal(char*);
         ~RRT();
     private:
         Node initial_node, goal_node;
@@ -108,12 +108,13 @@ void RRT::build(void)
         else if(finished == 2)
         {
             cout << "[" << i << "] Objetivo alcancado." << endl;
-            //path_finder();
-            //print_nodes(nodes);
+            //path_to_closest_goal(pathfilename);
             break;
         }
     }
-    cout << "Tentativas de adicionar nos: " << i<< " Previlegiou: " << prev << endl;
+    cout << "Tentativas de adicionar nos: " << j << endl;
+    cout << "Nos adicionados: " << i << endl;
+    cout << "Previlegiou q_goal: " << prev << endl;
 }
 
 int RRT::extend(double *rand)
@@ -238,13 +239,13 @@ void RRT::close_logfile(void)
     fp.close();
 }
 
-void RRT::path_to_closest_goal(void)
+void RRT::path_to_closest_goal(char *filename)
 {
     Dijkstra<Graph, ArcMapWeight> ss(g, (*cost));
     Node closest_goal;
     MyPath p;
     double distance;
-    ofstream pathfile("path.log");
+    ofstream pathfile(filename);
     closest_goal = select_nearest_node(goal_state);
     cout << (*states)[closest_goal][0] << " " << (*states)[closest_goal][1] << " " << (*states)[closest_goal][2] << endl;
     distance = metric((*states)[closest_goal], goal_state);
@@ -258,10 +259,10 @@ void RRT::path_to_closest_goal(void)
     {
         Node s = g.source(a);
         Node t = g.target(a);
-        cout << "From State: " << (*states)[s][0] <<" "<< (*states)[s][1] <<" " << (*states)[s][2] << endl;
+        /*cout << "From State: " << (*states)[s][0] <<" "<< (*states)[s][1] <<" " << (*states)[s][2] << endl;
         cout << "To State: " << (*states)[t][0] <<" "<< (*states)[t][1] <<" " << (*states)[t][2] << endl;
         cout << "Control map: " << (*control_map)[a][0] << " " << (*control_map)[a][1] << endl;
-        cout << "Arc cost: " << (*cost)[a] << endl;
+        cout << "Arc cost: " << (*cost)[a] << endl;*/
         for(int i=0; i<veh->n_states; i++)
             pathfile << (*states)[s][i] << " ";
         pathfile << (*control_map)[a][0] << " " << (*control_map)[a][1] << " "

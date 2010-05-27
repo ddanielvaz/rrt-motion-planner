@@ -12,7 +12,9 @@ int main(int argc, char *argv[])
     double f[]={4.40, 2.5, 0.0, 0.0, 0.0};
     double state[3];
     double x, y, theta, v, w, aux, dt;
-    double d, t, w_total, neg_t;
+    double x_old, y_old, dx, dy;
+    double d, t, w_total, neg_t, dist_perc;
+    int count;
     ofstream statistic_fp("statistics.csv");
     // Parametro: distância final do ponto de destino.
     // Parametro: tempo total do percurso
@@ -31,6 +33,8 @@ int main(int argc, char *argv[])
         t = 0.0;
         w_total = 0.0;
         neg_t = 0.0;
+        dist_perc = 0.0;
+        count = 0;
         while(pathfp.getline(temp, 1024))
         {
             x = strtod(temp, &ps);
@@ -50,12 +54,22 @@ int main(int argc, char *argv[])
             dt = strtod(nxt, NULL);
             w_total += fabs(w*dt);
             t += dt;
+            if(count)
+            {
+                dx = x - x_old;
+                dy = y - y_old;
+                dist_perc += sqrt(dx*dx + dy*dy);
+            }
             if(v<0)
                 neg_t += dt;
+            x_old = x;
+            y_old = y;
+            count++;
         }
         state[0] = x; state[1] = y; state[2] = theta;
         d = metric(state, f);
-        statistic_fp << pathfile << ", " << d << ", " << t << ", " << w_total << ", " << neg_t << endl;
+        statistic_fp << pathfile << ", " << d << ", " << t << ", " << w_total
+                     << ", " << neg_t << ", " << dist_perc << endl;
     }
     statistic_fp.close();
     return 0;

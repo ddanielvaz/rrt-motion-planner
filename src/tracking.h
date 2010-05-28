@@ -230,9 +230,6 @@ void Tracking::control_kanayama_delay(char *log, char *ip)
         angle_e = angle_diff;
         vx_control = limit_speed(vx_path*cos(angle_e) + Kx * x_e, 0.4);
         va_control = va_path + vx_path*(Ky*y_e + Ktheta * sin(angle_e));
-        gettimeofday(&t_end, NULL);
-        t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
-        r0.odom->AdjustSpeed(vx_control, va_control);
 
         // Logando informações
         data_fp << "x_path: " << path_log_pos.px << " y_path: "
@@ -263,7 +260,11 @@ void Tracking::control_kanayama_delay(char *log, char *ip)
         va_path = -data[4];
         old_pos = curr_pos;
         odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
-        usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
+        gettimeofday(&t_end, NULL);
+        t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
+        r0.odom->AdjustSpeed(vx_control, va_control);
+        if((t1-t0) < INTEGRATION_TIME)
+            usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
     }
     path_fp.close();
     r0.odom->AdjustSpeed(0.0, 0.0);
@@ -291,9 +292,13 @@ void Tracking::control(char *log, char *ip)
     double x_diff, y_diff, angle_diff;
     double vx_control, va_control;
     double wp = 1;
-    double kp_trans=1.5*wp, kp_rot=2*wp;
+    double kp_trans=0.5*wp, kp_rot=1.2*wp;
     double p_trans_error, p_rot_error;
     Robot r0(ip);
+    // Delay
+    struct timeval t_begin, t_end;
+    double t0, t1;
+    // End Delay
     // Mudando modo como os dados são lidos do servidor.
     // Desse modo garante que as leituras serão sempre as mais novas.
     try
@@ -328,6 +333,8 @@ void Tracking::control(char *log, char *ip)
     
     while(path_fp.getline(temp, 100))
     {
+        gettimeofday(&t_begin, NULL);
+        t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
         // Requisita dados dos sensores.
         r0.client->Read();
         curr_pos = odom_pos = r0.odom->GetPose();
@@ -346,8 +353,8 @@ void Tracking::control(char *log, char *ip)
         speed_error = calculate_speed(aux_dq, curr_pos.pa);
         p_trans_error = kp_trans * speed_error.px;
         p_rot_error = kp_rot * speed_error.pa;
-        vx_control = limit_speed(vx_path + p_trans_error, 0.3);
-        va_control = limit_speed(va_path + p_rot_error, 0.6);
+        vx_control = limit_speed(vx_path + p_trans_error, 0.4);
+        va_control = va_path + p_rot_error;
 
         // Logando informações
         data_fp << "x_path: " << path_log_pos.px << " y_path: "
@@ -378,8 +385,11 @@ void Tracking::control(char *log, char *ip)
         va_path = -data[4];
         old_pos = curr_pos;
         odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
+        gettimeofday(&t_end, NULL);
+        t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
         r0.odom->AdjustSpeed(vx_control, va_control);
-        usleep(INTEGRATION_TIME * 1e6);
+        if((t1-t0) < INTEGRATION_TIME)
+            usleep(INTEGRATION_TIME * 1e6 - (t1-t0) * 1e6);
     }
     path_fp.close();
     r0.odom->AdjustSpeed(0.0, 0.0);
@@ -458,7 +468,8 @@ void Tracking::no_control(char *log, char *ip)
         r0.odom->AdjustSpeed(vx_path, va_path);
         gettimeofday(&t_end, NULL);
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
-        usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
+        if((t1-t0) < INTEGRATION_TIME)
+            usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
     }
     path_fp.close();
     r0.odom->AdjustSpeed(0.0, 0.0);

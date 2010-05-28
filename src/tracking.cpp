@@ -14,12 +14,12 @@ int main(int argc, char *argv[])
         strcpy(ip, argv[1]);
         //track.control(pathfile, ip);
         //track.control_kanayama(pathfile, ip);
-        track.control_kanayama_delay(pathfile, ip);
-        //track.no_control(pathfile, ip);
+        //track.control_kanayama_delay(pathfile, ip);
+        track.no_control(pathfile, ip);
     }
     else
         //track.control(pathfile, NULL);
         //track.control_kanayama(pathfile, NULL);
-        track.control_kanayama_delay(pathfile, NULL);
-        //track.no_control(pathfile, NULL);
+        //track.control_kanayama_delay(pathfile, NULL);
+        track.no_control(pathfile, NULL);
 }

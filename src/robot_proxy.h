@@ -52,6 +52,7 @@ Robot::Robot(char *ip){
 Robot::~Robot()
 {
     cout << "Destruindo instancia da classe." << endl;
+    delete odom;
     delete client;
 }
 

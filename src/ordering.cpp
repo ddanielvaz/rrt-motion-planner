@@ -9,7 +9,12 @@ int main(int argc, char *argv[])
 {
     char pathfile[32];
     char temp[1024], *ps, *nxt;
-    double f[]={4.40, 2.5, 0.0, 0.0, 0.0};
+    // Baliza
+    //double f[]={4.40, 2.5, 0.0, 0.0, 0.0};
+    // Manobra 1
+    //double f[]={2.0, 3.7, 3.13, 0.0, 0.0};
+    // Manobra 2
+    double f[]={5.8, 3.7, 0.0, 0.0, 0.0};
     double state[3];
     double x, y, theta, v, w, aux, dt;
     double x_old, y_old, dx, dy;
@@ -20,6 +25,10 @@ int main(int argc, char *argv[])
     // Parametro: tempo total do percurso
     // Parametro: integração absoluta da velocidade angular w
     // Parametro: tempo em velocidade negativa
+    statistic_fp << "Nome do arquivo, Distancia do objetivo, "
+                 << "Tempo total do percurso, Somatório de omega, "
+                 << "Tempo com velocidade negativa, Distancia total do percurso"
+                 << endl;
     for(int i=0; i<100; i++)
     {
         snprintf(pathfile, 32, "path%d.log", i);

@@ -316,10 +316,12 @@ void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,
     velocities_dflow(wtemp, u_torque, w4);
     for(i=0; i<2; i++)
         speeds[i] = initial_state[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+    
     if(fabs(initial_state[0]-speeds[0])/t > MAX_LIN_ACCEL)
-        speeds[0] = initial_state[0] + sgn(speeds[0])*MAX_LIN_ACCEL;
+        speeds[0] = initial_state[0] + sgn(speeds[0])*MAX_LIN_ACCEL*t;
+    
     if(fabs(initial_state[1]-speeds[1])/t > MAX_STEER_ACCEL)
-        speeds[0] = initial_state[1] + sgn(speeds[1])*MAX_STEER_ACCEL;
+        speeds[1] = initial_state[1] + sgn(speeds[1])*MAX_STEER_ACCEL*t;
     //Newton-Euler
 /*    velocities_dflow(initial_state, u_torque, w1);
     for(i=0; i<2; i++)

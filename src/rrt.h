@@ -264,7 +264,7 @@ void RRT::path_to_closest_goal(char *filename)
         cout << "Control map: " << (*control_map)[a][0] << " " << (*control_map)[a][1] << endl;
         cout << "Arc cost: " << (*cost)[a] << endl;*/
         for(int i=0; i<veh->n_states; i++)
-            pathfile << (*states)[s][i] << " ";
+            pathfile << (*states)[t][i] << " ";
         pathfile << (*control_map)[a][0] << " " << (*control_map)[a][1] << " "
                  << INTEGRATION_TIME << endl;
     }

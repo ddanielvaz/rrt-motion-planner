@@ -10,11 +10,11 @@ int main(int argc, char *argv[])
     char pathfile[32];
     char temp[1024], *ps, *nxt;
     // Baliza
-    //double f[]={4.40, 2.5, 0.0, 0.0, 0.0};
+    double f[]={4.40, 2.5, 0.0, 0.0, 0.0};
     // Manobra 1
     //double f[]={2.0, 3.7, 3.13, 0.0, 0.0};
     // Manobra 2
-    double f[]={5.8, 3.7, 0.0, 0.0, 0.0};
+    //double f[]={5.8, 3.7, 0.0, 0.0, 0.0};
     double state[3];
     double x, y, theta, v, w, aux, dt;
     double x_old, y_old, dx, dy;

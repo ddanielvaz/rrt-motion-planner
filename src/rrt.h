@@ -103,14 +103,21 @@ void RRT::build(void)
             memcpy(random_state, goal_state, sizeof(double) * veh->n_states);
         }
         finished = extend(random_state);
-        if(finished == 1)
-            i++;
-        else if(finished == 2)
+//         if(finished == 1)
+//             i++;
+//         else if(finished == 2)
+//         {
+//             cout << "[" << i << "] Objetivo alcancado." << endl;
+//             //path_to_closest_goal(pathfilename);
+//             break;
+//         }
+        if(finished == 2)
         {
             cout << "[" << i << "] Objetivo alcancado." << endl;
             //path_to_closest_goal(pathfilename);
             break;
         }
+        i++;
     }
     cout << "Tentativas de adicionar nos: " << j << endl;
     cout << "Nos adicionados: " << i << endl;

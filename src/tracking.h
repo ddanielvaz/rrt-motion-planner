@@ -8,7 +8,7 @@ using namespace std;
 
 player_pose2d_t calculate_speed(player_pose2d_t dq, double theta)
 {
-    const double xcir=0.008, xcir2_1=(xcir*xcir)+1.0;
+    const double xcir=0.02, xcir2_1=(xcir*xcir)+1.0;
     player_pose2d_t vel;
     vel.px = dq.px * cos(theta) + dq.py * sin(theta);
     vel.pa = dq.px*(-xcir*sin(theta)/xcir2_1) + dq.py*(xcir*cos(theta)/xcir2_1)
@@ -429,7 +429,7 @@ void Tracking::control_01(char *log, char *ip)
     double x_diff, y_diff, angle_diff;
     double vx_control, va_control;
     double wp = 1;
-    double kp_trans=1.0*wp, kp_rot=1.0*wp;
+    double kp_trans=0.1*wp, kp_rot=1.2*wp;
     double p_trans_error, p_rot_error;
     Robot r0(ip);
     // Delay
@@ -538,7 +538,7 @@ void Tracking::control_01(char *log, char *ip)
         if((t1-t0) < INTEGRATION_TIME)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0) * 1e6);
     }
-    while(fabs(x_diff) > 0.01 || fabs(angle_diff) > 0.01)
+    while(fabs(x_diff) > 0.05 || fabs(angle_diff) > 0.05)
     {
         vx_path = 0.0;
         va_path = 0.0;
@@ -587,8 +587,7 @@ void Tracking::control_01(char *log, char *ip)
         gettimeofday(&t_end, NULL);
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
         r0.odom->AdjustSpeed(vx_control, va_control);
-        data_fp << "PROCESSING TIME: " << (t1-t0) << endl;
-        cout << "PROCESSING TIME: " << (t1-t0) << endl;
+        data_fp << "CONTROLLER" << endl;
         if((t1-t0) < INTEGRATION_TIME)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0) * 1e6);
     }

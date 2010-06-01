@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     //Dimensoes para um veiculo
     //double width = 2.5, height = 1.5, body_length = 2.0;
     //Dimensoes para o pioneer 3at
-    double width = 0.51, height = 0.493, body_length = 0.26;
+    double width = 0.51, height = 0.493, body_length = 0.0;
     char obstacles_file[]="lasi_map.txt", logcontrol[]="controls.log";
     double xcir = 0.008;
     double motor[] = {0.0230, 0.0230, 38.3, 0.71};
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     {
         char pathfile[32], logfile[32];
         snprintf(logfile, 32, "results%d.log", i);
-        RRT plan(q, f, 3000, &veh, &w, logfile, logcontrol);
+        RRT plan(q, f, 7000, &veh, &w, logfile, logcontrol);
         plan.build();
         plan.close_logfile();
         snprintf(pathfile, 32, "path%d.log",i);

@@ -9,10 +9,8 @@
 #include <cv.h>
 #include <highgui.h>
 
-#include "geometry.h"
-#include "robots.h"
+#include "../geometry.h"
 #include "drawing_utils.h"
-#include "world.h"
 
 using namespace std;
 
@@ -81,6 +79,7 @@ void Obstacles::draw(IplImage *img)
     CvPoint *fig[1];
     int npts=3, ncurves=1;
     CvScalar red = CV_RGB(255,0,0);
+    CvScalar black = CV_RGB(0,0,0);
     for (vector<CvPoint3D64f>::iterator i = triangs.begin(); i != triangs.end(); ){
         triang[0] = cvPoint(SCALE_FACTOR * i->x, SCALE_FACTOR * i->y);
         ++i;
@@ -89,33 +88,38 @@ void Obstacles::draw(IplImage *img)
         triang[2] = cvPoint(SCALE_FACTOR * i->x, SCALE_FACTOR * i->y);
         ++i;
         fig[0] = triang;
-        cvPolyLine(img, fig, &npts, ncurves, 1, red);
+        //Solid
+        cvFillPoly(img, fig, &npts, ncurves, black);
+        //Wireframe
+        //cvPolyLine(img, fig, &npts, ncurves, 1, red);
     }
 }
 
 class Graphics
 {
     public:
-        Graphics(CarGeometry *);
+        Graphics(CarGeometry *, char*);
         ~Graphics();
-        void plot_states(char *, int);
+        void plot_trail_states(char *, int);
+        void plot_line_states(char *, int);
         void plot_obstacles(char *);
-        void draw(double, double, double, int);
-        void show(void);
+        void draw_trail(double, double, double, int);
+        void draw_line(double, double, double, double, int);
+        void show(char*);
         void draw_initial_and_goal(double *initial, double *goal);
     private:
         CarGeometry *veh_geom;
         IplImage* img1;
 };
 
-Graphics::Graphics(CarGeometry *car_geom)
+Graphics::Graphics(CarGeometry *car_geom, char *title)
 {
     cout << "Criando instancia da classe Graphics" << endl;
-    CvSize s = cvSize(410, 410);
+    CvSize s = cvSize(7.2 * SCALE_FACTOR + 1, 5.3 * SCALE_FACTOR + 1);
     CvScalar white = colors[c_white];
-    img1 = cvCreateImage(s, IPL_DEPTH_32F, 3);
-    cvNamedWindow("win1", CV_WINDOW_AUTOSIZE);
-    cvRectangle(img1, cvPoint(0,0), cvPoint(410,410), white, -1, 8, 0);
+    img1 = cvCreateImage(s, 8, 3);
+    cvNamedWindow(title, CV_WINDOW_AUTOSIZE);
+    cvRectangle(img1, cvPoint(0,0), cvPoint(7.2 * SCALE_FACTOR + 1,5.3 * SCALE_FACTOR + 1), white, -1, 8, 0);
     veh_geom = car_geom;
 }
 
@@ -123,6 +127,7 @@ Graphics::~Graphics()
 {
     cout << "Destruindo instancia da classe Graphics" << endl;
     cvReleaseImage(&img1);
+    cvDestroyAllWindows();
 }
 
 void Graphics::draw_initial_and_goal(double *initial, double *goal)
@@ -137,14 +142,31 @@ void Graphics::draw_initial_and_goal(double *initial, double *goal)
     cvCircle(img1, cvPoint(x,y), r, green, -1, 8, 0);
 }
 
-void Graphics::plot_states(char *filename, int color)
+void Graphics::plot_trail_states(char *filename, int color)
 {
     char temp[100], *ps, *nxt;
     int i;
     float x, y, theta;
     ifstream fp(filename);
+    if(!fp.is_open())
+    {
+        cout << "Arquivo " << filename << " nao encontrado." << endl;
+        return;
+    }
     cout << "Lendo pontos do arquivo. " << endl;
-    i = 0;
+    //Lendo ponto inicial
+    fp.getline(temp, 100);
+    x = strtod(temp, &ps);
+    nxt = ps;
+
+    y = strtod(nxt, &ps);
+    nxt = ps;
+
+    theta = strtod(nxt, &ps);
+    nxt = ps;
+    draw_trail(x, y, theta, color);
+    i = 1;
+    //lendo ponto Target
     while(fp.getline(temp, 100))
     {
         x = strtod(temp, &ps);
@@ -155,20 +177,74 @@ void Graphics::plot_states(char *filename, int color)
 
         theta = strtod(nxt, &ps);
         nxt = ps;
-        draw(x, y, theta, color);
+        draw_trail(x, y, theta, color);
         i++;
     }
     cout << i << " pontos lidos." << endl;
     fp.close();
 }
 
-void Graphics::draw(double x, double y, double theta, int color_id)
+void Graphics::draw_trail(double x, double y, double theta, int color_id)
 {
-    cvCircle(img1, cvPoint(x * SCALE_FACTOR,y * SCALE_FACTOR), 1.0, colors[c_red], -1, 8, 0);
+    //cvCircle(img1, cvPoint(x * SCALE_FACTOR,y * SCALE_FACTOR), 1.0, colors[c_red], -1, 8, 0);
     veh_geom->position(x, y, theta);
     Carro car(veh_geom);
     CvScalar color = colors[color_id];
     car.draw(img1, color);
+}
+
+void Graphics::plot_line_states(char *filename, int color)
+{
+    char temp[100], *ps, *nxt;
+    int i;
+    double x, y, theta_initial, x_old, y_old, theta;
+    ifstream fp(filename);
+    if(!fp.is_open())
+    {
+        cout << "Arquivo " << filename << " nao encontrado." << endl;
+        return;
+    }
+    cout << "Lendo pontos do arquivo. " << endl;
+    //Lendo ponto inicial
+    fp.getline(temp, 100);
+    x = x_old = strtod(temp, &ps);
+    nxt = ps;
+
+    y = y_old = strtod(nxt, &ps);
+    nxt = ps;
+    
+    theta = theta_initial = strtod(nxt, &ps);
+    nxt = ps;
+    
+    draw_trail(x_old, y_old, theta_initial, color);
+
+    i = 1;
+    //lendo ponto Target
+    while(fp.getline(temp, 100))
+    {
+        x = strtod(temp, &ps);
+        nxt = ps;
+
+        y = strtod(nxt, &ps);
+        nxt = ps;
+        
+        theta = strtod(nxt, &ps);
+        nxt = ps;
+
+        draw_line(x_old, y_old, x, y, color);
+        x_old = x;
+        y_old = y;
+        i++;
+    }
+    draw_trail(x, y, theta, color);
+    cout << i << " pontos lidos." << endl;
+    fp.close();
+}
+
+void Graphics::draw_line(double x_old, double y_old, double x, double y, int color_id)
+{
+    CvScalar color = colors[color_id];
+    cvLine(img1, cvPoint(x_old* SCALE_FACTOR, y_old* SCALE_FACTOR), cvPoint(x* SCALE_FACTOR,y* SCALE_FACTOR), color);
 }
 
 void Graphics::plot_obstacles(char *filename)
@@ -177,9 +253,10 @@ void Graphics::plot_obstacles(char *filename)
     obs.draw(img1);
 }
 
-void Graphics::show(void)
+void Graphics::show(char *title)
 {
-    cvShowImage("win1", img1);
+    cvShowImage(title, img1);
+    cvSaveImage("teste.png",img1);
     cvWaitKey(0);
 }
 

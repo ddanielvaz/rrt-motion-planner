@@ -219,17 +219,12 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
-    
-    /*double u[12][2]={{3, 3}, {-3, -3}, {5, 5}, {-5, -5}, {5, 3}, {-5, -3},
-    {5, -3}, {-5, 3}, {3, 5}, {-3, -5}, {3, -5}, {-3, 5}};*/
-    /*double u[12][2]={{10, 10}, {-10, -10}, {10, 5},
-    {-10, -5}, {-10, 5}, {10, -5}, {5, 10}, {-5,-10}, {-5, 10}, {5, -10},
-    {5, 5}, {-5, -5}};*/
-    /*double u[12][2]={{10, 10}, {-10, -10}, {8, 8}, {-8, -8}, {8, 10}, {-8, -10}, {8, -10},
-    {-8, 10}, {10, 8}, {-10, -8}, {10, -8}, {-10, 8}};*/
+
     #define dyn 18
-    double u[dyn][2]={{6,6} , {7,7}, {8,8}, {9,9}, {10,10}, {6,8}, {7,8}, {8,6}, {8,7},
-                      {-6,-6} , {-7,-7}, {-8,-8}, {-9,-9}, {-10,-10}, {-6,-8}, {-7,-8}, {-8,-6}, {-8,-7}};
+    double u[dyn][2]={{0,0}, {8,8}, {6,6}, {2,2}, {1,1},
+                      {-5,-5}, {-4,-4}, {-3,-3}, {-2,-2}, {-1,-1},
+                      {2,0}, {0,2}, {5,2}, {2,5},
+                      {-6,-8}, {-8,-6}, {-5,-2}, {-2,-5}};
     control_input temp[dyn];
     memcpy(temp, u, sizeof(double) * dyn * 2);
     for(int i=0; i<dyn; i++)
@@ -321,10 +316,12 @@ void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,
     velocities_dflow(wtemp, u_torque, w4);
     for(i=0; i<2; i++)
         speeds[i] = initial_state[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
-    if(fabs(initial_state[0]-speeds[0]) > MAX_LIN_ACCEL)
-        speeds[0] = initial_state[0] + sgn(speeds[0])*MAX_LIN_ACCEL;
-    if(fabs(initial_state[1]-speeds[1]) > MAX_STEER_ACCEL)
-        speeds[0] = initial_state[1] + sgn(speeds[1])*MAX_STEER_ACCEL;
+    
+//     if(fabs(initial_state[0]-speeds[0])/t > MAX_LIN_ACCEL)
+//         speeds[0] = initial_state[0] + sgn(speeds[0])*MAX_LIN_ACCEL*t;
+//     
+//     if(fabs(initial_state[1]-speeds[1])/t > MAX_STEER_ACCEL)
+//         speeds[1] = initial_state[1] + sgn(speeds[1])*MAX_STEER_ACCEL*t;
     //Newton-Euler
 /*    velocities_dflow(initial_state, u_torque, w1);
     for(i=0; i<2; i++)

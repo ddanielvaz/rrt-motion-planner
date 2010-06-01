@@ -104,8 +104,8 @@ double metric(const double *state0, const double *state)
     dy = state0[STATE_Y] - state[STATE_Y];
     d = sqrt(dx*dx + dy*dy);
     angle = normalize_angle(state0[STATE_THETA] - state[STATE_THETA]);
-    if (3.0 - d > 0)
-        return d + fabs(angle)*1.5;
+    if (2.0 - d < 0)
+        return d + fabs(angle)*2.0;
     else
         return d + fabs(angle);
 }
@@ -144,9 +144,9 @@ inline double limit_steering(double steering)
 
 inline double sgn(double x)
 {
-    if(x>0)
+    if(x>0.0)
         return 1.0;
-    else if(x<0)
+    else if(x<0.0)
         return -1.0;
     return 0.0;
 }

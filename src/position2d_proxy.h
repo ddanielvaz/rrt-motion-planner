@@ -7,6 +7,7 @@ class ProxyPosition : public Position2dProxy
 {
     public:
         ProxyPosition(PlayerClient *client);
+        ~ProxyPosition(void);
         void AdjustSpeed(double fwd, double turn);
         void SetMotorStatus(bool st);
         void SetOdomPos(player_pose2d_t pos);
@@ -16,6 +17,11 @@ class ProxyPosition : public Position2dProxy
 ProxyPosition::ProxyPosition(PlayerClient *client) : Position2dProxy(client, 0)
 {
     cout << "Criando instancia da classe ProxyPosition." << endl;
+}
+
+ProxyPosition::~ProxyPosition(void)
+{
+    cout << "Destruindo instancia da classe ProxyPosition." << endl;
 }
 
 /**

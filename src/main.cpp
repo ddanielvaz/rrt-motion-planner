@@ -12,14 +12,17 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     double q[]={1.0, 1.5, 0.0, 0.0, 0.0};
-    double f[]={4.40, 2.3, 0.0, 0.0, 0.0};
+    // Baliza
+    double f[]={4.40, 2.5, 0.0, 0.0, 0.0};
+    // Manobra 1
     //double f[]={2.0, 3.7, 3.13, 0.0, 0.0};
+    // Manobra 2
+    //double f[]={5.8, 3.7, 0.0, 0.0, 0.0};
     //Dimensoes para um veiculo
     //double width = 2.5, height = 1.5, body_length = 2.0;
     //Dimensoes para o pioneer 3at
-    double width = 0.51, height = 0.493, body_length = 0.26;
-    char logfile[] = "results.log", obstacles_file[]="lasi_map.txt",
-         pathfile[] = "path.log", logcontrol[]="controls.log";
+    double width = 0.51, height = 0.493, body_length = 0.0;
+    char obstacles_file[]="lasi_map.txt", logcontrol[]="controls.log";
     double xcir = 0.008;
     double motor[] = {0.0230, 0.0230, 38.3, 0.71};
     double robot[] = {0.413, 40, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.4};
@@ -30,18 +33,22 @@ int main(int argc, char *argv[])
     //SkidSteerModel veh(3, xcir);
     CarGeometry geom_car(width, height, body_length);
     World w(obstacles_file, &geom_car);
-    RRT plan(q, f, 1200, &veh, &w, logfile, logcontrol);
-    cvInitSystem(argc, argv);
-    setlocale(LC_NUMERIC, "C");
-    plan.build();
-    plan.close_logfile();
-    plan.path_to_closest_goal();
-    Graphics fig(&geom_car);
+    for(int i=75; i<100; i++)
+    {
+        char pathfile[32], logfile[32];
+        snprintf(logfile, 32, "results%d.log", i);
+        RRT plan(q, f, 7000, &veh, &w, logfile, logcontrol);
+        plan.build();
+        plan.close_logfile();
+        snprintf(pathfile, 32, "path%d.log",i);
+        plan.path_to_closest_goal(pathfile);
+    }
+    /*Graphics fig(&geom_car);
     fig.plot_obstacles(obstacles_file);
     fig.plot_states(logfile, c_light_green);
     fig.draw_initial_and_goal(q,f);
     fig.show();
     fig.plot_states(pathfile, c_blue);
-    fig.show();
+    fig.show();*/
     return 0;
 }

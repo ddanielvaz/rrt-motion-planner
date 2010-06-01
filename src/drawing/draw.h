@@ -11,7 +11,7 @@
 
 #include "geometry.h"
 #include "robots.h"
-#include "utils.h"
+#include "drawing_utils.h"
 #include "world.h"
 
 using namespace std;

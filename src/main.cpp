@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "draw.h"
 #include "geometry.h"
 #include "rrt.h"
 #include "robots.h"
@@ -13,9 +12,9 @@ int main(int argc, char *argv[])
 {
     double q[]={1.0, 1.5, 0.0, 0.0, 0.0};
     // Baliza
-    double f[]={4.40, 2.5, 0.0, 0.0, 0.0};
+    //double f[]={4.40, 2.5, 0.0, 0.0, 0.0};
     // Manobra 1
-    //double f[]={2.0, 3.7, 3.13, 0.0, 0.0};
+    double f[]={2.0, 3.7, 3.13, 0.0, 0.0};
     // Manobra 2
     //double f[]={5.8, 3.7, 0.0, 0.0, 0.0};
     //Dimensoes para um veiculo
@@ -43,12 +42,5 @@ int main(int argc, char *argv[])
         snprintf(pathfile, 32, "path%d.log",i);
         plan.path_to_closest_goal(pathfile);
     }
-    /*Graphics fig(&geom_car);
-    fig.plot_obstacles(obstacles_file);
-    fig.plot_states(logfile, c_light_green);
-    fig.draw_initial_and_goal(q,f);
-    fig.show();
-    fig.plot_states(pathfile, c_blue);
-    fig.show();*/
     return 0;
 }

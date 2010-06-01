@@ -6,8 +6,6 @@
 #include <vector>
 
 #include <PQP/PQP.h>
-#include <cv.h>
-#include <highgui.h>
 
 #include "robots.h"
 

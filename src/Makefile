@@ -1,8 +1,8 @@
 .SUFFIXES: .cpp
 
 CC = g++
-CFLAGS  = -Wall -O2 `pkg-config --cflags opencv`
-LDLIBS  = -lm -lPQP `pkg-config --libs opencv` -lemon
+CFLAGS  = -Wall -O2
+LDLIBS  = -lm -lPQP -lemon
 
 SRCS    = main.cpp
 

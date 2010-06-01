@@ -5,7 +5,8 @@
 #include <string.h>
 #include <iostream>
 
-#include "utils.h"
+#include "constants.h"
+#include "math_functions.h"
 
 using namespace std;
 

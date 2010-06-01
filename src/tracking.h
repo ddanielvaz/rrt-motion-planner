@@ -8,7 +8,7 @@ using namespace std;
 
 player_pose2d_t calculate_speed(player_pose2d_t dq, double theta)
 {
-    const double xcir=0.02, xcir2_1=(xcir*xcir)+1.0;
+    const double xcir=0.01, xcir2_1=(xcir*xcir)+1.0;
     player_pose2d_t vel;
     vel.px = dq.px * cos(theta) + dq.py * sin(theta);
     vel.pa = dq.px*(-xcir*sin(theta)/xcir2_1) + dq.py*(xcir*cos(theta)/xcir2_1)
@@ -429,7 +429,7 @@ void Tracking::control_01(char *log, char *ip)
     double x_diff, y_diff, angle_diff;
     double vx_control, va_control;
     double wp = 1;
-    double kp_trans=0.1*wp, kp_rot=1.2*wp;
+    double kp_trans=0.5*wp, kp_rot=0.75*wp;
     double p_trans_error, p_rot_error;
     Robot r0(ip);
     // Delay

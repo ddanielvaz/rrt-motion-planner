@@ -32,11 +32,11 @@ int main(int argc, char *argv[])
     //SkidSteerModel veh(3, xcir);
     CarGeometry geom_car(width, height, body_length);
     World w(obstacles_file, &geom_car);
-    for(int i=75; i<100; i++)
+    for(int i=0; i<25; i++)
     {
         char pathfile[32], logfile[32];
         snprintf(logfile, 32, "results%d.log", i);
-        RRT plan(q, f, 7000, &veh, &w, logfile, logcontrol);
+        RRT plan(q, f, 5000, &veh, &w, logfile, logcontrol);
         plan.build();
         plan.close_logfile();
         snprintf(pathfile, 32, "path%d.log",i);

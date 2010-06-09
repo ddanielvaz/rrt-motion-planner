@@ -1,0 +1,26 @@
+.SUFFIXES: .cpp
+
+CC = g++
+CFLAGS  = -Wall -O2 `pkg-config --cflags opencv`
+LDLIBS  = -lm `pkg-config --libs opencv`
+
+SRCS    = draw_performance.cpp
+
+OBJECTS = draw_performance.o
+
+TARGET = draw_performance
+
+CLEAN   = $(OBJECTS) $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) $(OBJECTS) -o $(TARGET) $(LDLIBS)
+
+.cpp.o:
+	$(CC) ${CFLAGS} -c $<
+
+run: $(TARGET)
+	$(TARGET)
+
+clean:
+	/bin/rm -f $(CLEAN)
+

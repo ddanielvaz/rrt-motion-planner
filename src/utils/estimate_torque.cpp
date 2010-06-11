@@ -20,5 +20,4 @@ int main(int argc, char *argv[])
     }
 //     cout << "x: " << aux[0] << " y: " << aux[1] << " angle: " << aux[2]
 //          << " v: " << aux[3] << " w: " << aux[4] << endl;
-    cout << "v_f: " << aux[3] << " w_f: " << aux[4] << endl << endl;
 }

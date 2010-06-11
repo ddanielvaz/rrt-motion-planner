@@ -326,7 +326,6 @@ void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,
     cout << "k4_dv: " << w4[0] << " k4_dw: " << w4[1] << endl;
     for(i=0; i<2; i++)
         speeds[i] = initial_state[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
-//     cout << "v: " << speeds[0] << " w: " << speeds[1] << endl;
 
     //Newton-Euler
 /*    velocities_dflow(initial_state, u_torque, w1);

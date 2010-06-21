@@ -308,22 +308,22 @@ void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,
     memcpy(initial_state, x, sizeof(double) * 2);
     //Runge Kutta 4th
     velocities_dflow(initial_state, u_torque, w1);
-    cout << "k1_dv: " << w1[0] << " k1_dw: " << w1[1] << endl;
+//     cout << "k1_dv: " << w1[0] << " k1_dw: " << w1[1] << endl;
     for(i=0;i<2;i++)
         wtemp[i] = initial_state[i] + 0.5 * t * w1[i];
 
     velocities_dflow(wtemp, u_torque, w2);
-    cout << "k2_dv: " << w2[0] << " k2_dw: " << w2[1] << endl;
+//     cout << "k2_dv: " << w2[0] << " k2_dw: " << w2[1] << endl;
     for(i=0;i<2;i++)
         wtemp[i] = initial_state[i] + 0.5 * t * w2[i];
 
     velocities_dflow(wtemp, u_torque, w3);
-    cout << "k3_dv: " << w3[0] << " k3_w: " << w3[1] << endl;
+//     cout << "k3_dv: " << w3[0] << " k3_w: " << w3[1] << endl;
     for(i=0;i<2;i++)
         wtemp[i] = initial_state[i] + t * w3[i];
 
     velocities_dflow(wtemp, u_torque, w4);
-    cout << "k4_dv: " << w4[0] << " k4_dw: " << w4[1] << endl;
+//     cout << "k4_dv: " << w4[0] << " k4_dw: " << w4[1] << endl;
     for(i=0; i<2; i++)
         speeds[i] = initial_state[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
 

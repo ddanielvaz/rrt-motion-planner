@@ -2,7 +2,6 @@
 #define _UTILS_COMMOM_H_
 
 #include <math.h>
-#include <iostream>
 #include <ctime>
 
 #include <lemon/random.h>

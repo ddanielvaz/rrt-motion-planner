@@ -2,18 +2,17 @@
 #define _ROBOTS_MODEL_H_
 
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "constants.h"
 #include "math_functions.h"
 
 using namespace std;
-
-typedef struct
-{
-    double ctrl[2];
-}control_input;
 
 class RobotModel
 {
@@ -21,19 +20,31 @@ class RobotModel
         virtual void dflow(const double *x, const double *u, double *dx);
         virtual void EstimateNewState(const double dt, const double *x,
                                       const double *u, double *dx);
+        virtual void GenerateInputs(void);
+        virtual void GetValidInputs(const double *x);
         int n_states;
         vector<control_input> inputs;
 };
 
 void RobotModel::dflow(const double *x, const double *u, double *dx)
 {
-    cout << "VIRTUAL METHOD dflow." << endl;
+    cout << "VIRTUAL METHOD dflow: Warning subscribe it in child class." << endl;
 }
 
 void RobotModel::EstimateNewState(const double dt, const double *x,
                                           const double *u, double *dx)
 {
-    cout << "VIRTUAL METHOD EstimateNewState." << endl;
+    cout << "VIRTUAL METHOD EstimateNewState: Warning subscribe it in child class." << endl;
+}
+
+void RobotModel::GenerateInputs(void)
+{
+    cout << "VIRTUAL METHOD GenerateInputs: Warning subscribe it in child class." << endl;
+}
+
+void RobotModel::GetValidInputs(const double *x)
+{
+    cout << "VIRTUAL METHOD GetValidInputs: Warning subscribe it in child class." << endl;
 }
 
 class CarLikeModel : public RobotModel
@@ -196,9 +207,13 @@ class SkidSteerDynamicModel : public RobotModel
         void velocities_dflow(const double *, const double *, double *);
         void EstimateVelocities(const double , const double *,
                                 const double *, double *);
+        void GenerateInputs(void);
+        void GetValidInputs(const double *x);
         ~SkidSteerDynamicModel();
     private:
         double Kt, Ke, n, R, I, m, fr, mu, xcir, a, b, c, r, max_v, max_w;
+        int n_inputs;
+        vector<control_input> all_inputs;
 };
 
 SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot_params, double *speeds_limit, int n_st)
@@ -210,7 +225,6 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     R = motor_params[3];
     I = robot_params[0];
     m = robot_params[1];
-    cout << "mass: " << m << endl;
     fr = robot_params[2];
     mu = robot_params[3];
     xcir = robot_params[4];
@@ -221,15 +235,46 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
+}
 
-    #define dyn 13
-    double u[dyn][2]={{0,0}, {4,4}, {3,3}, {2,2}, {1,1},
-                      {-4,-4}, {-3,-3}, {-2,-2}, {-1,-1},
-                      {2,0}, {0,2}, {5,2}, {2,5} };
-    control_input temp[dyn];
-    memcpy(temp, u, sizeof(double) * dyn * 2);
-    for(int i=0; i<dyn; i++)
-        inputs.push_back(temp[i]);
+void SkidSteerDynamicModel::GenerateInputs(void)
+{
+    ifstream ctrl_inputs_fp(TORQUE_LOGFILE);
+    char buf[1024], *pt, *torques, *nxt, *t_l, *t_r;
+    control_input temp;
+    int i;
+    all_inputs.clear();
+    ctrl_inputs_fp.getline(buf, 1024);
+    n_inputs = atoi(buf);
+    cout << TORQUE_LOGFILE << " has " << n_inputs << " control inputs per line." << endl;
+    while(ctrl_inputs_fp.getline(buf, 1024))
+    {
+        pt = buf;
+        for(i=0;i<n_inputs;i++)
+        {
+            torques = strtok_r(pt, ";", &nxt);
+            t_r = strtok_r(torques, ",", &t_l);
+            temp.ctrl[TORQUE_R] = atof(t_r);
+            temp.ctrl[TORQUE_L] = atof(t_l);
+            cout << "Torque right: " << temp.ctrl[TORQUE_R] << " Torque left: " << temp.ctrl[TORQUE_L] << endl;
+            all_inputs.push_back(temp);
+            pt = nxt;
+        }
+    }
+}
+
+void SkidSteerDynamicModel::GetValidInputs(const double *x)
+{
+    double speed_step = 0.05, quant_speed;
+    int initial_index, final_index, i;
+    quant_speed = nearest_quantified_speed(x[STATE_V], speed_step);
+    initial_index = ceil((quant_speed+0.5)/speed_step) * n_inputs;
+    final_index = initial_index + n_inputs;
+//     cout << "Current speed: " << x[STATE_V] << " quantic speed: " << quant_speed << endl;
+//     cout << "Adding elements from index " << initial_index << " until index " << final_index << endl;
+    inputs.clear();
+    for(i=initial_index; i<final_index; i++)
+        inputs.push_back(all_inputs.at(i));
 }
 
 void SkidSteerDynamicModel::dflow(const double *x, const double *ctl, double *dx)

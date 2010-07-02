@@ -3,6 +3,8 @@
 
 #include <math.h>
 
+#include "constants.h"
+
 inline double limit_steering(double steering)
 {
     return (fabs(steering) < MAX_STEERING) ? steering:MAX_STEERING;
@@ -39,6 +41,22 @@ double normalize_angle(const double r)
 {
     double pi2 = 2 * M_PI;
     return r - pi2 * floor((r + M_PI) / pi2);
+}
+
+static inline
+double nearest_quantified_speed(double speed, double speed_step)
+{
+    double near_speed=0.0, temp, aux=1e7, i;
+    for(i=-MAX_LIN_SPEED; i<=MAX_LIN_SPEED; i+=speed_step)
+    {
+        temp = i-speed;
+        if(fabs(temp) < fabs(aux))
+        {
+            aux = temp;
+            near_speed = i;
+        }
+    }
+    return near_speed;
 }
 
 #endif

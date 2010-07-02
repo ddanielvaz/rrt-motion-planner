@@ -6,14 +6,16 @@
 #define ROTATIONAL_TOLERANCE 0.087
 //10 graus
 #define MAX_ROTATIONAL_TOLERANCE 2 * ROTATIONAL_TOLERANCE
-//mudanca maxima de angulo de estercamento em rad (100 graus/(s*s))
-#define MAX_STEER_ACCEL 1.7453292519943295
 //angulo maximo de estercamento em rad (30 graus)
 #define MAX_STEERING 0.523598
-//mudanca maxima de velocidade
+//maxima aceleração linear em m/s
 #define MAX_LIN_ACCEL 0.3
-//velocidade maxima
-#define MAX_SPEED 1.0
+//maxima aceleração angular em radianos (100 graus/(s*s))
+#define MAX_STEER_ACCEL 1.7453292519943295
+//velocidade maxima - datasheet 0.75 m/s, 100 graus/s ou 1.745 rad/s
+//adotando velocidade menor para translação de 0.5 m/s e 1.2 rad/s
+#define MAX_LIN_SPEED 0.5
+#define MAX_ROT_SPEED 1.2
 
 #define DELTA_T 0.04
 #define INTEGRATION_TIME 0.2
@@ -23,12 +25,12 @@
 #define N_STATES 3
 #define N_CONTROLS 11
 
-#define SCALE_FACTOR 50.0
-
 #define COLLISION_TOLERANCE 0.15
 #define COLLIDED 1
 
 #define GRAVITY 9.81
+
+#define TORQUE_LOGFILE "p3at.torques"
 
 enum
 {
@@ -54,5 +56,10 @@ enum
 {
     LINEAR_ACCEL=0, ANGULAR_ACCEL
 };
+
+typedef struct
+{
+    double ctrl[2];
+}control_input;
 
 #endif

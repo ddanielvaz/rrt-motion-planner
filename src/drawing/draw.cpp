@@ -29,9 +29,9 @@ int main(int argc, char *argv[])
     fig.plot_line_states(odomfile, c_red);
     fig.show(title);
     //draw trails
-//     fig.plot_obstacles(obstacles_file);
-//     fig.plot_trail_states(pathfile, c_light_green);
-//     fig.plot_trail_states(odomfile, c_blue);
-//     fig.show(title);
+/*    fig.plot_obstacles(obstacles_file);
+    fig.plot_trail_states(pathfile, c_light_green);
+    fig.plot_trail_states(odomfile, c_blue);
+    fig.show(title)*/;
     return 0;
 }

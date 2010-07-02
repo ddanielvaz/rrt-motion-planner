@@ -10,6 +10,7 @@
 #include <highgui.h>
 
 #include "../geometry.h"
+#include "../robots.h"
 #include "drawing_utils.h"
 
 using namespace std;
@@ -102,6 +103,7 @@ class Graphics
         ~Graphics();
         void plot_trail_states(char *, int);
         void plot_line_states(char *, int);
+        void plot_tree(char *, int, RobotModel *);
         void plot_obstacles(char *);
         void draw_trail(double, double, double, int);
         void draw_line(double, double, double, double, int);
@@ -238,6 +240,89 @@ void Graphics::plot_line_states(char *filename, int color)
     }
     draw_trail(x, y, theta, color);
     cout << i << " pontos lidos." << endl;
+    fp.close();
+}
+
+void Graphics::plot_tree(char *filename, int color, RobotModel *r)
+{
+    char temp[100], *ps, *nxt;
+    int i;
+    double x[r->n_states], xf[r->n_states], u[2], integration_time;
+    ifstream fp(filename);
+    if(!fp.is_open())
+    {
+        cout << "Arquivo " << filename << " nao encontrado." << endl;
+        return;
+    }
+    cout << "Lendo pontos do arquivo. " << endl;
+    //Lendo ponto inicial
+    fp.getline(temp, 100);
+    x[STATE_X] = strtod(temp, &ps);
+    nxt = ps;
+
+    x[STATE_Y] = strtod(nxt, &ps);
+    nxt = ps;
+
+    x[STATE_THETA] = strtod(nxt, &ps);
+    nxt = ps;
+    
+    x[STATE_V] = strtod(nxt, &ps);
+    nxt = ps;
+
+    x[STATE_W] = strtod(nxt, &ps);
+    nxt = ps;
+
+    u[0] = strtod(nxt, &ps);
+    nxt = ps;
+
+    u[1] = strtod(nxt, &ps);
+    nxt = ps;
+
+    integration_time = strtod(nxt, &ps);
+    nxt = ps;
+    
+    r->EstimateNewState(integration_time, x, u, xf);
+    draw_line(x[STATE_X], x[STATE_Y], xf[STATE_X], xf[STATE_Y], color);
+
+    //draw_trail(x_old, y_old, theta_initial, color);
+
+    //i = 1;
+    //lendo ponto Target
+    while(fp.getline(temp, 100))
+    {
+        x[STATE_X] = strtod(temp, &ps);
+        nxt = ps;
+
+        x[STATE_Y] = strtod(nxt, &ps);
+        nxt = ps;
+
+        x[STATE_THETA] = strtod(nxt, &ps);
+        nxt = ps;
+
+        x[STATE_V] = strtod(nxt, &ps);
+        nxt = ps;
+
+        x[STATE_W] = strtod(nxt, &ps);
+        nxt = ps;
+
+        u[0] = strtod(nxt, &ps);
+        nxt = ps;
+
+        u[1] = strtod(nxt, &ps);
+        nxt = ps;
+
+        integration_time = strtod(nxt, &ps);
+        nxt = ps;
+        
+        cout << "integration time: " << integration_time << endl;
+
+        r->EstimateNewState(integration_time, x, u, xf);
+        cout << x[STATE_X] << " " << x[STATE_Y] << " " << xf[STATE_X] << " " << xf[STATE_Y] << endl;
+        draw_line(x[STATE_X], x[STATE_Y], xf[STATE_X], xf[STATE_Y], color);
+        i++;
+    }
+//     draw_trail(x, y, theta, color);
+//     cout << i << " pontos lidos." << endl;
     fp.close();
 }
 

@@ -1,8 +1,7 @@
 #include <iostream>
 
 #include "draw.h"
-#include "geometry.h"
-#include "utils.h"
+#include "../geometry.h"
 
 using namespace std;
 
@@ -39,9 +38,9 @@ int main(int argc, char *argv[])
         snprintf(pathfile, 32, "path%d.log", index);
         Graphics fig(&geom_car, pathfile);
         fig.plot_obstacles(obstacles_file);
-        fig.plot_states(rrtfile, c_light_green);
+        fig.plot_trail_states(rrtfile, c_light_green);
         fig.draw_initial_and_goal(q,f);
-        fig.plot_states(pathfile, c_blue);
+        fig.plot_trail_states(pathfile, c_blue);
         fig.show(pathfile);
     }
     return 0;

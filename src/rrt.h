@@ -27,7 +27,7 @@ typedef Path<Graph> MyPath;
 class RRT
 {
     public:
-        RRT(double *, double *, int, RobotModel*, World*, char*, char*);
+        RRT(double *, double *, int, RobotModel*, World*, char*);
         void build(void);
         int extend(double*);
         double* select_best_input(double*);
@@ -45,7 +45,7 @@ class RRT
         int max_nodes;
         RobotModel *veh;
         World *world;
-        ofstream fp, controlfp;
+        ofstream fp;
         Graph g;
         ArcMapWeight *cost;
         NodeMapState *states;
@@ -53,7 +53,7 @@ class RRT
 };
 
 RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w,
-         char *fname, char *ctrl_fname)
+         char *fname)
 {
     cout << "Criando instancia da classe RRT" << endl;
     goal_state = (double*) malloc(sizeof(double) * car->n_states);
@@ -69,7 +69,6 @@ RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w,
     veh = car;
     world = w;
     fp.open(fname);
-    controlfp.open(ctrl_fname);
     initiate_rand_number_generator();
 }
 
@@ -132,6 +131,7 @@ int RRT::extend(double *rand)
     double d=1e7, aux;
     int duplicated_node_id;
     vector<control_input>::iterator it;
+    veh->GetValidInputs((*states)[near]);
     for ( it=veh->inputs.begin() ; it < veh->inputs.end(); it++ )
     {
         not_collided = check_no_collision_path((*states)[near], (*it).ctrl, expanded);
@@ -237,8 +237,7 @@ void RRT::print_path(const double *near_node, const double *best_control)
 {
     for(int i=0; i<veh->n_states; i++)
         fp << near_node[i] << " ";
-    fp << endl;
-    controlfp << best_control[0] << " " << best_control[1] << " " << INTEGRATION_TIME << endl;
+    fp << best_control[0] << " " << best_control[1] << " " << INTEGRATION_TIME << endl;
 }
 
 void RRT::close_logfile(void)

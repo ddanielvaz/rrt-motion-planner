@@ -211,7 +211,8 @@ class SkidSteerDynamicModel : public RobotModel
         void GetValidInputs(const double *x);
         ~SkidSteerDynamicModel();
     private:
-        double Kt, Ke, n, R, I, m, fr, mu, xcir, a, b, c, r, max_v, max_w;
+        double Kt, Ke, n, R, I, mass, fr, mu, xcir, a, b, c, wheel_radius,
+        max_v, max_w;
         int n_inputs;
         vector<control_input> all_inputs;
 };

@@ -225,14 +225,14 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     n = motor_params[2];
     R = motor_params[3];
     I = robot_params[0];
-    m = robot_params[1];
+    mass = robot_params[1];
     fr = robot_params[2];
     mu = robot_params[3];
     xcir = robot_params[4];
     a = robot_params[5];
     b = robot_params[6];
     c = robot_params[7];
-    r = robot_params[8];
+    wheel_radius = robot_params[8];
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
@@ -331,16 +331,16 @@ void SkidSteerDynamicModel::velocities_dflow(const double *x,
 //     cout << " vr: " << vr;
 //     cout << " vf: " << vf;
 //     cout << " vb: " << vb;
-    Fy = mu*((m*GRAVITY)/(a+b))*(b*sgn(vf)+a*sgn(vb));
-    Mr = mu*((a*b*m*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+fr*c*m*GRAVITY*(sgn(vl)-sgn(vr));
-    Rx = fr*m*GRAVITY*(sgn(vl)+sgn(vr));
+    Fy = mu*((mass*GRAVITY)/(a+b))*(b*sgn(vf)+a*sgn(vb));
+    Mr = mu*((a*b*mass*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+fr*c*mass*GRAVITY*(sgn(vl)-sgn(vr));
+    Rx = fr*mass*GRAVITY*(sgn(vl)+sgn(vr));
 //     cout << "Rx: " << Rx << endl;
-    dx[VX_SPEED] = xcir * dtheta * x[ANGULAR_SPEED] - Rx/m + ctl[TORQUE_L]/(m*r) + ctl[TORQUE_R]/(m*r);
+    dx[VX_SPEED] = xcir * dtheta * x[ANGULAR_SPEED] - Rx/mass + ctl[TORQUE_L]/(mass*wheel_radius) + ctl[TORQUE_R]/(mass*wheel_radius);
     //Limitar aceleração
-    dx[ANGULAR_SPEED] = -(m*xcir*x[ANGULAR_SPEED]*x[VX_SPEED])/(m*xcir*xcir+I)
-                        -(Mr+xcir*Fy)/(m*xcir*xcir+I)
-                        +(c*ctl[TORQUE_L])/((m*xcir*xcir+I)*r)
-                        -(c*ctl[TORQUE_R])/((m*xcir*xcir+I)*r);
+    dx[ANGULAR_SPEED] = -(mass*xcir*x[ANGULAR_SPEED]*x[VX_SPEED])/(mass*xcir*xcir+I)
+                        -(Mr+xcir*Fy)/(mass*xcir*xcir+I)
+                        +(c*ctl[TORQUE_L])/((mass*xcir*xcir+I)*wheel_radius)
+                        -(c*ctl[TORQUE_R])/((mass*xcir*xcir+I)*wheel_radius);
 //     cout << " dv: " << dx[VX_SPEED] << " dw: " << dx[ANGULAR_SPEED] << endl;
 }
 

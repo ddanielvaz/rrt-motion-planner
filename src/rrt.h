@@ -35,7 +35,7 @@ class RRT
         void get_control_inputs(double u[][2], double*);
         bool check_no_collision_path(const double*, const double*, double*);
         int check_duplicate_node(double *);
-        void print_path(const double*, const double*);
+        void export_path(const double*, const double*);
         void close_logfile(void);
         void path_to_closest_goal(char*);
         ~RRT();
@@ -163,7 +163,7 @@ int RRT::extend(double *rand)
             (*cost)[arc] = d;
             return -1;
         }
-        print_path((*states)[near], best_control);
+        export_path((*states)[near], best_control);
         choosed = (double*) malloc(sizeof(double) * veh->n_states);
         memcpy(choosed, temp, sizeof(double) * veh->n_states);
         added = g.addNode();
@@ -233,7 +233,7 @@ int RRT::check_duplicate_node(double *adding)
     return -1;
 }
 
-void RRT::print_path(const double *near_node, const double *best_control)
+void RRT::export_path(const double *near_node, const double *best_control)
 {
     for(int i=0; i<veh->n_states; i++)
         fp << near_node[i] << " ";

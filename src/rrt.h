@@ -30,9 +30,7 @@ class RRT
         RRT(double *, double *, int, RobotModel*, World*, char*);
         void build(void);
         int extend(double*);
-        double* select_best_input(double*);
         Node select_nearest_node(double*);
-        void get_control_inputs(double u[][2], double*);
         bool check_no_collision_path(const double*, const double*, double*);
         int check_duplicate_node(double *);
         void export_path(const double*, const double*);
@@ -42,7 +40,7 @@ class RRT
     private:
         Node initial_node, goal_node;
         double *goal_state, *initial_state;
-        int max_nodes;
+        int trial_max;
         RobotModel *veh;
         World *world;
         ofstream fp;
@@ -65,7 +63,7 @@ RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w,
     control_map = new ArcMapControl(g);
     initial_node = g.addNode();
     (*states)[initial_node] = initial_state;
-    max_nodes = n;
+    trial_max = n;
     veh = car;
     world = w;
     fp.open(fname);
@@ -79,48 +77,39 @@ RRT::~RRT()
 
 void RRT::build(void)
 {
-    int finished=0, i=0;
+    int finished=0, i=0, added_nodes=0;
     double random_state[veh->n_states];
-    int prev=0, j=0, collided;
-    while(i < max_nodes)
+    int previleges_qgoal=0, collided;
+    for(i=0; i<trial_max; i++)
     {
-        collided=1;
-        j++;
         //Se amostra maior que GOAL_BIAS, ponto aleatorio eh escolhido para expandir
         //arvore. Caso contrario eh escolhido o destino para a expansao.
         if(rnd() > GOAL_BIAS)
         {
+            collided=1;
             while(collided)
             {
                 biased_sampling(world->env->dim, random_state);
-                collided = world->is_vehicle_in_collision(random_state[0], random_state[1], random_state[2]);
+                collided = world->IsVehicleInSafePosition(random_state[0], random_state[1], random_state[2]);
             }
         }
         else
         {
-            prev++;
+            previleges_qgoal++;
             memcpy(random_state, goal_state, sizeof(double) * veh->n_states);
         }
         finished = extend(random_state);
-//         if(finished == 1)
-//             i++;
-//         else if(finished == 2)
-//         {
-//             cout << "[" << i << "] Objetivo alcancado." << endl;
-//             //path_to_closest_goal(pathfilename);
-//             break;
-//         }
-        if(finished == 2)
+        if(finished == 1)
+            added_nodes++;
+        else if(finished == 2)
         {
             cout << "[" << i << "] Objetivo alcancado." << endl;
-            //path_to_closest_goal(pathfilename);
             break;
         }
-        i++;
     }
-    cout << "Tentativas de adicionar nos: " << j << endl;
-    cout << "Nos adicionados: " << i << endl;
-    cout << "Previlegiou q_goal: " << prev << endl;
+    cout << "Tentativas de adicionar nos: " << trial_max << endl;
+    cout << "Nos adicionados: " << added_nodes << endl;
+    cout << "Previlegiou q_goal: " << previleges_qgoal << endl;
 }
 
 int RRT::extend(double *rand)
@@ -206,7 +195,7 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
         x = temp[STATE_X];
         y = temp[STATE_Y];
         theta = normalize_angle(temp[STATE_THETA]);
-        in_collision = world->is_vehicle_in_collision(x, y, theta);
+        in_collision = world->IsVehicleInSafePosition(x, y, theta);
         if (in_collision)
         {
             //cout << "COLLISION" << endl;

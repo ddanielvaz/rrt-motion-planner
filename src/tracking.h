@@ -89,19 +89,19 @@ void Tracking::control_kanayama(char *log, char *ip)
     old_path_pos = path_log_pos;
     vx_path = data[3];
     va_path = -data[4];
-    r0.odom->SetOdomPos(path_log_pos);
-    r0.odom->SetMotorStatus(true);
+    r0.navigator->SetOdomPos(path_log_pos);
+    r0.navigator->SetMotorStatus(true);
     r0.client->Read();
-    old_pos = r0.odom->GetPose();
+    old_pos = r0.navigator->GetPose();
     
     while(path_fp.getline(temp, 100))
     {
         // Requisita dados dos sensores.
         r0.client->Read();
-        curr_pos = odom_pos = r0.odom->GetPose();
-        vx_robot = r0.odom->GetXSpeed();
-        vy_robot = r0.odom->GetYSpeed();
-        va_robot = r0.odom->GetYawSpeed();
+        curr_pos = odom_pos = r0.navigator->GetPose();
+        vx_robot = r0.navigator->GetXSpeed();
+        vy_robot = r0.navigator->GetYSpeed();
+        va_robot = r0.navigator->GetYawSpeed();
         vx_e = (vx_path - vx_robot);
         va_e = (va_path - va_robot);
         // Calculando erro de posição da trajetória planejada com leitura do odometro
@@ -144,17 +144,17 @@ void Tracking::control_kanayama(char *log, char *ip)
         va_path = -data[4];
         old_pos = curr_pos;
         odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
-        r0.odom->AdjustSpeed(vx_control, va_control);
+        r0.navigator->AdjustSpeed(vx_control, va_control);
         usleep(INTEGRATION_TIME * 1e6);
     }
     path_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
     r0.client->Read();
-    odom_pos = r0.odom->GetPose();
+    odom_pos = r0.navigator->GetPose();
     odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
     odom_fp.close();
     data_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
 }
 
 void Tracking::control_kanayama_delay(char *log, char *ip)
@@ -205,10 +205,10 @@ void Tracking::control_kanayama_delay(char *log, char *ip)
     old_path_pos = path_log_pos;
     vx_path = data[3];
     va_path = -data[4];
-    r0.odom->SetOdomPos(path_log_pos);
-    r0.odom->SetMotorStatus(true);
+    r0.navigator->SetOdomPos(path_log_pos);
+    r0.navigator->SetMotorStatus(true);
     r0.client->Read();
-    old_pos = r0.odom->GetPose();
+    old_pos = r0.navigator->GetPose();
     
     while(path_fp.getline(temp, 100))
     {
@@ -216,10 +216,10 @@ void Tracking::control_kanayama_delay(char *log, char *ip)
         t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
         // Requisita dados dos sensores.
         r0.client->Read();
-        curr_pos = odom_pos = r0.odom->GetPose();
-        vx_robot = r0.odom->GetXSpeed();
-        vy_robot = r0.odom->GetYSpeed();
-        va_robot = r0.odom->GetYawSpeed();
+        curr_pos = odom_pos = r0.navigator->GetPose();
+        vx_robot = r0.navigator->GetXSpeed();
+        vy_robot = r0.navigator->GetYSpeed();
+        va_robot = r0.navigator->GetYawSpeed();
         vx_e = (vx_path - vx_robot);
         va_e = (va_path - va_robot);
         // Calculando erro de posição da trajetória planejada com leitura do odometro
@@ -264,18 +264,18 @@ void Tracking::control_kanayama_delay(char *log, char *ip)
         odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
         gettimeofday(&t_end, NULL);
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
-        r0.odom->AdjustSpeed(vx_control, va_control);
+        r0.navigator->AdjustSpeed(vx_control, va_control);
         if((t1-t0) < INTEGRATION_TIME)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
     }
     path_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
     r0.client->Read();
-    odom_pos = r0.odom->GetPose();
+    odom_pos = r0.navigator->GetPose();
     odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
     odom_fp.close();
     data_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
 }
 
 void Tracking::control(char *log, char *ip)
@@ -328,10 +328,10 @@ void Tracking::control(char *log, char *ip)
     old_path_pos = path_log_pos;
     vx_path = data[3];
     va_path = -data[4];
-    r0.odom->SetOdomPos(path_log_pos);
-    r0.odom->SetMotorStatus(true);
+    r0.navigator->SetOdomPos(path_log_pos);
+    r0.navigator->SetMotorStatus(true);
     r0.client->Read();
-    old_pos = r0.odom->GetPose();
+    old_pos = r0.navigator->GetPose();
     
     for(int i=0;i<10;i++)
         r0.client->Read();
@@ -343,10 +343,10 @@ void Tracking::control(char *log, char *ip)
         // Requisita dados dos sensores.
         
         r0.client->Read();
-        curr_pos = odom_pos = r0.odom->GetPose();
-        vx_robot = r0.odom->GetXSpeed();
-        vy_robot = r0.odom->GetYSpeed();
-        va_robot = r0.odom->GetYawSpeed();
+        curr_pos = odom_pos = r0.navigator->GetPose();
+        vx_robot = r0.navigator->GetXSpeed();
+        vy_robot = r0.navigator->GetYSpeed();
+        va_robot = r0.navigator->GetYawSpeed();
         // Calculando erro de posição da trajetória planejada com leitura do odometro
 //         x_diff = (path_log_pos.px - curr_pos.px);
 //         y_diff = (path_log_pos.py - curr_pos.py);
@@ -397,20 +397,20 @@ void Tracking::control(char *log, char *ip)
         odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
         gettimeofday(&t_end, NULL);
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
-        r0.odom->AdjustSpeed(vx_control, va_control);
+        r0.navigator->AdjustSpeed(vx_control, va_control);
         data_fp << "PROCESSING TIME: " << (t1-t0) << endl;
         cout << "PROCESSING TIME: " << (t1-t0) << endl;
         if((t1-t0) < INTEGRATION_TIME)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0) * 1e6);
     }
     path_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
     r0.client->Read();
-    odom_pos = r0.odom->GetPose();
+    odom_pos = r0.navigator->GetPose();
     odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
     odom_fp.close();
     data_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
 }
 
 
@@ -464,10 +464,10 @@ void Tracking::control_01(char *log, char *ip)
     old_path_pos = path_log_pos;
     vx_path = data[3];
     va_path = -data[4];
-    r0.odom->SetOdomPos(path_log_pos);
-    r0.odom->SetMotorStatus(true);
+    r0.navigator->SetOdomPos(path_log_pos);
+    r0.navigator->SetMotorStatus(true);
     r0.client->Read();
-    old_pos = r0.odom->GetPose();
+    old_pos = r0.navigator->GetPose();
     
     for(int i=0;i<10;i++)
         r0.client->Read();
@@ -479,10 +479,10 @@ void Tracking::control_01(char *log, char *ip)
         // Requisita dados dos sensores.
         
         r0.client->Read();
-        curr_pos = odom_pos = r0.odom->GetPose();
-        vx_robot = r0.odom->GetXSpeed();
-        vy_robot = r0.odom->GetYSpeed();
-        va_robot = r0.odom->GetYawSpeed();
+        curr_pos = odom_pos = r0.navigator->GetPose();
+        vx_robot = r0.navigator->GetXSpeed();
+        vy_robot = r0.navigator->GetYSpeed();
+        va_robot = r0.navigator->GetYawSpeed();
         // Calculando erro de posição da trajetória planejada com leitura do odometro
         x_diff = (old_path_pos.px - curr_pos.px);
         y_diff = (old_path_pos.py - curr_pos.py);
@@ -529,7 +529,7 @@ void Tracking::control_01(char *log, char *ip)
         odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
         gettimeofday(&t_end, NULL);
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
-        r0.odom->AdjustSpeed(vx_control, va_control);
+        r0.navigator->AdjustSpeed(vx_control, va_control);
         data_fp << "PROCESSING TIME: " << (t1-t0) << endl;
         if((t1-t0) < INTEGRATION_TIME)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0) * 1e6);
@@ -543,10 +543,10 @@ void Tracking::control_01(char *log, char *ip)
         // Requisita dados dos sensores.
         
         r0.client->Read();
-        curr_pos = odom_pos = r0.odom->GetPose();
-        vx_robot = r0.odom->GetXSpeed();
-        vy_robot = r0.odom->GetYSpeed();
-        va_robot = r0.odom->GetYawSpeed();
+        curr_pos = odom_pos = r0.navigator->GetPose();
+        vx_robot = r0.navigator->GetXSpeed();
+        vy_robot = r0.navigator->GetYSpeed();
+        va_robot = r0.navigator->GetYawSpeed();
         // Calculando erro de posição da trajetória planejada com leitura do odometro
 //         x_diff = (path_log_pos.px - curr_pos.px);
 //         y_diff = (path_log_pos.py - curr_pos.py);
@@ -582,20 +582,20 @@ void Tracking::control_01(char *log, char *ip)
         odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
         gettimeofday(&t_end, NULL);
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
-        r0.odom->AdjustSpeed(vx_control, va_control);
+        r0.navigator->AdjustSpeed(vx_control, va_control);
         data_fp << "CONTROLLER" << endl;
         if((t1-t0) < INTEGRATION_TIME)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0) * 1e6);
     }
         
     path_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
     r0.client->Read();
-    odom_pos = r0.odom->GetPose();
+    odom_pos = r0.navigator->GetPose();
     odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
     odom_fp.close();
     data_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
 }
 
 void Tracking::control_02(char *log, char *ip)
@@ -648,10 +648,10 @@ void Tracking::control_02(char *log, char *ip)
     old_path_pos = path_log_pos;
     vx_path = data[3];
     va_path = -data[4];
-    r0.odom->SetOdomPos(path_log_pos);
-    r0.odom->SetMotorStatus(true);
+    r0.navigator->SetOdomPos(path_log_pos);
+    r0.navigator->SetMotorStatus(true);
     r0.client->Read();
-    old_pos = r0.odom->GetPose();
+    old_pos = r0.navigator->GetPose();
     
     for(i=0;i<10;i++)
         r0.client->Read();
@@ -664,10 +664,10 @@ void Tracking::control_02(char *log, char *ip)
             t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
             // Requisita dados dos sensores.
             r0.client->Read();
-            curr_pos = odom_pos = r0.odom->GetPose();
-//             vx_robot = r0.odom->GetXSpeed();
-//             vy_robot = r0.odom->GetYSpeed();
-//             va_robot = r0.odom->GetYawSpeed();
+            curr_pos = odom_pos = r0.navigator->GetPose();
+//             vx_robot = r0.navigator->GetXSpeed();
+//             vy_robot = r0.navigator->GetYSpeed();
+//             va_robot = r0.navigator->GetYawSpeed();
             // Calculando erro de posição da trajetória planejada com leitura do odometro
             x_diff = (old_path_pos.px - curr_pos.px);
             y_diff = (old_path_pos.py - curr_pos.py);
@@ -699,7 +699,7 @@ void Tracking::control_02(char *log, char *ip)
             gettimeofday(&t_end, NULL);
             t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
             dt = t1-t0;
-            r0.odom->AdjustSpeed(vx_control, va_control);
+            r0.navigator->AdjustSpeed(vx_control, va_control);
             data_fp << "PROCESSING TIME: " << dt << endl << endl;
             if(dt < INTEGRATION_TIME/2.0)
                 usleep((INTEGRATION_TIME/2.0 - dt) * 1e6);
@@ -728,10 +728,10 @@ void Tracking::control_02(char *log, char *ip)
         // Requisita dados dos sensores.
         
         r0.client->Read();
-        curr_pos = odom_pos = r0.odom->GetPose();
-        vx_robot = r0.odom->GetXSpeed();
-        vy_robot = r0.odom->GetYSpeed();
-        va_robot = r0.odom->GetYawSpeed();
+        curr_pos = odom_pos = r0.navigator->GetPose();
+        vx_robot = r0.navigator->GetXSpeed();
+        vy_robot = r0.navigator->GetYSpeed();
+        va_robot = r0.navigator->GetYawSpeed();
         // Calculando erro de posição da trajetória planejada com leitura do odometro
 //         x_diff = (path_log_pos.px - curr_pos.px);
 //         y_diff = (path_log_pos.py - curr_pos.py);
@@ -767,20 +767,20 @@ void Tracking::control_02(char *log, char *ip)
         odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
         gettimeofday(&t_end, NULL);
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
-        r0.odom->AdjustSpeed(vx_control, va_control);
+        r0.navigator->AdjustSpeed(vx_control, va_control);
         data_fp << "CONTROLLER" << endl;
         if((t1-t0) < INTEGRATION_TIME)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0) * 1e6);
     }
         
     path_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
     r0.client->Read();
-    odom_pos = r0.odom->GetPose();
+    odom_pos = r0.navigator->GetPose();
     odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
     odom_fp.close();
     data_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
 }
 
 
@@ -827,13 +827,13 @@ void Tracking::no_control(char *log, char *ip)
     path_log_pos.pa = -data[2];
     vx_path = data[3];
     va_path = -data[4];
-    r0.odom->SetOdomPos(path_log_pos);
-    r0.odom->SetMotorStatus(true);
+    r0.navigator->SetOdomPos(path_log_pos);
+    r0.navigator->SetMotorStatus(true);
     r0.client->Read();
     while(path_fp.getline(temp, 100))
     {
         // Requisita dados dos sensores.
-        odom_pos = r0.odom->GetPose();
+        odom_pos = r0.navigator->GetPose();
         gettimeofday(&t_begin, NULL);
         t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
         r0.client->Read();
@@ -850,7 +850,7 @@ void Tracking::no_control(char *log, char *ip)
         path_log_pos.pa = -data[2];
         vx_path = data[3];
         va_path = -data[4];
-        r0.odom->AdjustSpeed(vx_path, va_path);
+        r0.navigator->AdjustSpeed(vx_path, va_path);
         odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
         gettimeofday(&t_end, NULL);
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
@@ -858,11 +858,11 @@ void Tracking::no_control(char *log, char *ip)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
     }
     path_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
+    r0.navigator->AdjustSpeed(0.0, 0.0);
     r0.client->Read();
     data_fp.close();
-    r0.odom->AdjustSpeed(0.0, 0.0);
-    odom_pos = r0.odom->GetPose();
+    r0.navigator->AdjustSpeed(0.0, 0.0);
+    odom_pos = r0.navigator->GetPose();
     odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
 }
 

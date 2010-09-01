@@ -14,7 +14,7 @@ class CarGeometry{
         double get_between_axes_length(void);
         double get_body_width(void);
         double get_body_height(void);
-        void position(double, double, double);
+        void SetVerticesPosition(double, double, double);
     private:
         double w, h, l;
 };
@@ -33,7 +33,7 @@ CarGeometry::CarGeometry(double width, double height, double length)
  * @param y coordenada y, do ponto em torno do qual o retangulo será rotacionado.
  * @param theta ângulo de rotação.
 */
-void CarGeometry::position(double x, double y, double theta)
+void CarGeometry::SetVerticesPosition(double x, double y, double theta)
 {
     double rot_mat[4], xc, yc, aux_x, aux_y;
     //Clockwise rotation

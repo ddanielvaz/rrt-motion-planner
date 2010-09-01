@@ -37,7 +37,7 @@ class Robot{
         // Métodos
         Robot (char*); //Construtor
         ~Robot(); //Destrutor
-        ProxyPosition *odom;
+        ProxyPosition *navigator;
 };
 
 Robot::Robot(char *ip){
@@ -46,13 +46,13 @@ Robot::Robot(char *ip){
         client = new PlayerClient(ip, 6665);
     else
         client = new PlayerClient("localhost", 6665);
-    odom = new ProxyPosition(client);
+    navigator = new ProxyPosition(client);
 }
 
 Robot::~Robot()
 {
     cout << "Destruindo instancia da classe." << endl;
-    delete odom;
+    delete navigator;
     delete client;
 }
 

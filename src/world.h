@@ -70,7 +70,7 @@ class World
     public:
         World(char *, CarGeometry *);
         ~World();
-        int is_vehicle_in_collision(double, double, double);
+        int IsVehicleInSafePosition(double, double, double);
         CarGeometry *veh_geometry;
         EnvModel *env;
 };
@@ -82,7 +82,7 @@ World::World(char *envfilename, CarGeometry* car_geom)
     veh_geometry = car_geom;
 }
 
-int World::is_vehicle_in_collision(double x, double y, double theta)
+int World::IsVehicleInSafePosition(double x, double y, double theta)
 {
 //     PQP_CollideResult cres;
     PQP_DistanceResult dres;
@@ -90,7 +90,7 @@ int World::is_vehicle_in_collision(double x, double y, double theta)
     double rel_err = 0.0, abs_err = 0.0, distance = 0.0;
 //     int colliding;
     PQP_REAL p0[3], p1[3], p2[3], p3[3], p4[3], p5[3];
-    veh_geometry->position(x, y, theta);
+    veh_geometry->SetVerticesPosition(x, y, theta);
     p0[2] = p1[2] = p2[2] = p3[2] = p4[2] = p5[2] = 0.0;
     // Primeiro triangulo
     p0[0] = veh_geometry->xlt; p0[1] = veh_geometry->ylt;

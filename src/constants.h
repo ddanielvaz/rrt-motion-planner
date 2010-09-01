@@ -57,6 +57,11 @@ enum
     LINEAR_ACCEL=0, ANGULAR_ACCEL
 };
 
+enum
+{
+    V_DESIRED=0, W_DESIRED, DV_DESIRED, DW_DESIRED
+};
+
 typedef struct
 {
     double ctrl[2];

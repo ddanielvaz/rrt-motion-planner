@@ -20,10 +20,19 @@ double metric(const double *state0, const double *state)
     dy = state0[STATE_Y] - state[STATE_Y];
     d = sqrt(dx*dx + dy*dy);
     angle = normalize_angle(state0[STATE_THETA] - state[STATE_THETA]);
-    if (d < 0.25)
-        return d + 2.0*fabs(angle);
-    else
-        return d + 0.75 * fabs(angle);
+//     if (d < 1.0)
+//         return d + 2.0*fabs(angle);
+//     else
+        return d + fabs(angle)/M_PI;
+}
+
+double euclidean_distance(const double *state0, const double *state)
+{
+    double dx, dy;
+    //distancia euclideana
+    dx = state0[STATE_X] - state[STATE_X];
+    dy = state0[STATE_Y] - state[STATE_Y];
+    return sqrt(dx*dx + dy*dy);
 }
 
 bool goal_state_reached(const double *state, const double *goal)

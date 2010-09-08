@@ -107,7 +107,7 @@ void RRT::build(void)
             break;
         }
     }
-    cout << "Tentativas de adicionar nos: " << trial_max << endl;
+    cout << "Numero de tentativas: Maxima= " << trial_max << " Realizadas= " << i << endl;
     cout << "Nos adicionados: " << added_nodes << endl;
     cout << "Previlegiou q_goal: " << previleges_qgoal << endl;
 }
@@ -145,7 +145,7 @@ int RRT::extend(double *rand)
         //cout << "ID: " << duplicated_node_id << " ";
         if (duplicated_node_id >= 0)
         {
-            //cout << "Duplicated NODE detect ID: " << duplicated_node_id << endl;
+//             cout << "Duplicated NODE detect ID: " << duplicated_node_id << endl;
             Node n = g.nodeFromId(duplicated_node_id);
             Graph::Arc arc = g.addArc(near, n);
             (*control_map)[arc] = arcmap_best_control;
@@ -165,6 +165,7 @@ int RRT::extend(double *rand)
         else
             return 1;
     }
+//     cout << "sem no para adicionar" << endl;
     return -1;
 }
 
@@ -186,19 +187,19 @@ Node RRT::select_nearest_node(double *rand)
 
 bool RRT::check_no_collision_path(const double *near_node, const double *u, double *new_state)
 {
-    double it, aux[veh->n_states], temp[veh->n_states], x, y, theta;
+    double t, aux[veh->n_states], temp[veh->n_states], x, y, theta;
     bool in_collision;
     memcpy(aux, near_node, sizeof(double) * veh->n_states);
-    for (it=0.0; it<INTEGRATION_TIME; it+=DELTA_T)
+    for (t=0.0; t<INTEGRATION_TIME; t+=DELTA_T)
     {
-        veh->EstimateNewState(DELTA_T, aux, u, temp);
+        veh->EstimateNewState(aux, u, temp);
         x = temp[STATE_X];
         y = temp[STATE_Y];
         theta = normalize_angle(temp[STATE_THETA]);
         in_collision = world->IsVehicleInSafePosition(x, y, theta);
         if (in_collision)
         {
-            //cout << "COLLISION" << endl;
+//             cout << "COLLISION" << endl;
             return false;
         }
         memcpy(aux, temp, sizeof(double) * veh->n_states);
@@ -213,7 +214,7 @@ int RRT::check_duplicate_node(double *adding)
     double aux;
     for(Graph::NodeIt n(g); n != INVALID; ++n)
     {
-        aux = metric((*states)[n], adding);
+        aux = euclidean_distance((*states)[n], adding);
         if (aux < 1e-7)
         {
             return g.id(n);

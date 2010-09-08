@@ -1,7 +1,8 @@
 .SUFFIXES: .cpp
 
 CC = g++
-CFLAGS  = -Wall -O2
+# CFLAGS  = -Wall -O2
+CFLAGS  = -Wall
 LDLIBS  = -lm -lPQP -lemon
 
 SRCS    = main.cpp

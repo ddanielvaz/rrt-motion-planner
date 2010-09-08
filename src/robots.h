@@ -18,7 +18,7 @@ class RobotModel
 {
     public:
         virtual void dflow(const double *x, const double *u, double *dx);
-        virtual void EstimateNewState(const double dt, const double *x,
+        virtual void EstimateNewState(const double *x,
                                       const double *u, double *dx);
         virtual void GenerateInputs(void);
         virtual void GetValidInputs(const double *x);
@@ -31,7 +31,7 @@ void RobotModel::dflow(const double *x, const double *u, double *dx)
     cout << "VIRTUAL METHOD dflow: Warning subscribe it in child class." << endl;
 }
 
-void RobotModel::EstimateNewState(const double dt, const double *x,
+void RobotModel::EstimateNewState(const double *x,
                                           const double *u, double *dx)
 {
     cout << "VIRTUAL METHOD EstimateNewState: Warning subscribe it in child class." << endl;
@@ -62,7 +62,7 @@ class CarLikeModel : public RobotModel
           *@param dx derivative of state at time <em>t</em>
         */
         void dflow(const double *x, const double *u, double *dx);
-        void EstimateNewState(const double dt, const double *x,
+        void EstimateNewState(const double *x,
                               const double *u, double *dx);
     private:
         double m_one_over_bodyLength;
@@ -103,7 +103,7 @@ void CarLikeModel::dflow(const double *x, const double *u, double *dx)
     dx[STATE_THETA] = u[CONTROL_STEERING_ANGLE];//u[CONTROL_VELOCITY] * m_one_over_bodyLength * tan(u[CONTROL_STEERING_ANGLE]);
 }
 
-void CarLikeModel::EstimateNewState(const double dt, const double *x,
+void CarLikeModel::EstimateNewState(const double *x,
                                 const double *u, double *dx)
 {
     double w1[3], w2[3], w3[3], w4[3], wtemp[3];
@@ -112,19 +112,19 @@ void CarLikeModel::EstimateNewState(const double dt, const double *x,
     
     dflow(x, u, w1);
     for(i=0;i<3;i++)
-        wtemp[i] = x[i] + 0.5 * dt * w1[i];
+        wtemp[i] = x[i] + 0.5 * DELTA_T * w1[i];
     dflow(wtemp, u, w2);
 
     for(i=0;i<3;i++)
-        wtemp[i] = x[i] + 0.5 * dt * w2[i];
+        wtemp[i] = x[i] + 0.5 * DELTA_T * w2[i];
     dflow(wtemp, u, w3);
 
     for(i=0;i<3;i++)
-        wtemp[i] = x[i] + dt * w3[i];
+        wtemp[i] = x[i] + DELTA_T * w3[i];
     dflow(wtemp, u, w4);
 
     for(i=0; i<3; i++)
-        dx[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+        dx[i] = x[i] + (DELTA_T/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
 }
 
 class SkidSteerModel : public RobotModel
@@ -132,7 +132,7 @@ class SkidSteerModel : public RobotModel
     public:
         SkidSteerModel(int, double);
         void dflow(const double *x, const double *u, double *dx);
-        void EstimateNewState(const double dt, const double *x,
+        void EstimateNewState(const double *x,
                               const double *u, double *dx);
         ~SkidSteerModel();
     private:
@@ -169,7 +169,7 @@ void SkidSteerModel::dflow(const double *x, const double *u, double *dx)
     dx[STATE_THETA] = u[ANGULAR_SPEED];
 }
 
-void SkidSteerModel::EstimateNewState(const double dt, const double *x,
+void SkidSteerModel::EstimateNewState(const double *x,
                                       const double *u, double *dx)
 {
     double w1[3], w2[3], w3[3], w4[3], wtemp[3];
@@ -177,19 +177,19 @@ void SkidSteerModel::EstimateNewState(const double dt, const double *x,
 
     dflow(x, u, w1);
     for(i=0;i<3;i++)
-        wtemp[i] = x[i] + 0.5 * dt * w1[i];
+        wtemp[i] = x[i] + 0.5 * DELTA_T * w1[i];
     dflow(wtemp, u, w2);
 
     for(i=0;i<3;i++)
-        wtemp[i] = x[i] + 0.5 * dt * w2[i];
+        wtemp[i] = x[i] + 0.5 * DELTA_T * w2[i];
     dflow(wtemp, u, w3);
 
     for(i=0;i<3;i++)
-        wtemp[i] = x[i] + dt * w3[i];
+        wtemp[i] = x[i] + DELTA_T * w3[i];
     dflow(wtemp, u, w4);
 
     for(i=0; i<3; i++)
-        dx[i] = x[i] + (dt/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+        dx[i] = x[i] + (DELTA_T/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
 }
 
 SkidSteerModel::~SkidSteerModel()
@@ -202,10 +202,10 @@ class SkidSteerDynamicModel : public RobotModel
     public:
         SkidSteerDynamicModel(double *, double *, double *, int);
         void dflow(const double *, const double *, double *);
-        void EstimateNewState(const double , const double *,
+        void EstimateNewState(const double *,
                               const double *, double *);
         void velocities_dflow(const double *, const double *, double *);
-        void EstimateVelocities(const double , const double *,
+        void EstimateVelocities(const double *,
                                 const double *, double *);
         void GenerateInputs(void);
         void GetValidInputs(const double *x);
@@ -255,8 +255,8 @@ void SkidSteerDynamicModel::GenerateInputs(void)
         {
             torques = strtok_r(pt, ";", &nxt);
             t_r = strtok_r(torques, ",", &t_l);
-            temp.ctrl[TORQUE_R] = atof(t_r);
-            temp.ctrl[TORQUE_L] = atof(t_l);
+            temp.ctrl[TORQUE_R] = atof(t_r)/2.0;
+            temp.ctrl[TORQUE_L] = atof(t_l)/2.0;
             cout << "Torque right: " << temp.ctrl[TORQUE_R] << " Torque left: " << temp.ctrl[TORQUE_L] << endl;
             all_inputs.push_back(temp);
             pt = nxt;
@@ -285,32 +285,32 @@ void SkidSteerDynamicModel::dflow(const double *x, const double *ctl, double *dx
     dx[STATE_THETA] = ctl[ANGULAR_SPEED];
 }
 
-void SkidSteerDynamicModel::EstimateNewState(const double t, const double *x,
+void SkidSteerDynamicModel::EstimateNewState(const double *x,
                                              const double *ctl, double *dx)
 {
     double curr_vel[2], new_vel[2];
     double k1[3], k2[3], k3[3], k4[3], ktemp[3];
     int i;
     memcpy(curr_vel, x+3, sizeof(double) * 2);
-    EstimateVelocities(t, curr_vel, ctl, new_vel);
+    EstimateVelocities(curr_vel, ctl, new_vel);
 
     memcpy(dx+3, new_vel, sizeof(double)*2);
 
     dflow(x, new_vel, k1);
     for(i=0;i<3;i++)
-        ktemp[i] = x[i] + 0.5 * t * k1[i];
+        ktemp[i] = x[i] + 0.5 * DELTA_T * k1[i];
 
     dflow(ktemp, new_vel, k2);
     for(i=0;i<3;i++)
-        ktemp[i] = x[i] + 0.5 * t * k2[i];
+        ktemp[i] = x[i] + 0.5 * DELTA_T * k2[i];
 
     dflow(ktemp, new_vel, k3);
     for(i=0;i<3;i++)
-        ktemp[i] = x[i] + t * k3[i];
+        ktemp[i] = x[i] + DELTA_T * k3[i];
 
     dflow(ktemp, new_vel, k4);
     for(i=0; i<3; i++)
-        dx[i] = x[i] + (t/6.0)*(k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]);
+        dx[i] = x[i] + (DELTA_T/6.0)*(k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]);
     
     //Newton-Euler
 /*    for(i=0; i<3; i++)
@@ -344,7 +344,7 @@ void SkidSteerDynamicModel::velocities_dflow(const double *x,
 //     cout << " dv: " << dx[VX_SPEED] << " dw: " << dx[ANGULAR_SPEED] << endl;
 }
 
-void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,
+void SkidSteerDynamicModel::EstimateVelocities(const double *x,
                                                const double *u_torque,
                                                double *speeds)
 {
@@ -356,22 +356,22 @@ void SkidSteerDynamicModel::EstimateVelocities(const double t, const double *x,
     velocities_dflow(initial_state, u_torque, w1);
 //     cout << "k1_dv: " << w1[0] << " k1_dw: " << w1[1] << endl;
     for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + 0.5 * t * w1[i];
+        wtemp[i] = initial_state[i] + 0.5 * DELTA_T * w1[i];
 
     velocities_dflow(wtemp, u_torque, w2);
 //     cout << "k2_dv: " << w2[0] << " k2_dw: " << w2[1] << endl;
     for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + 0.5 * t * w2[i];
+        wtemp[i] = initial_state[i] + 0.5 * DELTA_T * w2[i];
 
     velocities_dflow(wtemp, u_torque, w3);
 //     cout << "k3_dv: " << w3[0] << " k3_w: " << w3[1] << endl;
     for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + t * w3[i];
+        wtemp[i] = initial_state[i] + DELTA_T * w3[i];
 
     velocities_dflow(wtemp, u_torque, w4);
 //     cout << "k4_dv: " << w4[0] << " k4_dw: " << w4[1] << endl;
     for(i=0; i<2; i++)
-        speeds[i] = initial_state[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+        speeds[i] = initial_state[i] + (DELTA_T/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
 
     //Newton-Euler
 /*    velocities_dflow(initial_state, u_torque, w1);
@@ -389,10 +389,10 @@ class SkidSteerControlBased : public RobotModel
     public:
         SkidSteerControlBased(double *, double *, int);
         void dflow(const double *, const double *, double *);
-        void EstimateNewState(const double , const double *,
+        void EstimateNewState(const double *,
                               const double *, double *);
         void velocities_dflow(const double *, const double *, double *);
-        void EstimateVelocities(const double , const double *,
+        void EstimateVelocities(const double *,
                                 const double *, double *);
         void GenerateInputs(void);
         void GetValidInputs(const double *x);
@@ -423,24 +423,25 @@ SkidSteerControlBased::SkidSteerControlBased(double *robot_params, double *speed
 
 void SkidSteerControlBased::GenerateInputs(void)
 {
-    ifstream ctrl_inputs_fp(TORQUE_LOGFILE);
-    char buf[1024], *pt, *torques, *nxt, *t_l, *t_r;
+    ifstream accel_inputs(ACCEL_LOGFILE);
+    char buf[1024], *pt, *acc, *nxt, *dv, *dw;
     control_input temp;
     int i;
     all_inputs.clear();
-    ctrl_inputs_fp.getline(buf, 1024);
-    n_inputs = atoi(buf);
-    cout << TORQUE_LOGFILE << " has " << n_inputs << " control inputs per line." << endl;
-    while(ctrl_inputs_fp.getline(buf, 1024))
+//     cout << ACCEL_LOGFILE << " has " << n_inputs << " control inputs per line." << endl;
+    while(accel_inputs.getline(buf, 1024))
     {
+        n_inputs = atoi(buf);
+        accel_inputs.getline(buf, 1024);    
         pt = buf;
         for(i=0;i<n_inputs;i++)
         {
-            torques = strtok_r(pt, ";", &nxt);
-            t_r = strtok_r(torques, ",", &t_l);
-            temp.ctrl[TORQUE_R] = atof(t_r);
-            temp.ctrl[TORQUE_L] = atof(t_l);
-            cout << "Torque right: " << temp.ctrl[TORQUE_R] << " Torque left: " << temp.ctrl[TORQUE_L] << endl;
+            acc = strtok_r(pt, ";", &nxt);
+            dv = strtok_r(acc, ",", &dw);
+            temp.ctrl[LINEAR_ACCEL] = atof(dv);
+            temp.ctrl[ANGULAR_ACCEL] = atof(dw);
+            cout << "Linear acceleration: " << temp.ctrl[LINEAR_ACCEL]
+                 << " Angular acceleration: " << temp.ctrl[ANGULAR_ACCEL] << endl;
             all_inputs.push_back(temp);
             pt = nxt;
         }
@@ -449,16 +450,23 @@ void SkidSteerControlBased::GenerateInputs(void)
 
 void SkidSteerControlBased::GetValidInputs(const double *x)
 {
-    double speed_step = 0.05, quant_speed;
-    int initial_index, final_index, i;
-    quant_speed = nearest_quantified_speed(x[STATE_V], speed_step);
-    initial_index = ceil((quant_speed+0.5)/speed_step) * n_inputs;
-    final_index = initial_index + n_inputs;
-//     cout << "Current speed: " << x[STATE_V] << " quantic speed: " << quant_speed << endl;
-//     cout << "Adding elements from index " << initial_index << " until index " << final_index << endl;
+//     cout << "GET VALID INPUTS" << endl << endl ;
+    double v, w;
+    vector<control_input>::iterator it;
+    // Calculando acelerações
     inputs.clear();
-    for(i=initial_index; i<final_index; i++)
-        inputs.push_back(all_inputs.at(i));
+//     cout << "curr_v: " << x[STATE_V] << " curr_w: " << x[STATE_W] << endl;
+    for(it=all_inputs.begin() ; it < all_inputs.end(); it++)
+    {
+        v = fabs(x[STATE_V] + (*it).ctrl[LINEAR_ACCEL]*DELTA_T);
+        w = fabs(x[STATE_W] + (*it).ctrl[ANGULAR_ACCEL]*DELTA_T);
+//         cout << "V: " << v << " W: " << w << endl;
+        if( v <= max_v && w <= max_w )
+        {
+            inputs.push_back(*it);
+        }
+    }
+//     cout << "Valid Inputs: " << inputs.size() << endl << endl;
 }
 
 void SkidSteerControlBased::dflow(const double *x, const double *ctl, double *dx)
@@ -468,32 +476,35 @@ void SkidSteerControlBased::dflow(const double *x, const double *ctl, double *dx
     dx[STATE_THETA] = ctl[ANGULAR_SPEED];
 }
 
-void SkidSteerControlBased::EstimateNewState(const double t, const double *x,
+void SkidSteerControlBased::EstimateNewState(const double *x,
                                              const double *ctl, double *dx)
 {
     double curr_vel[2], new_vel[2];
     double k1[3], k2[3], k3[3], k4[3], ktemp[3];
     int i;
     memcpy(curr_vel, x+3, sizeof(double) * 2);
-    EstimateVelocities(t, curr_vel, ctl, new_vel);
+    EstimateVelocities(curr_vel, ctl, new_vel);
+    new_vel[0] = limit_speed(new_vel[0], MAX_LIN_SPEED);
+    new_vel[1] = limit_speed(new_vel[1], MAX_ROT_SPEED);
+    
 
     memcpy(dx+3, new_vel, sizeof(double)*2);
 
     dflow(x, new_vel, k1);
     for(i=0;i<3;i++)
-        ktemp[i] = x[i] + 0.5 * t * k1[i];
+        ktemp[i] = x[i] + 0.5 * DELTA_T * k1[i];
 
     dflow(ktemp, new_vel, k2);
     for(i=0;i<3;i++)
-        ktemp[i] = x[i] + 0.5 * t * k2[i];
+        ktemp[i] = x[i] + 0.5 * DELTA_T * k2[i];
 
     dflow(ktemp, new_vel, k3);
     for(i=0;i<3;i++)
-        ktemp[i] = x[i] + t * k3[i];
+        ktemp[i] = x[i] + DELTA_T * k3[i];
 
     dflow(ktemp, new_vel, k4);
     for(i=0; i<3; i++)
-        dx[i] = x[i] + (t/6.0)*(k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]);
+        dx[i] = x[i] + (DELTA_T/6.0)*(k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]);
     
     //Newton-Euler
 /*    for(i=0; i<3; i++)
@@ -505,6 +516,9 @@ void SkidSteerControlBased::velocities_dflow(const double *x,
                                              double *dx)
 {
     double Rx, Fy, Mr, vl, vr, vf, vb, dtheta, torque_left, torque_right;
+    double v_desired, w_desired;
+    v_desired = x[VX_SPEED] + ctl[DV_DESIRED];
+    w_desired = x[ANGULAR_SPEED] + ctl[DW_DESIRED];
     dtheta = x[ANGULAR_SPEED];
     vl = x[VX_SPEED] + c * x[ANGULAR_SPEED];
     vr = x[VX_SPEED] - c * x[ANGULAR_SPEED];
@@ -517,25 +531,25 @@ void SkidSteerControlBased::velocities_dflow(const double *x,
     Rx = (fr*mass*GRAVITY/2.0)*(sgn(vl)+sgn(vr));
     Fy = mu*((mass*GRAVITY)/(a+b))*(b*sgn(vf)+a*sgn(vb));
     Mr = mu*((a*b*mass*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+(fr*c*mass*GRAVITY/2.0)*(sgn(vl)-sgn(vr));
-    cout << "Rx: " << Rx << endl;
+//     cout << "Rx: " << Rx << endl;
 
-    torque_left = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - ctl[W_DESIRED] * (mass * x[ANGULAR_SPEED] * xcir))/2 +
+    torque_left = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - w_desired * (mass * x[ANGULAR_SPEED] * xcir))/2 +
                   wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
-                  mass * xcir * xcir + ctl[V_DESIRED] * (mass * x[ANGULAR_SPEED] * xcir))/(2*c);
-    torque_right = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - ctl[W_DESIRED] * (mass * x[ANGULAR_SPEED] * xcir))/2 -
+                  mass * xcir * xcir + v_desired * (mass * x[ANGULAR_SPEED] * xcir))/(2*c);
+    torque_right = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - w_desired * (mass * x[ANGULAR_SPEED] * xcir))/2 -
                    wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
-                   mass * xcir *xcir + ctl[V_DESIRED] * (mass * x[ANGULAR_SPEED] * xcir))/(2*c);
-    cout << "T_left: " << torque_left << " T_right: " << torque_right << endl;
+                   mass * xcir *xcir + v_desired * (mass * x[ANGULAR_SPEED] * xcir))/(2*c);
+//     cout << "T_left: " << torque_left << " T_right: " << torque_right << endl;
     dx[VX_SPEED] = xcir * dtheta * x[ANGULAR_SPEED] - Rx/mass + torque_left/(mass*wheel_radius) + torque_right/(mass*wheel_radius);
     //Limitar aceleração
     dx[ANGULAR_SPEED] = -(mass*xcir*x[ANGULAR_SPEED]*x[VX_SPEED])/(mass*xcir*xcir+Inertia)
                         -(Mr+xcir*Fy)/(mass*xcir*xcir+Inertia)
                         +(c*torque_left)/((mass*xcir*xcir+Inertia)*wheel_radius)
                         -(c*torque_right)/((mass*xcir*xcir+Inertia)*wheel_radius);
-    cout << " dv: " << dx[VX_SPEED] << " dw: " << dx[ANGULAR_SPEED] << endl;
+//     cout << "dv: " << dx[VX_SPEED] << " dw: " << dx[ANGULAR_SPEED] << endl << endl;
 }
 
-void SkidSteerControlBased::EstimateVelocities(const double t, const double *x,
+void SkidSteerControlBased::EstimateVelocities(const double *x,
                                                const double *u_torque,
                                                double *speeds)
 {
@@ -547,22 +561,22 @@ void SkidSteerControlBased::EstimateVelocities(const double t, const double *x,
     velocities_dflow(initial_state, u_torque, w1);
 //     cout << "k1_dv: " << w1[0] << " k1_dw: " << w1[1] << endl;
     for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + 0.5 * t * w1[i];
+        wtemp[i] = initial_state[i] + 0.5 * DELTA_T * w1[i];
 
     velocities_dflow(wtemp, u_torque, w2);
 //     cout << "k2_dv: " << w2[0] << " k2_dw: " << w2[1] << endl;
     for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + 0.5 * t * w2[i];
+        wtemp[i] = initial_state[i] + 0.5 * DELTA_T * w2[i];
 
     velocities_dflow(wtemp, u_torque, w3);
 //     cout << "k3_dv: " << w3[0] << " k3_w: " << w3[1] << endl;
     for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + t * w3[i];
+        wtemp[i] = initial_state[i] + DELTA_T * w3[i];
 
     velocities_dflow(wtemp, u_torque, w4);
 //     cout << "k4_dv: " << w4[0] << " k4_dw: " << w4[1] << endl;
     for(i=0; i<2; i++)
-        speeds[i] = initial_state[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+        speeds[i] = initial_state[i] + (DELTA_T/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
 
     //Newton-Euler
 /*    velocities_dflow(initial_state, u_torque, w1);
@@ -580,10 +594,10 @@ class PioneerCarLikeModel: public RobotModel
     public:
         PioneerCarLikeModel(double *, double *, double *, int);
         void dflow(const double *, const double *, double *);
-        void EstimateNewState(const double , const double *,
+        void EstimateNewState(const double *,
                               const double *, double *);
         void velocities_dflow(const double *, const double *, double *);
-        void EstimateVelocities(const double , const double *,
+        void EstimateVelocities(const double *,
                                 const double *, double *);
         ~PioneerCarLikeModel();
     private:
@@ -626,32 +640,32 @@ void PioneerCarLikeModel::dflow(const double *x, const double *ctl, double *dx)
     dx[STATE_THETA] = ctl[ANGULAR_SPEED];
 }
 
-void PioneerCarLikeModel::EstimateNewState(const double t, const double *x,
+void PioneerCarLikeModel::EstimateNewState(const double *x,
                                              const double *ctl, double *dx)
 {
     double curr_vel[2], new_vel[2], w1[3], w2[3], w3[3], w4[3], wtemp[3];
     int i;
     memcpy(curr_vel, x+3, sizeof(double) * 2);
-    EstimateVelocities(t, curr_vel, ctl, new_vel);
+    EstimateVelocities(curr_vel, ctl, new_vel);
     new_vel[0] = limit_speed(new_vel[0], max_v);
     new_vel[1] = limit_speed(new_vel[1], max_w);
     memcpy(dx+3, new_vel, sizeof(double)*2);
 
     dflow(x, new_vel, w1);
     for(i=0;i<3;i++)
-        wtemp[i] = x[i] + 0.5 * t * w1[i];
+        wtemp[i] = x[i] + 0.5 * DELTA_T * w1[i];
 
     dflow(wtemp, new_vel, w2);
     for(i=0;i<3;i++)
-        wtemp[i] = x[i] + 0.5 * t * w2[i];
+        wtemp[i] = x[i] + 0.5 * DELTA_T * w2[i];
 
     dflow(wtemp, new_vel, w3);
     for(i=0;i<3;i++)
-        wtemp[i] = x[i] + t * w3[i];
+        wtemp[i] = x[i] + DELTA_T * w3[i];
 
     dflow(wtemp, new_vel, w4);
     for(i=0; i<3; i++)
-        dx[i] = x[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+        dx[i] = x[i] + (DELTA_T/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
     
     //Newton-Euler
 /*    for(i=0; i<3; i++)
@@ -679,7 +693,7 @@ void PioneerCarLikeModel::velocities_dflow(const double *x,
                         -(c*ctl[TORQUE_R])/((m*xcir*xcir+I)*r);
 }
 
-void PioneerCarLikeModel::EstimateVelocities(const double t, const double *x,
+void PioneerCarLikeModel::EstimateVelocities(const double *x,
                                                const double *u_torque,
                                                double *speeds)
 {
@@ -690,19 +704,19 @@ void PioneerCarLikeModel::EstimateVelocities(const double t, const double *x,
     //Runge Kutta 4th
     velocities_dflow(initial_state, u_torque, w1);
     for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + 0.5 * t * w1[i];
+        wtemp[i] = initial_state[i] + 0.5 * DELTA_T * w1[i];
 
     velocities_dflow(wtemp, u_torque, w2);
     for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + 0.5 * t * w2[i];
+        wtemp[i] = initial_state[i] + 0.5 * DELTA_T * w2[i];
 
     velocities_dflow(wtemp, u_torque, w3);
     for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + t * w3[i];
+        wtemp[i] = initial_state[i] + DELTA_T * w3[i];
 
     velocities_dflow(wtemp, u_torque, w4);
     for(i=0; i<2; i++)
-        speeds[i] = initial_state[i] + (t/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
+        speeds[i] = initial_state[i] + (DELTA_T/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
     //Newton-Euler
 /*    velocities_dflow(initial_state, u_torque, w1);
     for(i=0; i<2; i++)

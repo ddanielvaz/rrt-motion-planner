@@ -1,0 +1,26 @@
+.SUFFIXES: .cpp
+
+CC = g++
+CFLAGS  = -Wall
+LDLIBS  = -lm -lemon
+
+SRCS    = generate_valid_acc.cpp
+
+OBJECTS = generate_valid_acc.o
+
+TARGET = generate_accel
+
+CLEAN   = $(OBJECTS) $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) $(OBJECTS) -o $(TARGET) $(LDLIBS)
+
+.cpp.o:
+	$(CC) ${CFLAGS} -c $<
+
+run: $(TARGET)
+	$(TARGET)
+
+clean:
+	/bin/rm -f $(CLEAN)
+

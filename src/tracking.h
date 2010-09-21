@@ -538,7 +538,7 @@ void Tracking::control_01(char *log, char *ip)
     {
         vx_path = 0.0;
         va_path = 0.0;
-       gettimeofday(&t_begin, NULL);
+        gettimeofday(&t_begin, NULL);
         t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
         // Requisita dados dos sensores.
         
@@ -552,9 +552,9 @@ void Tracking::control_01(char *log, char *ip)
 //         y_diff = (path_log_pos.py - curr_pos.py);
 //         angle_diff = normalize_angle(path_log_pos.pa - curr_pos.pa);
         
-        x_diff = (old_path_pos.px - curr_pos.px);
-        y_diff = (old_path_pos.py - curr_pos.py);
-        angle_diff = normalize_angle(old_path_pos.pa - curr_pos.pa);
+        x_diff = (path_log_pos.px - curr_pos.px);
+        y_diff = (path_log_pos.py - curr_pos.py);
+        angle_diff = normalize_angle(path_log_pos.pa - curr_pos.pa);
         // Preenchendo estrutura auxiliar
         aux_dq.px = x_diff;
         aux_dq.py = y_diff;

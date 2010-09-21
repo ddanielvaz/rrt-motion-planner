@@ -3,7 +3,7 @@
 
 #include <cv.h>
 
-#define SCALE_FACTOR 150
+#define SCALE_FACTOR 50
 
 enum
 {

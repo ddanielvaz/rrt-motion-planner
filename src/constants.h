@@ -7,7 +7,7 @@
 //10 graus
 #define MAX_ROTATIONAL_TOLERANCE 2 * ROTATIONAL_TOLERANCE
 //angulo maximo de estercamento em rad (30 graus)
-#define MAX_STEERING 0.523598
+#define MAX_STEERING_ANGLE 0.523598
 //velocidade maxima - datasheet 0.75 m/s, 100 graus/s ou 1.745 rad/s
 //adotando velocidade menor para translação de 0.5 m/s e 1.2 rad/s
 #define MAX_LIN_SPEED 0.5
@@ -28,10 +28,15 @@
 
 #define TORQUE_LOGFILE "p3at.torques"
 #define ACCEL_LOGFILE "p3at.accel"
+#define CARLIKE_LOGFILE "carlike.accel"
 
 enum
 {
     STATE_X=0, STATE_Y, STATE_THETA, STATE_V, STATE_W
+};
+
+enum{
+    STATE_STEERING_ANGLE=4
 };
 
 enum

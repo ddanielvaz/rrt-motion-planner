@@ -23,7 +23,7 @@ double metric(const double *state0, const double *state)
 //     if (d < 1.0)
 //         return d + 2.0*fabs(angle);
 //     else
-        return d + fabs(angle)/M_PI;
+        return d + fabs(angle)/M_PI_2l;
 }
 
 double euclidean_distance(const double *state0, const double *state)

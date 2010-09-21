@@ -10,6 +10,7 @@
 #include <highgui.h>
 
 #include "../geometry.h"
+#include "../constants.h"
 #include "../robots.h"
 #include "drawing_utils.h"
 
@@ -48,6 +49,7 @@ class Obstacles
         Obstacles(char *);
         void draw(IplImage *);
         vector<CvPoint3D64f> triangs;
+        double w, h;
 };
 
 Obstacles::Obstacles(char *filename)
@@ -57,8 +59,11 @@ Obstacles::Obstacles(char *filename)
     char temp[100], *ps, *nxt;
     double v[9];
     int i;
-    // Descartando primeira linha de informação sobre dimensão do ambiente.
+    // Pegando informação sobre largura e altura total do ambiente
     obs_fp.getline(temp, 100);
+    w = strtod(temp, &ps);
+    h = strtod(ps, NULL);
+    cout << w << " " << h << endl;
     while(obs_fp.getline(temp, 100))
     {
         v[0] = strtod(temp, &ps);
@@ -99,29 +104,35 @@ void Obstacles::draw(IplImage *img)
 class Graphics
 {
     public:
-        Graphics(CarGeometry *, char*);
+        Graphics(CarGeometry *, char *, char*);
         ~Graphics();
         void plot_trail_states(char *, int);
         void plot_line_states(char *, int);
         void plot_tree(char *, int, RobotModel *);
-        void plot_obstacles(char *);
+        void plot_obstacles(void);
         void draw_trail(double, double, double, int);
         void draw_line(double, double, double, double, int);
         void show(char*);
         void draw_initial_and_goal(double *initial, double *goal);
     private:
         CarGeometry *veh_geom;
+        Obstacles *map_enviroment;
         IplImage* img1;
 };
 
-Graphics::Graphics(CarGeometry *car_geom, char *title)
+Graphics::Graphics(CarGeometry *car_geom, char *obs_file, char *title)
 {
     cout << "Criando instancia da classe Graphics" << endl;
-    CvSize s = cvSize(7.2 * SCALE_FACTOR + 1, 5.3 * SCALE_FACTOR + 1);
+    // Criar instancia da classe Obstacle como atributo desta classe
+    // Substituir 7.2 e 5.3 por leitura do arquivo de obstacles
+    // Criar na classe obstacles dois atributos, Width e Height para armazenar
+    // a largura e altura total do mapa.
+    map_enviroment = new Obstacles(obs_file);
+    CvSize s = cvSize(map_enviroment->w * SCALE_FACTOR + 1, map_enviroment->h * SCALE_FACTOR + 1);
     CvScalar white = colors[c_white];
     img1 = cvCreateImage(s, 8, 3);
     cvNamedWindow(title, CV_WINDOW_AUTOSIZE);
-    cvRectangle(img1, cvPoint(0,0), cvPoint(7.2 * SCALE_FACTOR + 1,5.3 * SCALE_FACTOR + 1), white, -1, 8, 0);
+    cvRectangle(img1, cvPoint(0,0), cvPoint(map_enviroment->w * SCALE_FACTOR + 1, map_enviroment->h * SCALE_FACTOR + 1), white, -1, 8, 0);
     veh_geom = car_geom;
 }
 
@@ -189,7 +200,7 @@ void Graphics::plot_trail_states(char *filename, int color)
 void Graphics::draw_trail(double x, double y, double theta, int color_id)
 {
     //cvCircle(img1, cvPoint(x * SCALE_FACTOR,y * SCALE_FACTOR), 1.0, colors[c_red], -1, 8, 0);
-    veh_geom->position(x, y, theta);
+    veh_geom->SetVerticesPosition(x, y, theta);
     Carro car(veh_geom);
     CvScalar color = colors[color_id];
     car.draw(img1, color);
@@ -280,10 +291,12 @@ void Graphics::plot_tree(char *filename, int color, RobotModel *r)
 
     integration_time = strtod(nxt, &ps);
     nxt = ps;
-    
-    r->EstimateNewState(integration_time, x, u, xf);
-    draw_line(x[STATE_X], x[STATE_Y], xf[STATE_X], xf[STATE_Y], color);
-
+for(double t=0.0; t<=integration_time; t+=DELTA_T)
+        {
+            r->EstimateNewState(x, u, xf);
+            draw_line(x[STATE_X], x[STATE_Y], xf[STATE_X], xf[STATE_Y], color);
+            memcpy(x, xf, sizeof(double)*r->n_states);
+        }
     //draw_trail(x_old, y_old, theta_initial, color);
 
     //i = 1;
@@ -315,10 +328,13 @@ void Graphics::plot_tree(char *filename, int color, RobotModel *r)
         nxt = ps;
         
         cout << "integration time: " << integration_time << endl;
-
-        r->EstimateNewState(integration_time, x, u, xf);
-        cout << x[STATE_X] << " " << x[STATE_Y] << " " << xf[STATE_X] << " " << xf[STATE_Y] << endl;
-        draw_line(x[STATE_X], x[STATE_Y], xf[STATE_X], xf[STATE_Y], color);
+        
+        for(double t=0.0; t<=integration_time; t+=DELTA_T)
+        {
+            r->EstimateNewState(x, u, xf);
+            draw_line(x[STATE_X], x[STATE_Y], xf[STATE_X], xf[STATE_Y], color);
+            memcpy(x, xf, sizeof(double)*r->n_states);
+        }
         i++;
     }
 //     draw_trail(x, y, theta, color);
@@ -332,10 +348,9 @@ void Graphics::draw_line(double x_old, double y_old, double x, double y, int col
     cvLine(img1, cvPoint(x_old* SCALE_FACTOR, y_old* SCALE_FACTOR), cvPoint(x* SCALE_FACTOR,y* SCALE_FACTOR), color);
 }
 
-void Graphics::plot_obstacles(char *filename)
+void Graphics::plot_obstacles(void)
 {
-    Obstacles obs(filename);
-    obs.draw(img1);
+    map_enviroment->draw(img1);
 }
 
 void Graphics::show(char *title)

@@ -5,11 +5,6 @@
 
 #include "constants.h"
 
-inline double limit_steering(double steering)
-{
-    return (fabs(steering) < MAX_STEERING) ? steering:MAX_STEERING;
-}
-
 inline double sgn(double x)
 {
     if(x > 0.0)
@@ -17,6 +12,11 @@ inline double sgn(double x)
     else if(x < 0.0)
         return -1.0;
     return 0.0;
+}
+
+inline double limit_steering(double steering, double max_steering_angle)
+{
+    return (fabs(steering) < max_steering_angle) ? steering:sgn(steering)*max_steering_angle;
 }
 
 inline double limit_speed(double speed, double max_speed)

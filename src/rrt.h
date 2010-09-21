@@ -196,6 +196,7 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
         x = temp[STATE_X];
         y = temp[STATE_Y];
         theta = normalize_angle(temp[STATE_THETA]);
+        temp[STATE_THETA] = theta;
         in_collision = world->IsVehicleInSafePosition(x, y, theta);
         if (in_collision)
         {
@@ -214,7 +215,7 @@ int RRT::check_duplicate_node(double *adding)
     double aux;
     for(Graph::NodeIt n(g); n != INVALID; ++n)
     {
-        aux = euclidean_distance((*states)[n], adding);
+        aux = metric((*states)[n], adding);
         if (aux < 1e-7)
         {
             return g.id(n);

@@ -1,0 +1,26 @@
+.SUFFIXES: .cpp
+
+CC = g++
+CFLAGS  = -Wall
+LDLIBS  = -lm -lemon
+
+SRCS    = generate_inputs_carlike.cpp
+
+OBJECTS = generate_inputs_carlike.o
+
+TARGET = carlike_inputs_generator
+
+CLEAN   = $(OBJECTS) $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) $(OBJECTS) -o $(TARGET) $(LDLIBS)
+
+.cpp.o:
+	$(CC) ${CFLAGS} -c $<
+
+run: $(TARGET)
+	$(TARGET)
+
+clean:
+	/bin/rm -f $(CLEAN)
+

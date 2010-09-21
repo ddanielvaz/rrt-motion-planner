@@ -10,11 +10,11 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-//     double q[]={1.0, 1.5, 0.0, 0.0, 0.0};
+    double q[]={1.0, 1.5, 0.0, 0.0, 0.0};
     // Baliza
 //     double f[]={4.40, 2.5, 0.1, 0.0, 0.0};
     // Manobra 1
-//     double f[]={2.0, 3.7, 3.13, 0.0, 0.0};
+    double f[]={2.0, 3.7, 3.13, 0.0, 0.0};
     // Manobra 2
 //     double f[]={5.8, 3.7, 0.0, 0.0, 0.0};
 // Pontos de referencia para o mapa grande
@@ -24,22 +24,22 @@ int main(int argc, char *argv[])
 //     double f[]={16.0, 17.0, M_PI, 0.0, 0.0};
 //     double f[]={21.0, 9.0, 0.0, 0.0, 0.0};
 // Manobras para veiculo no mapa grande modificado para Baliza
-    double q[]={1.0, 3.5, 0.0, 0.0, 0.0};
-    double f[]={6.5, 1.5, 0.0, 0.0, 0.0};
+//     double q[]={1.0, 3.5, 0.0, 0.0, 0.0};
+//     double f[]={6.5, 1.5, 0.0, 0.0, 0.0};
     //Dimensoes para um veiculo
-    double width = 2.5, height = 1.5, body_length = 2.0;
+//     double width = 2.5, height = 1.5, body_length = 2.0;
     //Dimensoes para o pioneer 3at
-//     double width = 0.51, height = 0.493, body_length = 0.0;
+    double width = 0.51, height = 0.493, body_length = 0.0;
     char obstacles_file[]="lasi_map.txt";
-//     double xcir = 0.01;
+    double xcir = 0.01;
 //     double motor[] = {0.0230, 0.0230, 38.3, 0.71};
-//     double robot[] = {0.413, 40, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.4};
-//     double speeds_limits[] = {MAX_LIN_SPEED, MAX_ROT_SPEED};
-    double constraints[] = {1.0, MAX_STEERING_ANGLE};
+    double robot[] = {0.413, 40, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.1};
+    double speeds_limits[] = {MAX_LIN_SPEED, MAX_ROT_SPEED};
+//     double constraints[] = {1.0, MAX_STEERING_ANGLE};
 //     SkidSteerDynamicModel veh(motor, robot, speeds_limits, 5);
-//     SkidSteerControlBased veh(robot, speeds_limits, 5);
+    SkidSteerControlBased veh(robot, speeds_limits, 5);
     //PioneerCarLikeModel veh(motor, robot, speeds_limits, 5);
-    CarLikeModel veh(body_length, constraints, 5);
+//     CarLikeModel veh(body_length, constraints, 5);
     //SkidSteerModel veh(3, xcir);
     veh.GenerateInputs();
     CarGeometry geom_car(width, height, body_length);

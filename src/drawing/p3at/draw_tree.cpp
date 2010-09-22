@@ -18,12 +18,12 @@ int main(int argc, char *argv[])
     /** Tipos de Robos */
     SkidSteerControlBased veh(robot, speeds_limits, 5);
 //     SkidSteerDynamicModel veh(motor, robot, speeds_limits, 5);
-    char obstacles_file[]="lasi_map.txt", pathfile[32], resultsfile[32],
+    char obstacles_file[]="../resources/lasi_map.txt", pathfile[32], resultsfile[32],
     title[]="Drawing Tool";
     CarGeometry geom_car(width, height, body_length);
     cvInitSystem(argc, argv);
     setlocale(LC_NUMERIC, "C");
-    Graphics fig(&geom_car, title);
+    Graphics fig(&geom_car, obstacles_file, title);
     if(argc == 3)
     {
         strcpy(resultsfile, argv[1]);
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
         strcpy(resultsfile, "results.log");
     }
     //draw rrt
-    fig.plot_obstacles(obstacles_file);
+    fig.plot_obstacles();
     fig.plot_tree(resultsfile, c_blue, &veh);
     fig.plot_line_states(pathfile, c_green);
     fig.show(title);

@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     //double f[]={5.8, 3.7, 0.0, 0.0, 0.0};
     //Dimensoes para o pioneer 3at
     double width = 0.51, height = 0.493, body_length = 0.26;
-    char obstacles_file[]="lasi_map.txt";
+    char obstacles_file[]="../resources/lasi_map.txt";
     char pathfile[32], rrtfile[32], temp[32];
     int index;
     ifstream statisticfile;
@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
         index = atoi(temp);
         snprintf(rrtfile, 32, "results%d.log", index);
         snprintf(pathfile, 32, "path%d.log", index);
-        Graphics fig(&geom_car, pathfile);
-        fig.plot_obstacles(obstacles_file);
+        Graphics fig(&geom_car, obstacles_file, pathfile);
+        fig.plot_obstacles();
         fig.plot_trail_states(rrtfile, c_light_green);
         fig.draw_initial_and_goal(q,f);
         fig.plot_trail_states(pathfile, c_blue);

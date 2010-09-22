@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include "../geometry.h"
-#include "../robots.h"
-#include "../constants.h"
+#include "geometry.h"
+#include "robots.h"
+#include "constants.h"
 #include "draw.h"
 
 using namespace std;

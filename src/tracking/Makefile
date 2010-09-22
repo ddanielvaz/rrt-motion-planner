@@ -1,16 +1,15 @@
 .SUFFIXES: .cpp
 
 CC = g++
-# CFLAGS  = -Wall -O2
 INCLUDE_DIR = ../include
-CFLAGS  = -Wall -I$(INCLUDE_DIR)
-LDLIBS  = -lm -lPQP -lemon
+CFLAGS  = -Wall -I$(INCLUDE_DIR) `pkg-config --cflags opencv playerc++`
+LDLIBS  = -lm -lemon `pkg-config --libs playerc++`
 
-SRCS    = main.cpp
+SRCS    = tracking.cpp
 
-OBJECTS = main.o
+OBJECTS = tracking.o
 
-TARGET = planning
+TARGET = tracking
 
 CLEAN   = $(OBJECTS) $(TARGET)
 

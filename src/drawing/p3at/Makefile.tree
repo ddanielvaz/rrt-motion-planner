@@ -1,7 +1,8 @@
 .SUFFIXES: .cpp
 
 CC = g++
-CFLAGS  = -Wall -O2 `pkg-config --cflags opencv`
+INCLUDE_DIR = ../../include
+CFLAGS  = -Wall -I$(INCLUDE_DIR) `pkg-config --cflags opencv`
 LDLIBS  = -lm `pkg-config --libs opencv`
 
 SRCS    = draw_tree.cpp

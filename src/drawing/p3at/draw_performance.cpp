@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "draw.h"
-#include "../geometry.h"
+#include "geometry.h"
 
 using namespace std;
 

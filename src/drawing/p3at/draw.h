@@ -9,9 +9,9 @@
 #include <cv.h>
 #include <highgui.h>
 
-#include "../../geometry.h"
-#include "../../constants.h"
-#include "../../robots.h"
+#include "geometry.h"
+#include "constants.h"
+#include "robots.h"
 #include "drawing_utils.h"
 
 using namespace std;
@@ -56,6 +56,11 @@ Obstacles::Obstacles(char *filename)
 {
     cout << "Criando instancia da classe Obstacles" << endl;
     ifstream obs_fp(filename);
+    if(!obs_fp.is_open())
+    {
+        cerr << "Arquivo: " << filename << " nao encontrado. Podem ocorrer erros na visualizacao." << endl;
+        return;
+    }
     char temp[100], *ps, *nxt;
     double v[9];
     int i;
@@ -356,7 +361,7 @@ void Graphics::plot_obstacles(void)
 void Graphics::show(char *title)
 {
     cvShowImage(title, img1);
-    cvSaveImage("teste.png",img1);
+    cvSaveImage("trajetoria.png",img1);
     cvWaitKey(0);
 }
 

@@ -23,10 +23,10 @@ int main(int argc, char *argv[])
         strcpy(pathfile, "path.log");
         strcpy(odomfile, "odom.log");
     }
-    //draw trails
+    //draw trajectory
     fig.plot_obstacles();
-    fig.plot_trail_states(pathfile, c_light_green);
-    fig.plot_trail_states(odomfile, c_blue);
+    fig.plot_line_states(pathfile, c_blue);
+    fig.plot_line_states(odomfile, c_red);
     fig.show(title);
     return 0;
 }

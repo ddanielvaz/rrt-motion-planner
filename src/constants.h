@@ -26,10 +26,6 @@
 
 #define GRAVITY 9.81
 
-#define TORQUE_LOGFILE "p3at.torques"
-#define ACCEL_LOGFILE "p3at.accel"
-#define CARLIKE_LOGFILE "carlike.accel"
-
 enum
 {
     STATE_X=0, STATE_Y, STATE_THETA, STATE_V, STATE_W

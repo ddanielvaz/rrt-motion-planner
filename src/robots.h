@@ -56,7 +56,7 @@ class CarLikeModel : public RobotModel
         void EstimateNewState(const double *x, const double *u, double *dx);
         void SpeedFlow(const double *v, const double *u, double *dv);
         void EstimateSpeeds(const double *v, const double *u, double *nv);
-        void GenerateInputs(void);
+        void GenerateInputs(char *);
         void GetValidInputs(const double *x);
     private:
         double m_one_over_bodyLength, max_v, max_steering_angle;
@@ -93,9 +93,9 @@ CarLikeModel::~CarLikeModel()
     cout << "Destruindo instancia da classe CarLikeModel" << endl;
 }
 
-void CarLikeModel::GenerateInputs(void)
+void CarLikeModel::GenerateInputs(char *filename)
 {
-    ifstream accel_inputs(CARLIKE_LOGFILE);
+    ifstream accel_inputs(filename);
     char buf[1024], *pt, *acc, *nxt, *dv, *dw;
     control_input temp;
     int i, n_inputs;
@@ -261,7 +261,7 @@ class SkidSteerDynamicModel : public RobotModel
         void velocities_dflow(const double *, const double *, double *);
         void EstimateVelocities(const double *,
                                 const double *, double *);
-        void GenerateInputs(void);
+        void GenerateInputs(char *);
         void GetValidInputs(const double *x);
         ~SkidSteerDynamicModel();
     private:
@@ -292,16 +292,16 @@ SkidSteerDynamicModel::SkidSteerDynamicModel(double *motor_params, double *robot
     n_states = n_st;
 }
 
-void SkidSteerDynamicModel::GenerateInputs(void)
+void SkidSteerDynamicModel::GenerateInputs(char *filename)
 {
-    ifstream ctrl_inputs_fp(TORQUE_LOGFILE);
+    ifstream ctrl_inputs_fp(filename);
     char buf[1024], *pt, *torques, *nxt, *t_l, *t_r;
     control_input temp;
     int i;
     all_inputs.clear();
     ctrl_inputs_fp.getline(buf, 1024);
     n_inputs = atoi(buf);
-    cout << TORQUE_LOGFILE << " has " << n_inputs << " control inputs per line." << endl;
+    cout << filename << " has " << n_inputs << " control inputs per line." << endl;
     while(ctrl_inputs_fp.getline(buf, 1024))
     {
         pt = buf;
@@ -448,7 +448,7 @@ class SkidSteerControlBased : public RobotModel
         void velocities_dflow(const double *, const double *, double *);
         void EstimateVelocities(const double *,
                                 const double *, double *);
-        void GenerateInputs(void);
+        void GenerateInputs(char *);
         void GetValidInputs(const double *x);
         ~SkidSteerControlBased();
     private:
@@ -473,9 +473,9 @@ SkidSteerControlBased::SkidSteerControlBased(double *robot_params, double *speed
     n_states = n_st;
 }
 
-void SkidSteerControlBased::GenerateInputs(void)
+void SkidSteerControlBased::GenerateInputs(char *filename)
 {
-    ifstream accel_inputs(ACCEL_LOGFILE);
+    ifstream accel_inputs(filename);
     char buf[1024], *pt, *acc, *nxt, *dv, *dw;
     control_input temp;
     int i, n_inputs;

@@ -2,7 +2,8 @@
 
 CC = g++
 # CFLAGS  = -Wall -O2
-CFLAGS  = -Wall
+INCLUDE_DIR = ../
+CFLAGS  = -Wall -I$(INCLUDE_DIR)
 LDLIBS  = -lm -lPQP -lemon
 
 SRCS    = main.cpp

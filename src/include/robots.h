@@ -450,6 +450,7 @@ class SkidSteerControlBased : public RobotModel
                                 const double *, double *);
         void GenerateInputs(char *);
         void GetValidInputs(const double *x);
+        void EstimateTorque(const double *, const double *, double *);
         bool VerifyFeasibility(const double *x, const double *u);
         ~SkidSteerControlBased();
     private:
@@ -506,18 +507,13 @@ void SkidSteerControlBased::GenerateInputs(char *filename)
 void SkidSteerControlBased::GetValidInputs(const double *x)
 {
 //     cout << "GET VALID INPUTS" << endl << endl ;
-    double v, w;
     vector<control_input>::iterator it;
     inputs.clear();
     for(it=all_inputs.begin() ; it < all_inputs.end(); it++)
     {
-        v = fabs(x[STATE_V] + (*it).ctrl[LINEAR_ACCEL]*DELTA_T);
-        w = fabs(x[STATE_W] + (*it).ctrl[ANGULAR_ACCEL]*DELTA_T);
-//         cout << "V: " << v << " W: " << w << endl;
-        if( v <= max_v && w <= max_w )
-        {
+        // Validar torques e limites de velocidades
+        if(VerifyFeasibility(x, (*it).ctrl))
             inputs.push_back(*it);
-        }
     }
 //     cout << "Valid Inputs: " << inputs.size() << endl << endl;
 }
@@ -574,14 +570,9 @@ void SkidSteerControlBased::velocities_dflow(const double *x,
     vr = x[VX_SPEED] - c * x[ANGULAR_SPEED];
     vf = (-xcir + a) * x[ANGULAR_SPEED];
     vb = (-xcir - b) * x[ANGULAR_SPEED];
-//     cout << "vl: " << vl;
-//     cout << " vr: " << vr;
-//     cout << " vf: " << vf;
-//     cout << " vb: " << vb;
     Rx = (fr*mass*GRAVITY/2.0)*(sgn(vl)+sgn(vr));
     Fy = mu*((mass*GRAVITY)/(a+b))*(b*sgn(vf)+a*sgn(vb));
     Mr = mu*((a*b*mass*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+(fr*c*mass*GRAVITY/2.0)*(sgn(vl)-sgn(vr));
-//     cout << "Rx: " << Rx << endl;
 
     torque_left = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2 +
                   wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
@@ -589,17 +580,15 @@ void SkidSteerControlBased::velocities_dflow(const double *x,
     torque_right = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2 -
                    wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
                    mass * xcir * xcir + dtheta * mass * x[VX_SPEED] * xcir)/(2*c);
-//     cout << "T_left: " << torque_left << " T_right: " << torque_right << endl;
+
     dx[VX_SPEED] = xcir * dtheta * x[ANGULAR_SPEED] - Rx/mass + torque_left/(mass*wheel_radius) + torque_right/(mass*wheel_radius);
-    //Limitar aceleração
     dx[ANGULAR_SPEED] = -(mass*xcir*x[ANGULAR_SPEED]*x[VX_SPEED])/(mass*xcir*xcir+Inertia)
                         -(Mr+xcir*Fy)/(mass*xcir*xcir+Inertia)
                         +(c*torque_left)/((mass*xcir*xcir+Inertia)*wheel_radius)
                         -(c*torque_right)/((mass*xcir*xcir+Inertia)*wheel_radius);
-//     cout << "dv: " << dx[VX_SPEED] << " dw: " << dx[ANGULAR_SPEED] << endl << endl;
 }
 
-bool SkidSteerControlBased::VerifyFeasibility(const double *x, const double *ctl)
+void SkidSteerControlBased::EstimateTorque(const double *x, const double *ctl, double *torques)
 {
     double Rx, Fy, Mr, vl, vr, vf, vb, dtheta, torque_left, torque_right;
     dtheta = x[ANGULAR_SPEED];
@@ -607,25 +596,37 @@ bool SkidSteerControlBased::VerifyFeasibility(const double *x, const double *ctl
     vr = x[VX_SPEED] - c * x[ANGULAR_SPEED];
     vf = (-xcir + a) * x[ANGULAR_SPEED];
     vb = (-xcir - b) * x[ANGULAR_SPEED];
-//     cout << "vl: " << vl;
-//     cout << " vr: " << vr;
-//     cout << " vf: " << vf;
-//     cout << " vb: " << vb;
     Rx = (fr*mass*GRAVITY/2.0)*(sgn(vl)+sgn(vr));
     Fy = mu*((mass*GRAVITY)/(a+b))*(b*sgn(vf)+a*sgn(vb));
     Mr = mu*((a*b*mass*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+(fr*c*mass*GRAVITY/2.0)*(sgn(vl)-sgn(vr));
-//     cout << "Rx: " << Rx << endl;
-
     torque_left = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2 +
                   wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
                   mass * xcir * xcir + dtheta * mass * x[VX_SPEED] * xcir)/(2*c);
     torque_right = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2 -
                    wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
                    mass * xcir * xcir + dtheta * mass * x[VX_SPEED] * xcir)/(2*c);
-//     cout << "T_left: " << torque_left << " T_right: " << torque_right << endl;
-    if( fabs(torque_left) <= torque_max && fabs(torque_right) <= torque_max)
-        return true;
-    return false;
+    torques[TORQUE_L] = torque_left;
+    torques[TORQUE_R] = torque_right;
+}
+    
+
+bool SkidSteerControlBased::VerifyFeasibility(const double *x, const double *ctl)
+{
+    
+    double estimated_torques[2], curr_vel[2], new_vel[2];
+    bool torque_status=false, speed_status=false, status;
+    EstimateTorque(x, ctl, estimated_torques);
+//     cout << "T_left: " << estimated_torques[TORQUE_L] << " T_right: " << estimated_torques[TORQUE_R] << endl;
+    if( fabs(estimated_torques[TORQUE_L]) <= torque_max && fabs(estimated_torques[TORQUE_R]) <= torque_max)
+        torque_status = true;
+    memcpy(curr_vel, x+3, sizeof(double) * 2);
+    EstimateVelocities(curr_vel, ctl, new_vel);
+//     cout << "VX: " << new_vel[0] << " W: " << new_vel[1] << endl;
+    if(fabs(new_vel[0]) <= max_v && fabs(new_vel[1]) <= max_w)
+        speed_status = true;
+    status = torque_status && speed_status;
+//     cout << "The status is: " << status << endl;
+    return status;
 }
 
 void SkidSteerControlBased::EstimateVelocities(const double *x,

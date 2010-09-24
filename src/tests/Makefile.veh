@@ -6,11 +6,11 @@ INCLUDE_DIR = ../include
 CFLAGS  = -Wall -I$(INCLUDE_DIR)
 LDLIBS  = -lm -lPQP -lemon
 
-SRCS    = p3at.cpp
+SRCS    = main.cpp
 
-OBJECTS = p3at.o
+OBJECTS = main.o
 
-TARGET = p3at.out
+TARGET = planning
 
 CLEAN   = $(OBJECTS) $(TARGET)
 

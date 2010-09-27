@@ -11,6 +11,7 @@
 
 #include "constants.h"
 #include "math_functions.h"
+#include "control.h"
 
 using namespace std;
 
@@ -442,9 +443,9 @@ class SkidSteerControlBased : public RobotModel
 {
     public:
         SkidSteerControlBased(double *, double *, int);
+        void EstimateNewState(const double *, const double *, double *);
         void dflow(const double *, const double *, double *);
-        void EstimateNewState(const double *,
-                              const double *, double *);
+        void EstimatePosition(const double *, const double *, double *);
         void velocities_dflow(const double *, const double *, double *);
         void EstimateVelocities(const double *,
                                 const double *, double *);
@@ -456,6 +457,7 @@ class SkidSteerControlBased : public RobotModel
     private:
         double Inertia, mass, fr, mu, xcir, a, b, c, wheel_radius, torque_max,
                max_v, max_w;
+        TrackingControlPioneer3AT trajectory_control;
         vector<control_input> all_inputs;
 };
 
@@ -518,6 +520,29 @@ void SkidSteerControlBased::GetValidInputs(const double *x)
 //     cout << "Valid Inputs: " << inputs.size() << endl << endl;
 }
 
+void SkidSteerControlBased::EstimateNewState(const double *x,
+                                             const double *ctl, double *dx)
+{
+    double curr_vel[2], new_vel[2], curr_pos[3], new_pos[3];
+    double ideal_states[n_states], tracked_states[n_states];
+    // Preenchendo variáveis auxiliares para obtenção do novo estado através de
+    // entrada de controle e integração numérica.
+    memcpy(curr_pos, x, sizeof(double) * 3);
+    memcpy(curr_vel, x+3, sizeof(double) * 2);
+    // Estima velocidade futura a partir da velocidade atual e das acelerações
+    // linear e angular fornecidas.
+    EstimateVelocities(curr_vel, ctl, new_vel);
+    // Copiando velocidade estimada para vetor de estados ideais
+    memcpy(ideal_states+3, new_vel, sizeof(double) * 2);
+    //Estima posição futura a partir da posição atual e da velocidade futura
+    // estimada anteriormente.
+    EstimatePosition(curr_pos, new_vel, new_pos);
+    // Copiando posição estimada para vetor de estados ideais
+    memcpy(ideal_states, new_pos, sizeof(double) * 3);
+    trajectory_control.run(x, ideal_states, ctl, tracked_states);
+    memcpy(dx, tracked_states, sizeof(double)*n_states);
+}
+
 void SkidSteerControlBased::dflow(const double *x, const double *ctl, double *dx)
 {
     dx[STATE_X] = ctl[VX_SPEED]*cos(x[STATE_THETA]) - xcir * sin(x[STATE_THETA]) * ctl[ANGULAR_SPEED];
@@ -525,40 +550,28 @@ void SkidSteerControlBased::dflow(const double *x, const double *ctl, double *dx
     dx[STATE_THETA] = ctl[ANGULAR_SPEED];
 }
 
-void SkidSteerControlBased::EstimateNewState(const double *x,
-                                             const double *ctl, double *dx)
+void SkidSteerControlBased::EstimatePosition(const double *x, const double *speed_ctl, double *dx)
 {
-    double curr_vel[2], new_vel[2];
     double k1[3], k2[3], k3[3], k4[3], ktemp[3];
     int i;
-    memcpy(curr_vel, x+3, sizeof(double) * 2);
-    EstimateVelocities(curr_vel, ctl, new_vel);
-    new_vel[0] = limit_speed(new_vel[0], MAX_LIN_SPEED);
-    new_vel[1] = limit_speed(new_vel[1], MAX_ROT_SPEED);
-    
-
-    memcpy(dx+3, new_vel, sizeof(double)*2);
-
-    dflow(x, new_vel, k1);
+    dflow(x, speed_ctl, k1);
     for(i=0;i<3;i++)
         ktemp[i] = x[i] + 0.5 * DELTA_T * k1[i];
 
-    dflow(ktemp, new_vel, k2);
+    dflow(ktemp, speed_ctl, k2);
     for(i=0;i<3;i++)
         ktemp[i] = x[i] + 0.5 * DELTA_T * k2[i];
 
-    dflow(ktemp, new_vel, k3);
+    dflow(ktemp, speed_ctl, k3);
     for(i=0;i<3;i++)
         ktemp[i] = x[i] + DELTA_T * k3[i];
 
-    dflow(ktemp, new_vel, k4);
+    dflow(ktemp, speed_ctl, k4);
     for(i=0; i<3; i++)
         dx[i] = x[i] + (DELTA_T/6.0)*(k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]);
-    
-    //Newton-Euler
-/*    for(i=0; i<3; i++)
-       dx[i] = x[i] + w1[i]*t;*/
 }
+
+
 
 void SkidSteerControlBased::velocities_dflow(const double *x,
                                              const double *ctl,
@@ -609,7 +622,9 @@ void SkidSteerControlBased::EstimateTorque(const double *x, const double *ctl, d
     torques[TORQUE_R] = torque_right;
 }
     
-
+/**
+@brief: Este método verifica a factibilidade da entrada de controle, isto é, verifica se os valores de aceleração armazenados em ctl geram torque e velocidade (estimados) dentro dos limites do modelo do robô.
+*/
 bool SkidSteerControlBased::VerifyFeasibility(const double *x, const double *ctl)
 {
     

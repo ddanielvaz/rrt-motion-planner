@@ -539,6 +539,7 @@ void SkidSteerControlBased::EstimateNewState(const double *x,
     EstimatePosition(curr_pos, new_vel, new_pos);
     // Copiando posição estimada para vetor de estados ideais
     memcpy(ideal_states, new_pos, sizeof(double) * 3);
+    //XXX: talvez criar um método SimulateRobot para realizar as etapas acima.
     trajectory_control.run(x, ideal_states, ctl, tracked_states);
     memcpy(dx, tracked_states, sizeof(double)*n_states);
 }

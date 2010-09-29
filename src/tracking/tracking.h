@@ -477,7 +477,6 @@ void Tracking::control_01(char *log, char *ip)
         gettimeofday(&t_begin, NULL);
         t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
         // Requisita dados dos sensores.
-        
         r0.client->Read();
         curr_pos = odom_pos = r0.navigator->GetPose();
         vx_robot = r0.navigator->GetXSpeed();

@@ -9,6 +9,7 @@
 #include <cv.h>
 #include <highgui.h>
 
+#include "control.h"
 #include "geometry.h"
 #include "constants.h"
 #include "robots.h"

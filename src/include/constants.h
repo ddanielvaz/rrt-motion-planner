@@ -14,7 +14,7 @@
 #define MAX_ROT_SPEED 1.2
 
 #define DELTA_T 0.1
-#define INTEGRATION_TIME 0.1
+#define INTEGRATION_TIME 0.3
 
 #define GOAL_BIAS 0.15
 

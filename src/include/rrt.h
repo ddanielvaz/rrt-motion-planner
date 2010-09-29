@@ -3,7 +3,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <lemon/list_graph.h>
 #include <lemon/dijkstra.h>

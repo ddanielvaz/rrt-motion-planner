@@ -2,7 +2,7 @@
 #define _ROBOTS_GEOMETRY_MODEL_H_
 
 #include <iostream>
-#include <math.h>
+#include <cmath>
 
 using namespace std;
 

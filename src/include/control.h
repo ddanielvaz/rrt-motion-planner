@@ -1,3 +1,16 @@
+#ifndef __CONTROL_H__
+#define __CONTROL_H__
+
+#include <cmath>
+#include <cstring>
+
+#include "constants.h"
+
+// Forward declaration - resolver problema de compilação de interdependência
+// entre as classes TrackingControlPioneer3AT e SkidSteerControlBased
+class SkidSteerControlBased;
+
+
 class Pioneer3ATState
 {
     public:
@@ -48,6 +61,11 @@ class TrackingControlPioneer3AT
 {
     public:
         void run(const double *, const double *, const double *, double *);
+        SkidSteerControlBased *p3at_robot;
+    private:
+        void ZDot2Flow(Pioneer3ATState, const double *, double *);
+        void ZDotFlow(Pioneer3ATState, double *);
+        void ZFlow(Pioneer3ATState, double *);
 };
 
 /**
@@ -58,51 +76,55 @@ void TrackingControlPioneer3AT::run(const double *curr_st, const double *ref_st,
 {
     Pioneer3ATState curr_state(curr_st);
     Pioneer3ATState ref_state(ref_st);
-    Pioneer3ATState aux_dq, speed_error;
-    double x_diff, y_diff, psi_diff;
+    double zd[2], z[2];
 //     cout << "curr_state.x: " << curr_state.x << " curr_state.y: " << curr_state.y
-//          << " curr_state.psi: " << curr_state.psi << " curr_state.v: " << curr_state.v
-//          << " curr_state.w: " << curr_state.w << endl;
+//           << " curr_state.psi: " << curr_state.psi << " curr_state.v: " << curr_state.v
+//           << " curr_state.w: " << curr_state.w << endl;
 // 
 //     cout << "ref_state.x: " << ref_state.x << " ref_state.y: " << ref_state.y
-//          << " ref_state.psi: " << ref_state.psi << " ref_state.v: " << ref_state.v
-//          << " ref_state.w: " << ref_state.w << endl;
+//           << " ref_state.psi: " << ref_state.psi << " ref_state.v: " << ref_state.v
+//           << " ref_state.w: " << ref_state.w << endl;
 // 
 //     cout << "linear accel: " << ctl[LINEAR_ACCEL] << " angular accel: " << ctl[ANGULAR_ACCEL] << endl;
-    x_diff = (ref_state.x - curr_state.x);
-    y_diff = (ref_state.y - curr_state.y);
-    psi_diff = normalize_angle(ref_state.psi - curr_state.psi);
-    aux_dq.x = x_diff;
-    aux_dq.y = y_diff;
-    aux_dq.psi = psi_diff;
-    //Transformando para coordenas referentes ao angulo local
-    speed_error = calculate_speed(aux_dq, curr_state.psi);
     memcpy(tracked_st, ref_st, sizeof(double) * 5);
 }
-//     Calculando erro de posição da trajetória planejada com leitura do odometro
-//     x_diff = (old_path_pos.px - curr_pos.px);
-//     y_diff = (old_path_pos.py - curr_pos.py);
-//     angle_diff = normalize_angle(old_path_pos.pa - curr_pos.pa);
-//     Preenchendo estrutura auxiliar
-//     aux_dq.px = x_diff;
-//     aux_dq.py = y_diff;
-//     aux_dq.pa = angle_diff;
-//     Transformando para coordenas referentes ao angulo local
-//     speed_error = calculate_speed(aux_dq, curr_pos.pa);
-//     p_trans_error = kp_trans * speed_error.px;
-//     p_rot_error = kp_rot * speed_error.pa;
-//     vx_control = limit_speed(vx_path + p_trans_error, 0.7);
-//     va_control = va_path + p_rot_error;
-// 
-//     Logando informações
-//     data_fp << "x_path: " << path_log_pos.px << " y_path: "
-//             << path_log_pos.py << " angle_path: " << path_log_pos.pa << endl;
-//     data_fp << "vx_path: " << vx_path << " va_path: " << va_path << endl;
-//     data_fp << "x_odom: " << odom_pos.px << " y_odom: " << odom_pos.py
-//             << " angle_odom: " << odom_pos.pa << endl;
-//     data_fp << "vx_robot: " << vx_robot << " vy_robot: " << vy_robot
-//             << " va_robot: " << va_robot << endl;
-//     data_fp << "x_diff: " << x_diff << " y_diff: " << y_diff << " angle_diff:" << angle_diff << endl;
-//     data_fp << "speed_error_x: " << speed_error.px << " speed_error_a: " << speed_error.pa << endl;
-//     data_fp << "vx_control: " << vx_control << " va_control: " << va_control
-//             << endl << endl;
+
+/**
+As equações que representam o campo vetorial da segunda derivada de z.
+zdot2[0] = epslon*cos(psi) - eta1 * eta2 * sin(psi);
+zdot2[1] = epslon*sin(psi) + eta1 * eta2 * cos(psi);
+--------------------------------------------------------------------------------
+(controle) epslon = aceleração linear
+(espaço de estados) eta1 = velocidade linear
+(espaço de estados) eta2 = velocidade angular
+*/
+void TrackingControlPioneer3AT::ZDot2Flow(Pioneer3ATState state, const double *u, double *zdot2)
+{
+    zdot2[0] = u[LINEAR_ACCEL]*cos(state.psi) - state.v * state.w * sin(state.psi);
+    zdot2[1] = u[LINEAR_ACCEL]*sin(state.psi) + state.v * state.w * cos(state.psi);
+}
+
+/**
+As equações que representam o campo vetorial da primeira derivada de z.
+zdot[0] = eta1*cos(psi);
+zdot[1] = eta1*sin(psi);
+--------------------------------------------------------------------------------
+(espaço de estados) eta1 = velocidade linear
+*/
+void TrackingControlPioneer3AT::ZDotFlow(Pioneer3ATState state, double *zdot)
+{
+    zdot[0] = state.v * cos(state.psi);
+    zdot[1] = state.v * sin(state.psi);
+}
+
+/**
+As equações que representam z.
+z[0] = x - xcir*cos(psi);
+z[1] = y - xcir*sin(psi);
+*/
+void TrackingControlPioneer3AT::ZFlow(Pioneer3ATState state, double *z)
+{
+    z[0] = state.x - p3at_robot->xcir * cos(state.psi);
+    z[1] = state.y - p3at_robot->xcir * sin(state.psi);
+}
+#endif

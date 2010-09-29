@@ -1,9 +1,9 @@
 #ifndef _ROBOTS_MODEL_H_
 #define _ROBOTS_MODEL_H_
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 
 #include <fstream>
 #include <iostream>
@@ -11,9 +11,12 @@
 
 #include "constants.h"
 #include "math_functions.h"
-#include "control.h"
 
 using namespace std;
+
+// Forward declaration - resolver problema de compilação de interdependência
+// entre as classes TrackingControlPioneer3AT e SkidSteerControlBased
+class TrackingControlPioneer3AT;
 
 class RobotModel
 {
@@ -477,6 +480,7 @@ SkidSteerControlBased::SkidSteerControlBased(double *robot_params, double *speed
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
+//     trajectory_control = new TrackingControlPioneer3AT(this);
 }
 
 void SkidSteerControlBased::GenerateInputs(char *filename)
@@ -624,23 +628,36 @@ void SkidSteerControlBased::EstimateTorque(const double *x, const double *ctl, d
 }
     
 /**
-@brief: Este método verifica a factibilidade da entrada de controle, isto é, verifica se os valores de aceleração armazenados em ctl geram torque e velocidade (estimados) dentro dos limites do modelo do robô.
+\brief: Este método verifica a factibilidade da entrada de controle, isto é, verifica se os valores de aceleração armazenados em ctl geram torque e velocidade (estimados) dentro dos limites do modelo do robô.
 */
 bool SkidSteerControlBased::VerifyFeasibility(const double *x, const double *ctl)
 {
     
-    double estimated_torques[2], curr_vel[2], new_vel[2];
-    bool torque_status=false, speed_status=false, status;
-    EstimateTorque(x, ctl, estimated_torques);
-//     cout << "T_left: " << estimated_torques[TORQUE_L] << " T_right: " << estimated_torques[TORQUE_R] << endl;
-    if( fabs(estimated_torques[TORQUE_L]) <= torque_max && fabs(estimated_torques[TORQUE_R]) <= torque_max)
-        torque_status = true;
-    memcpy(curr_vel, x+3, sizeof(double) * 2);
-    EstimateVelocities(curr_vel, ctl, new_vel);
-//     cout << "VX: " << new_vel[0] << " W: " << new_vel[1] << endl;
-    if(fabs(new_vel[0]) <= max_v && fabs(new_vel[1]) <= max_w)
-        speed_status = true;
-    status = torque_status && speed_status;
+    double temp_state[n_states], i_time;
+    double estimated_torques[2], curr_vel[2], new_vel[2], new_pos[3];
+    bool torque_status, speed_status, status;
+    // Faz uma cópia local do conteúdo de x
+    memcpy(temp_state, x, sizeof(double) * n_states);
+    for(i_time=0.0; i_time<INTEGRATION_TIME; i_time+=DELTA_T)
+    {
+        EstimateTorque(temp_state, ctl, estimated_torques);
+        if(fabs(estimated_torques[TORQUE_L]) <= torque_max && fabs(estimated_torques[TORQUE_R]) <= torque_max)
+            torque_status = true;
+        else
+            torque_status = false;
+        memcpy(curr_vel, temp_state+3, sizeof(double) * 2);
+        EstimateVelocities(curr_vel, ctl, new_vel);
+        if(fabs(new_vel[0]) <= max_v && fabs(new_vel[1]) <= max_w)
+            speed_status = true;
+        else
+            speed_status = false;
+        status = torque_status && speed_status;
+        if(!status)
+            break;
+        EstimatePosition(x, new_vel, new_pos);
+        memcpy(temp_state, new_pos, sizeof(double) * 3);
+        memcpy(temp_state+3, new_vel, sizeof(double) * 2);
+    }
 //     cout << "The status is: " << status << endl;
     return status;
 }

@@ -1,7 +1,7 @@
 #ifndef _WORLD_MODULE_H_
 #define _WORLD_MODULE_H_
 
-#include <math.h>
+#include <cmath>
 #include <iostream>
 
 #include <PQP/PQP.h>

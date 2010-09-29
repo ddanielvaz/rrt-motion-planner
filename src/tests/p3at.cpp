@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "control.h"
 #include "geometry.h"
 #include "rrt.h"
 #include "robots.h"

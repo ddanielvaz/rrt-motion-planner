@@ -1,7 +1,7 @@
 #ifndef _MATH_FUNCTIONS_H_
 #define _MATH_FUNCTIONS_H_
 
-#include <math.h>
+#include <cmath>
 
 #include "constants.h"
 

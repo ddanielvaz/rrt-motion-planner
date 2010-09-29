@@ -1,7 +1,7 @@
 #ifndef _UTILS_COMMOM_H_
 #define _UTILS_COMMOM_H_
 
-#include <math.h>
+#include <cmath>
 #include <ctime>
 
 #include <lemon/random.h>

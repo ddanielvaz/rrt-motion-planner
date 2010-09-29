@@ -1,9 +1,9 @@
 #include <iostream>
 
+#include "draw.h"
 #include "geometry.h"
 #include "robots.h"
 #include "constants.h"
-#include "draw.h"
 
 using namespace std;
 

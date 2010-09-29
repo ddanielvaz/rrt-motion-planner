@@ -1,5 +1,12 @@
 #include "World.hh"
 
+PQP_REAL IDENTITY_MATRIX[3][3] = {{1.0, 0.0, 0.0},
+                                  {0.0, 1.0, 0.0},
+                                  {0.0, 0.0, 1.0}};
+
+PQP_REAL ORIGIN[3] = {0.0, 0.0, 0.0};
+
+
 EnvModel::EnvModel(char *filename)
 {
     cout << "Criando instancia da classe EnvModel" << endl;

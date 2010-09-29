@@ -1,5 +1,5 @@
-#ifndef __WORLD_MODULE_H__
-#define __WORLD_MODULE_H__
+#ifndef __WORLD_MODULE_HH__
+#define __WORLD_MODULE_HH__
 
 #include <PQP/PQP.h>
 
@@ -10,12 +10,6 @@
 // #include <iostream>
 #include <cstdlib>
 #include <fstream>
-
-PQP_REAL IDENTITY_MATRIX[3][3] = {{1.0, 0.0, 0.0},
-                                  {0.0, 1.0, 0.0},
-                                  {0.0, 0.0, 1.0}};
-
-PQP_REAL ORIGIN[3] = {0.0, 0.0, 0.0};
 
 class EnvModel
 {

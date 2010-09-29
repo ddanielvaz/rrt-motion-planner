@@ -2,9 +2,10 @@
 
 CC = g++
 # CFLAGS  = -Wall -O2
-INCLUDE_DIR = ../include
-CFLAGS  = -Wall -I$(INCLUDE_DIR)
-LDLIBS  = -lm -lPQP -lemon
+INCLUDE_DIR = ../include/
+MOTION_PLANNER_LIB_DIR = ../lib/
+CFLAGS  = -Wall -I$(INCLUDE_DIR) -shared
+LDLIBS  = -lm -lPQP -lemon -L$(MOTION_PLANNER_LIB_DIR) -lMotionPlanner
 
 SRCS    = p3at.cpp
 
@@ -18,7 +19,7 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(TARGET) $(LDLIBS)
 
 .cpp.o:
-	$(CC) ${CFLAGS} -c $<
+	$(CC) -shared $(CFLAGS) -c $<
 
 run: $(TARGET)
 	$(TARGET)

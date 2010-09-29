@@ -6,6 +6,20 @@
 
 using namespace std;
 
+/**
+Esta função auxiliar, implementa a transformação número (2) para estimar a
+velocidade do robô P3AT.
+--------------------------------------------------------------------------------
+dq   => diferença entre estados (referência e atual)
+eta  => vetor velocidade (linear e angular)
+S(q) => Matriz que rege a cinemática do robô Pioneer3AT
+--------------------------------------------------------------------------------
+(1) dq = S(q) * eta
+então:
+(2) eta = S^-1(q) * dq
+
+Obs: Como S(q) não é quadrada é calculada a pseudo-inversa.
+*/
 player_pose2d_t calculate_speed(player_pose2d_t dq, double theta)
 {
     const double xcir=0.008, xcir2_1=(xcir*xcir)+1.0;

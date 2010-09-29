@@ -1,5 +1,5 @@
-#ifndef _CONSTANTS_RRT_MOTION_PLANNER_
-#define _CONSTANTS_RRT_MOTION_PLANNER_
+#ifndef __RRT_CONSTANTS_HH__
+#define __RRT_CONSTANTS_HH__
 
 #define GOAL_TRANSLATIONAL_TOLERANCE 0.2
 //5 graus
@@ -59,10 +59,5 @@ enum
 {
     DV_DESIRED=0, DW_DESIRED
 };
-
-typedef struct
-{
-    double ctrl[2];
-}control_input;
 
 #endif

@@ -1,29 +1,4 @@
-#ifndef _WORLD_MODULE_H_
-#define _WORLD_MODULE_H_
-
-#include <cmath>
-#include <iostream>
-
-#include <PQP/PQP.h>
-
-#include "robots.h"
-
-PQP_REAL IDENTITY_MATRIX[3][3] = {{1.0, 0.0, 0.0},
-                                  {0.0, 1.0, 0.0},
-                                  {0.0, 0.0, 1.0}};
-
-PQP_REAL ORIGIN[3] = {0.0, 0.0, 0.0};
-
-using namespace std;
-
-class EnvModel
-{
-    public:
-        EnvModel(char *);
-        ~EnvModel();
-        PQP_Model obstacles;
-        double dim[2];
-};
+#include "World.hh"
 
 EnvModel::EnvModel(char *filename)
 {
@@ -64,16 +39,6 @@ EnvModel::~EnvModel()
 {
     cout << "Destruindo instancia da classe EnvModel" << endl;
 }
-
-class World
-{
-    public:
-        World(char *, CarGeometry *);
-        ~World();
-        int IsVehicleInSafePosition(double, double, double);
-        CarGeometry *veh_geometry;
-        EnvModel *env;
-};
 
 World::World(char *envfilename, CarGeometry* car_geom)
 {
@@ -123,5 +88,3 @@ World::~World()
 {
     cout << "Destruindo instancia da classe World." << endl;
 }
-
-#endif

@@ -1,16 +1,4 @@
-#ifndef _UTILS_COMMOM_H_
-#define _UTILS_COMMOM_H_
-
-#include <cmath>
-#include <ctime>
-
-#include <lemon/random.h>
-
-#include "constants.h"
-#include "math_functions.h"
-
-using namespace std;
-using namespace lemon;
+#include "Utils.hh"
 
 double metric(const double *state0, const double *state)
 {
@@ -61,5 +49,3 @@ void initiate_rand_number_generator()
     rnd.seedFromFile();
     return;
 }
-
-#endif

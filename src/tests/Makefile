@@ -1,13 +1,13 @@
 .SUFFIXES: .cpp
 
 CC = g++
-# CFLAGS  = -Wall -O2
 INCLUDE_DIR = ../include/
-MOTION_PLANNER_LIB_DIR = ../lib/
-CFLAGS  = -Wall -I$(INCLUDE_DIR) -shared
-LDLIBS  = -lm -lPQP -lemon -L$(MOTION_PLANNER_LIB_DIR) -lMotionPlanner
+CFLAGS  = -Wall -I$(INCLUDE_DIR)
+LDLIBS  = -lm -lPQP -lemon
 
 SRCS    = p3at.cpp
+
+MY_MOTION_PLANNER_LIB = ../lib/libMotionPlanner.a
 
 OBJECTS = p3at.o
 
@@ -16,10 +16,13 @@ TARGET = p3at.out
 CLEAN   = $(OBJECTS) $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(TARGET) $(LDLIBS)
+	$(CC) $(OBJECTS) $(MY_MOTION_PLANNER_LIB) -o $(TARGET) $(LDLIBS)
 
 .cpp.o:
-	$(CC) -shared $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
+
+all:
+	$(MAKE) "../include"
 
 run: $(TARGET)
 	$(TARGET)

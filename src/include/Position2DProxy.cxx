@@ -1,18 +1,4 @@
-#include <libplayerc++/playerc++.h>
-
-using namespace std;
-using namespace PlayerCc;
-
-class ProxyPosition : public Position2dProxy
-{
-    public:
-        ProxyPosition(PlayerClient *client);
-        ~ProxyPosition(void);
-        void AdjustSpeed(double fwd, double turn);
-        void SetMotorStatus(bool st);
-        void SetOdomPos(player_pose2d_t pos);
-        player_pose2d_t GetPose(void);
-};
+#include "Position2DProxy.hh"
 
 ProxyPosition::ProxyPosition(PlayerClient *client) : Position2dProxy(client, 0)
 {

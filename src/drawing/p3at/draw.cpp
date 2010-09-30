@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "geometry.h"
-#include "draw.h"
+#include "Geometry.hh"
+#include "Graphics.hh"
 
 using namespace std;
 
@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     //Dimensoes para o pioneer 3at
     double width = 0.51, height = 0.493, body_length = 0.0;
-    char obstacles_file[]="../resources/lasi_map.txt", pathfile[32], odomfile[32],
+    char obstacles_file[]="../resources/lasi.map", pathfile[32], odomfile[32],
     title[]="Drawing Tool";
     CarGeometry geom_car(width, height, body_length);
     cvInitSystem(argc, argv);

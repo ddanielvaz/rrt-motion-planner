@@ -1,130 +1,11 @@
-#ifndef _GRAPHICS_UTIL_H_
-#define _GRAPHICS_UTIL_H_
+#include "Graphics.hh"
+#include "Carro.hh"
+#include "Constants.hh"
+#include "Obstacles.hh"
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <math.h>
-
-#include <cv.h>
-#include <highgui.h>
-
-#include "control.h"
-#include "geometry.h"
-#include "constants.h"
-#include "robots.h"
-#include "drawing_utils.h"
-
-using namespace std;
-
-class Carro
-{
-    public:
-        Carro(CarGeometry*);
-        void draw(IplImage*, CvScalar);
-    private:
-        CvPoint retangulo[4];
-        CvPoint *fig[1];
-};
-
-
-Carro::Carro(CarGeometry *car)
-{
-    //cout << "Criando instancia da classe Carro." << endl;
-    retangulo[0] = cvPoint(SCALE_FACTOR * car->xlt, SCALE_FACTOR * car->ylt);
-    retangulo[1] = cvPoint(SCALE_FACTOR * car->xrt, SCALE_FACTOR * car->yrt);
-    retangulo[2] = cvPoint(SCALE_FACTOR * car->xrb, SCALE_FACTOR * car->yrb);
-    retangulo[3] = cvPoint(SCALE_FACTOR * car->xlb, SCALE_FACTOR * car->ylb);
-    fig[0] = retangulo;
-}
-
-void Carro::draw(IplImage* img, CvScalar color)
-{
-    int npts=4, ncurves = 1;
-    cvPolyLine(img, fig, &npts, ncurves, 1, color);
-}
-
-class Obstacles
-{
-    public:
-        Obstacles(char *);
-        void draw(IplImage *);
-        vector<CvPoint3D64f> triangs;
-        double w, h;
-};
-
-Obstacles::Obstacles(char *filename)
-{
-    cout << "Criando instancia da classe Obstacles" << endl;
-    ifstream obs_fp(filename);
-    if(!obs_fp.is_open())
-    {
-        cerr << "Arquivo: " << filename << " nao encontrado. Podem ocorrer erros na visualizacao." << endl;
-        return;
-    }
-    char temp[100], *ps, *nxt;
-    double v[9];
-    int i;
-    // Pegando informação sobre largura e altura total do ambiente
-    obs_fp.getline(temp, 100);
-    w = strtod(temp, &ps);
-    h = strtod(ps, NULL);
-    cout << w << " " << h << endl;
-    while(obs_fp.getline(temp, 100))
-    {
-        v[0] = strtod(temp, &ps);
-        nxt = ps;
-        for (i=1; i<9; i++)
-        {
-            v[i] = strtod(nxt, &ps);
-            nxt = ps;
-        }
-        for(i=0;i<9;i=i+3)
-            triangs.push_back(cvPoint3D64f(v[i], v[i+1], v[i+2]));
-    }
-    obs_fp.close();
-}
-
-void Obstacles::draw(IplImage *img)
-{
-    CvPoint triang[3];
-    CvPoint *fig[1];
-    int npts=3, ncurves=1;
-    CvScalar red = CV_RGB(255,0,0);
-    CvScalar black = CV_RGB(0,0,0);
-    for (vector<CvPoint3D64f>::iterator i = triangs.begin(); i != triangs.end(); ){
-        triang[0] = cvPoint(SCALE_FACTOR * i->x, SCALE_FACTOR * i->y);
-        ++i;
-        triang[1] = cvPoint(SCALE_FACTOR * i->x, SCALE_FACTOR * i->y);
-        ++i;
-        triang[2] = cvPoint(SCALE_FACTOR * i->x, SCALE_FACTOR * i->y);
-        ++i;
-        fig[0] = triang;
-        //Solid
-        cvFillPoly(img, fig, &npts, ncurves, black);
-        //Wireframe
-        //cvPolyLine(img, fig, &npts, ncurves, 1, red);
-    }
-}
-
-class Graphics
-{
-    public:
-        Graphics(CarGeometry *, char *, char*);
-        ~Graphics();
-        void plot_trail_states(char *, int);
-        void plot_line_states(char *, int);
-        void plot_tree(char *, int, RobotModel *);
-        void plot_obstacles(void);
-        void draw_trail(double, double, double, int);
-        void draw_line(double, double, double, double, int);
-        void show(char*);
-        void draw_initial_and_goal(double *initial, double *goal);
-    private:
-        CarGeometry *veh_geom;
-        Obstacles *map_enviroment;
-        IplImage* img1;
-};
+CvScalar colors[] = {CV_RGB(255,0,0), CV_RGB(0,255,0), CV_RGB(0,0,255),
+                     CV_RGB(255,255,0), CV_RGB(0.596*255,0.984*255,0.596*255), CV_RGB(0,0,0),
+                     CV_RGB(255,255,255) };
 
 Graphics::Graphics(CarGeometry *car_geom, char *obs_file, char *title)
 {
@@ -365,5 +246,3 @@ void Graphics::show(char *title)
     cvSaveImage("trajetoria.png",img1);
     cvWaitKey(0);
 }
-
-#endif

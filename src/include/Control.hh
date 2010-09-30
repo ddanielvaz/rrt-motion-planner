@@ -6,16 +6,19 @@
 #include <cstring>
 #include <cmath>
 
+// Forward declaration
+class SkidSteerControlBased;
+
 class TrackingControlPioneer3AT
 {
     public:
-        TrackingControlPioneer3AT(const double);
+        TrackingControlPioneer3AT(SkidSteerControlBased *);
         void run(const double *, const double *, const double *, double *);
     private:
         void ZDot2Flow(Pioneer3ATState, const double *, double *);
         void ZDotFlow(Pioneer3ATState, double *);
         void ZFlow(Pioneer3ATState, double *);
-        double xcir;
+        SkidSteerControlBased *p3at;
 };
 
 #endif

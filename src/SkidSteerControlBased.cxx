@@ -17,7 +17,7 @@ SkidSteerControlBased::SkidSteerControlBased(double *robot_params, double *speed
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
-    trajectory_control = new TrackingControlPioneer3AT(xcir);
+    trajectory_control = new TrackingControlPioneer3AT(this);
 }
 
 void SkidSteerControlBased::GenerateInputs(char *filename)
@@ -232,6 +232,11 @@ void SkidSteerControlBased::EstimateVelocities(const double *x,
 /*    velocities_dflow(initial_state, u_torque, w1);
     for(i=0; i<2; i++)
        speeds[i] = initial_state[i] + w1[i]*t;*/
+}
+
+double SkidSteerControlBased::GetXCIR(void)
+{
+    return this->xcir;
 }
 
 SkidSteerControlBased::~SkidSteerControlBased()

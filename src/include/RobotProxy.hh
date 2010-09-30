@@ -3,7 +3,7 @@
 
 #include <libplayerc++/playerc++.h>
 
-#include "position2d_proxy.h"
+#include "Position2DProxy.hh"
 
 #include <iostream>
 

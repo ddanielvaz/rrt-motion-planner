@@ -1,10 +1,9 @@
-#include <iostream>
-#include <fstream>
+#include "Constants.hh"
+#include "MathFunctions.hh"
+#include "PlayerTracking.hh"
+#include "RobotProxy.hh"
 
-#include "robot_proxy.h"
-#include "robots.h"
-
-using namespace std;
+/** Funções auxiliares */
 
 /**
 Esta função auxiliar, implementa a transformação número (2) para estimar a
@@ -40,30 +39,17 @@ player_pose2d_t calculate_dq(player_pose2d_t speed, double theta)
     return dq;
 }
 
-class Tracking
-{
-    public:
-        Tracking(RobotModel*);
-        void control_kanayama(char *, char *);
-        void control_kanayama_delay(char *, char *);
-        void control(char *, char *);
-        void control_01(char *, char *);
-        void control_02(char *, char *);
-        void no_control(char *, char *);
-        RobotModel *robot;
-};
+/** Declaração da Classe Tracking */
 
-Tracking::Tracking(RobotModel *r)
+Tracking::Tracking(int number_states)
 {
-    cout << "Criando instancia da classe Tracking." << endl;
-    robot = r;
+    cout << "Criando instancia da position2d_proxyclasse Tracking." << endl;
+    n_states = number_states;
 }
 
 void Tracking::control_kanayama(char *log, char *ip)
 {
-    int n = robot->n_states;
-    //double it, states[n], aux1[n], aux2[n], control[2];
-    double data[n];
+    double data[n_states];
     char temp[100], *nxt, *ps;
     ifstream path_fp(log);
     player_pose2d_t path_log_pos, old_path_pos, odom_pos, curr_pos, old_pos;
@@ -92,7 +78,7 @@ void Tracking::control_kanayama(char *log, char *ip)
     path_fp.getline(temp, 100);
     data[0] = strtod(temp, &ps);
     nxt = ps;
-    for (int i=1; i<n; i++)
+    for (int i=1; i<n_states; i++)
     {
         data[i] = strtod(nxt, &ps);
         nxt = ps;
@@ -144,7 +130,7 @@ void Tracking::control_kanayama(char *log, char *ip)
         // Fim do Log
         data[0] = strtod(temp, &ps);
         nxt = ps;
-        for (int i=1; i<n; i++)
+        for (int i=1; i<n_states; i++)
         {
             data[i] = strtod(nxt, &ps);
             nxt = ps;
@@ -173,9 +159,7 @@ void Tracking::control_kanayama(char *log, char *ip)
 
 void Tracking::control_kanayama_delay(char *log, char *ip)
 {
-    int n = robot->n_states;
-    //double it, states[n], aux1[n], aux2[n], control[2];
-    double data[n];
+    double data[n_states];
     char temp[100], *nxt, *ps;
     ifstream path_fp(log);
     player_pose2d_t path_log_pos, old_path_pos, odom_pos, curr_pos, old_pos;
@@ -208,7 +192,7 @@ void Tracking::control_kanayama_delay(char *log, char *ip)
     path_fp.getline(temp, 100);
     data[0] = strtod(temp, &ps);
     nxt = ps;
-    for (int i=1; i<n; i++)
+    for (int i=1; i<n_states; i++)
     {
         data[i] = strtod(nxt, &ps);
         nxt = ps;
@@ -262,7 +246,7 @@ void Tracking::control_kanayama_delay(char *log, char *ip)
         // Fim do Log
         data[0] = strtod(temp, &ps);
         nxt = ps;
-        for (int i=1; i<n; i++)
+        for (int i=1; i<n_states; i++)
         {
             data[i] = strtod(nxt, &ps);
             nxt = ps;
@@ -294,9 +278,7 @@ void Tracking::control_kanayama_delay(char *log, char *ip)
 
 void Tracking::control(char *log, char *ip)
 {
-    int n = robot->n_states;
-    //double it, states[n], aux1[n], aux2[n], control[2];
-    double data[n];
+    double data[n_states];
     char temp[100], *nxt, *ps;
     ifstream path_fp(log);
     player_pose2d_t path_log_pos, old_path_pos, odom_pos, curr_pos, old_pos;
@@ -331,7 +313,7 @@ void Tracking::control(char *log, char *ip)
     path_fp.getline(temp, 100);
     data[0] = strtod(temp, &ps);
     nxt = ps;
-    for (int i=1; i<n; i++)
+    for (int i=1; i<n_states; i++)
     {
         data[i] = strtod(nxt, &ps);
         nxt = ps;
@@ -395,7 +377,7 @@ void Tracking::control(char *log, char *ip)
         // Fim do Log
         data[0] = strtod(temp, &ps);
         nxt = ps;
-        for (int i=1; i<n; i++)
+        for (int i=1; i<n_states; i++)
         {
             data[i] = strtod(nxt, &ps);
             nxt = ps;
@@ -430,9 +412,8 @@ void Tracking::control(char *log, char *ip)
 
 void Tracking::control_01(char *log, char *ip)
 {
-    int n = robot->n_states;
     //double it, states[n], aux1[n], aux2[n], control[2];
-    double data[n];
+    double data[n_states];
     char temp[100], *nxt, *ps;
     ifstream path_fp(log);
     player_pose2d_t path_log_pos, old_path_pos, odom_pos, curr_pos, old_pos;
@@ -467,7 +448,7 @@ void Tracking::control_01(char *log, char *ip)
     path_fp.getline(temp, 100);
     data[0] = strtod(temp, &ps);
     nxt = ps;
-    for (int i=1; i<n; i++)
+    for (int i=1; i<n_states; i++)
     {
         data[i] = strtod(nxt, &ps);
         nxt = ps;
@@ -526,7 +507,7 @@ void Tracking::control_01(char *log, char *ip)
         // Fim do Log
         data[0] = strtod(temp, &ps);
         nxt = ps;
-        for (int i=1; i<n; i++)
+        for (int i=1; i<n_states; i++)
         {
             data[i] = strtod(nxt, &ps);
             nxt = ps;
@@ -613,9 +594,9 @@ void Tracking::control_01(char *log, char *ip)
 
 void Tracking::control_02(char *log, char *ip)
 {
-    int n = robot->n_states,i;
+    int i;
     //double it, states[n], aux1[n], aux2[n], control[2];
-    double data[n];
+    double data[n_states];
     char temp[100], *nxt, *ps;
     ifstream path_fp(log);
     player_pose2d_t path_log_pos, old_path_pos, odom_pos, curr_pos, old_pos;
@@ -650,7 +631,7 @@ void Tracking::control_02(char *log, char *ip)
     path_fp.getline(temp, 100);
     data[0] = strtod(temp, &ps);
     nxt = ps;
-    for (i=1; i<n; i++)
+    for (i=1; i<n_states; i++)
     {
         data[i] = strtod(nxt, &ps);
         nxt = ps;
@@ -719,7 +700,7 @@ void Tracking::control_02(char *log, char *ip)
         }
         data[0] = strtod(temp, &ps);
         nxt = ps;
-        for (i=1; i<n; i++)
+        for (i=1; i<n_states; i++)
         {
             data[i] = strtod(nxt, &ps);
             nxt = ps;
@@ -799,8 +780,7 @@ void Tracking::control_02(char *log, char *ip)
 
 void Tracking::no_control(char *log, char *ip)
 {
-    int n = robot->n_states;
-    double data[n];
+    double data[n_states];
     char temp[100], *nxt, *ps;
     ifstream path_fp(log);
     player_pose2d_t path_log_pos, odom_pos;
@@ -830,7 +810,7 @@ void Tracking::no_control(char *log, char *ip)
     path_fp.getline(temp, 100);
     data[0] = strtod(temp, &ps);
     nxt = ps;
-    for (int i=1; i<n; i++)
+    for (int i=1; i<n_states; i++)
     {
         data[i] = strtod(nxt, &ps);
         nxt = ps;
@@ -852,7 +832,7 @@ void Tracking::no_control(char *log, char *ip)
         r0.client->Read();
         data[0] = strtod(temp, &ps);
         nxt = ps;
-        for (int i=1; i<n; i++)
+        for (int i=1; i<n_states; i++)
         {
             data[i] = strtod(nxt, &ps);
             nxt = ps;
@@ -878,34 +858,3 @@ void Tracking::no_control(char *log, char *ip)
     odom_pos = r0.navigator->GetPose();
     odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
 }
-
-  /*  
-  
-    gettimeofday(&t_begin, NULL);
-    t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
-  
-  
-  Dado o torque do modelo dinamico, estima as velocidades a partir do metodo
-  EstimateNewState.
-  
-    states[0] = strtod(temp, &ps);
-    nxt = ps;
-    for (int i=1; i<robot->n_states; i++)
-    {
-        states[i] = strtod(nxt, &ps);
-        nxt = ps;
-    }
-    control[0] = strtod(nxt, &ps);
-    nxt = ps;
-    control[1] = strtod(nxt, NULL);
-    
-
-    memcpy(aux1, states, sizeof(double) * robot->n_states);
-    for (it=0.0; it<INTEGRATION_TIME; it+=DELTA_T)
-    {
-        robot->EstimateNewState(DELTA_T, aux1, control, aux2);
-        memcpy(aux1, aux2, sizeof(double) * robot->n_states);
-    }
-    cout << aux1[3] << " " << aux1[4] << endl;
-    */
-

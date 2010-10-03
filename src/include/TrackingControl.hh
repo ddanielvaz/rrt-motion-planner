@@ -6,9 +6,6 @@
 #include <cstring>
 #include <cmath>
 
-// Forward declaration
-// class SkidSteerControlBased;
-
 class TrackingControl
 {
     public:

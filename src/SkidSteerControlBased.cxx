@@ -1,5 +1,6 @@
 #include "SkidSteerControlBased.hh"
-#include "CaraccioloControl.hh"
+// #include "CaraccioloControl.hh"
+#include "FierroControl.hh"
 
 SkidSteerControlBased::SkidSteerControlBased(double *robot_params, double *speeds_limit, int n_st)
 {
@@ -17,7 +18,7 @@ SkidSteerControlBased::SkidSteerControlBased(double *robot_params, double *speed
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
-    trajectory_control = new CaraccioloControl(this);
+    trajectory_control = new FierroControl(this);
 }
 
 void SkidSteerControlBased::GenerateInputs(char *filename)

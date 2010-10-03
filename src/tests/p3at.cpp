@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "Control.hh"
 #include "Geometry.hh"
 #include "RRT.hh"
 #include "SkidSteerControlBased.hh"

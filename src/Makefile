@@ -2,7 +2,7 @@
 CC=g++
 INCLUDE_DIR = ./include/
 CFLAGS = -c -Wall -I$(INCLUDE_DIR)
-SOURCES = CarLikeModel.cxx Control.cxx Geometry.cxx MathFunctions.cxx Pioneer3ATState.cxx RobotModel.cxx RRT.cxx SkidSteerControlBased.cxx SkidSteerDynamicModel.cxx SkidSteerModel.cxx Utils.cxx World.cxx
+SOURCES = CarLikeModel.cxx TrackingControl.cxx CaraccioloControl.cxx Geometry.cxx MathFunctions.cxx Pioneer3ATState.cxx RobotModel.cxx RRT.cxx SkidSteerControlBased.cxx SkidSteerDynamicModel.cxx SkidSteerModel.cxx Utils.cxx World.cxx
 OBJDIR = ./lib
 MY_LIB = ./lib/libMotionPlanner.a
 OBJECTS = $(addprefix $(OBJDIR)/,$(SOURCES:.cxx=.o))

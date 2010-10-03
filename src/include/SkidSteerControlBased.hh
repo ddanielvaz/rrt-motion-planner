@@ -8,7 +8,7 @@
 #include <cstdlib>
 
 // Forward Declaration
-class TrackingControlPioneer3AT;
+class TrackingControl;
 
 class SkidSteerControlBased : public RobotModel
 {
@@ -29,7 +29,7 @@ class SkidSteerControlBased : public RobotModel
     private:
         double Inertia, mass, fr, mu, xcir, a, b, c, wheel_radius, torque_max,
                max_v, max_w;
-        TrackingControlPioneer3AT *trajectory_control;
+        TrackingControl *trajectory_control;
         vector<control_input> all_inputs;
 };
 

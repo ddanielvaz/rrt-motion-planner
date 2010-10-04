@@ -35,7 +35,7 @@ class FierroControl : public TrackingControl
         void ComputeDerivativeAuxVelocity(Pioneer3ATState, ErrorState,
                                           ErrorState,VelocityState *);
         void ComputeControlInput(VelocityState, VelocityState, Pioneer3ATState,
-                                 VelocityState *);
+                                 double *);
         // Pesos do controlador
         double k1, k2, k3, k4;
 };

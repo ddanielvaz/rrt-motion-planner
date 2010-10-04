@@ -24,12 +24,14 @@ class SkidSteerControlBased : public RobotModel
         void GetValidInputs(const double *x);
         void EstimateTorque(const double *, const double *, double *);
         bool VerifyFeasibility(const double *x, const double *u);
+        void EstimateVelocitiesFromTorque(const double*, const double*, double*);
         double GetXCIR(void);
         ~SkidSteerControlBased();
+        TrackingControl *trajectory_control;
     private:
         double Inertia, mass, fr, mu, xcir, a, b, c, wheel_radius, torque_max,
                max_v, max_w;
-        TrackingControl *trajectory_control;
+        
         vector<control_input> all_inputs;
 };
 

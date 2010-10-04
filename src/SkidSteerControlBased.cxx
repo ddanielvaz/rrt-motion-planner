@@ -1,5 +1,4 @@
 #include "SkidSteerControlBased.hh"
-// #include "CaraccioloControl.hh"
 #include "FierroControl.hh"
 
 SkidSteerControlBased::SkidSteerControlBased(double *robot_params, double *speeds_limit, int n_st)
@@ -55,7 +54,7 @@ void SkidSteerControlBased::GetValidInputs(const double *x)
     inputs.clear();
     for(it=all_inputs.begin() ; it < all_inputs.end(); it++)
     {
-        // Validar torques e limites de velocidades
+        // Validar limites de velocidades
         if(VerifyFeasibility(x, (*it).ctrl))
             inputs.push_back(*it);
     }
@@ -66,10 +65,15 @@ void SkidSteerControlBased::EstimateNewState(const double *x,
                                              const double *ctl, double *dx)
 {
     double curr_vel[2], new_vel[2], curr_pos[3], new_pos[3];
-    double ideal_states[n_states], tracked_states[n_states];
+    double ideal_states[n_states], inputs[2], computed_torques[2];
+    double new_vel_tracked[2], new_pos_tracked[3], tracked_states[n_states];
     // Preenchendo variáveis auxiliares para obtenção do novo estado através de
     // entrada de controle e integração numérica.
+    // Copiando as três primeiras posições do vetor do espaço de estados
+    // referentes a: (x,y,psi)
     memcpy(curr_pos, x, sizeof(double) * 3);
+    // Copiando as duas últimas posições do vetor do espaço de estados
+    // referentes a: (v,w)
     memcpy(curr_vel, x+3, sizeof(double) * 2);
     // Estima velocidade futura a partir da velocidade atual e das acelerações
     // linear e angular fornecidas.
@@ -82,7 +86,21 @@ void SkidSteerControlBased::EstimateNewState(const double *x,
     // Copiando posição estimada para vetor de estados ideais
     memcpy(ideal_states, new_pos, sizeof(double) * 3);
     //XXX: talvez criar um método SimulateRobot para realizar as etapas acima.
-    trajectory_control->run(x, ideal_states, ctl, tracked_states);
+    trajectory_control->run(x, ideal_states, ctl, inputs);
+    
+    EstimateTorque(x, inputs, computed_torques);
+    EstimateVelocitiesFromTorque(x, computed_torques, new_vel_tracked);
+    // Copiando velocidade estimada para vetor de estados acompanhados
+    memcpy(tracked_states+3, new_vel_tracked, sizeof(double) * 2);
+    //Estima posição futura a partir da posição atual e da velocidade de
+    // acompanhamento estimada anteriormente.
+    EstimatePosition(curr_pos, new_vel_tracked, new_pos_tracked);
+    memcpy(tracked_states, new_pos_tracked, sizeof(double) * 3);
+    cout << "Current Vx: " << curr_vel[0] << " Current W: " << curr_vel[1] << endl;
+    cout << "Ideal ref Vx: " << new_vel[0] << " Ideal ref W: " << new_vel[1] << endl;
+    cout << "Tracked Vx: " << new_vel_tracked[0] << " Tracked W: " << new_vel_tracked[1] << endl << endl;
+//     cout << "x: " << new_pos_tracked[0] << " y: " << new_pos_tracked[1] << " psi: " << new_pos_tracked[2] << endl << endl;
+//     cout << "Torque_l: " << computed_torques[TORQUE_L] << " Torque_r: " << computed_torques[TORQUE_R] << endl;
     memcpy(dx, tracked_states, sizeof(double)*n_states);
 }
 
@@ -114,36 +132,6 @@ void SkidSteerControlBased::EstimatePosition(const double *x, const double *spee
         dx[i] = x[i] + (DELTA_T/6.0)*(k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]);
 }
 
-
-
-void SkidSteerControlBased::velocities_dflow(const double *x,
-                                             const double *ctl,
-                                             double *dx)
-{
-    double Rx, Fy, Mr, vl, vr, vf, vb, dtheta, torque_left, torque_right;
-    dtheta = x[ANGULAR_SPEED];
-    vl = x[VX_SPEED] + c * x[ANGULAR_SPEED];
-    vr = x[VX_SPEED] - c * x[ANGULAR_SPEED];
-    vf = (-xcir + a) * x[ANGULAR_SPEED];
-    vb = (-xcir - b) * x[ANGULAR_SPEED];
-    Rx = (fr*mass*GRAVITY/2.0)*(sgn(vl)+sgn(vr));
-    Fy = mu*((mass*GRAVITY)/(a+b))*(b*sgn(vf)+a*sgn(vb));
-    Mr = mu*((a*b*mass*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+(fr*c*mass*GRAVITY/2.0)*(sgn(vl)-sgn(vr));
-
-    torque_left = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2 +
-                  wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
-                  mass * xcir * xcir + dtheta * mass * x[VX_SPEED] * xcir)/(2*c);
-    torque_right = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2 -
-                   wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
-                   mass * xcir * xcir + dtheta * mass * x[VX_SPEED] * xcir)/(2*c);
-
-    dx[VX_SPEED] = xcir * dtheta * x[ANGULAR_SPEED] - Rx/mass + torque_left/(mass*wheel_radius) + torque_right/(mass*wheel_radius);
-    dx[ANGULAR_SPEED] = -(mass*xcir*x[ANGULAR_SPEED]*x[VX_SPEED])/(mass*xcir*xcir+Inertia)
-                        -(Mr+xcir*Fy)/(mass*xcir*xcir+Inertia)
-                        +(c*torque_left)/((mass*xcir*xcir+Inertia)*wheel_radius)
-                        -(c*torque_right)/((mass*xcir*xcir+Inertia)*wheel_radius);
-}
-
 void SkidSteerControlBased::EstimateTorque(const double *x, const double *ctl, double *torques)
 {
     double Rx, Fy, Mr, vl, vr, vf, vb, dtheta, torque_left, torque_right;
@@ -155,12 +143,11 @@ void SkidSteerControlBased::EstimateTorque(const double *x, const double *ctl, d
     Rx = (fr*mass*GRAVITY/2.0)*(sgn(vl)+sgn(vr));
     Fy = mu*((mass*GRAVITY)/(a+b))*(b*sgn(vf)+a*sgn(vb));
     Mr = mu*((a*b*mass*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+(fr*c*mass*GRAVITY/2.0)*(sgn(vl)-sgn(vr));
-    torque_left = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2 +
-                  wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
-                  mass * xcir * xcir + dtheta * mass * x[VX_SPEED] * xcir)/(2*c);
-    torque_right = wheel_radius * (Rx + ctl[DV_DESIRED] * mass - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2 -
-                   wheel_radius * (Mr + Inertia * ctl[DW_DESIRED] + xcir * Fy + ctl[DW_DESIRED] *
-                   mass * xcir * xcir + dtheta * mass * x[VX_SPEED] * xcir)/(2*c);
+    torque_left = wheel_radius * (Rx + mass * ctl[u1] - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2.0 +
+                  wheel_radius * (-mass * ctl[u2] * xcir * xcir + Fy * xcir + Mr + Inertia * ctl[u2])/(2.0*c);
+
+    torque_right = wheel_radius * (Rx + mass * ctl[u1] - dtheta * mass * x[ANGULAR_SPEED] * xcir)/2.0 -
+                   wheel_radius * (-mass * ctl[u2] * xcir * xcir + Fy * xcir + Mr + Inertia * ctl[u2])/(2.0*c);
     torques[TORQUE_L] = torque_left;
     torques[TORQUE_R] = torque_right;
 }
@@ -170,7 +157,6 @@ void SkidSteerControlBased::EstimateTorque(const double *x, const double *ctl, d
 */
 bool SkidSteerControlBased::VerifyFeasibility(const double *x, const double *ctl)
 {
-    
     double temp_state[n_states], i_time;
     double estimated_torques[2], curr_vel[2], new_vel[2], new_pos[3];
     bool torque_status, speed_status, status;
@@ -183,6 +169,8 @@ bool SkidSteerControlBased::VerifyFeasibility(const double *x, const double *ctl
             torque_status = true;
         else
             torque_status = false;
+        // Copiando as duas últimas posições do vetor do espaço de estados
+        // referentes a: (v,w)
         memcpy(curr_vel, temp_state+3, sizeof(double) * 2);
         EstimateVelocities(curr_vel, ctl, new_vel);
         if(fabs(new_vel[0]) <= max_v && fabs(new_vel[1]) <= max_w)
@@ -193,46 +181,69 @@ bool SkidSteerControlBased::VerifyFeasibility(const double *x, const double *ctl
         if(!status)
             break;
         EstimatePosition(x, new_vel, new_pos);
+        // Atualiza o vetor do espaço de estados para próxima iteração.
         memcpy(temp_state, new_pos, sizeof(double) * 3);
         memcpy(temp_state+3, new_vel, sizeof(double) * 2);
     }
-//     cout << "The status is: " << status << endl;
     return status;
+// O trecho de código abaixo verifica apenas limites máximos de velocidade
+//     double temp_speeds[2], final_speeds[2], tempo;
+//     // Copiando as duas últimas posições do vetor do espaço de estados
+//     // referentes a: (v,w)
+//     memcpy(temp_speeds, x+3, sizeof(double) * 2);
+//     for(tempo=0.0; tempo<INTEGRATION_TIME; tempo+=DELTA_T)
+//     {
+//         EstimateVelocities(temp_speeds, ctl, final_speeds);
+//         memcpy(temp_speeds, final_speeds, sizeof(double) * 2);
+//     }
+//     if(fabs(final_speeds[0]) <= max_v && fabs(final_speeds[1]) <= max_w)
+//         return true;
+//     return false;
+}
+
+void SkidSteerControlBased::velocities_dflow(const double *x,
+                                             const double *ctl,
+                                             double *dx)
+{
+    dx[VX_SPEED] = ctl[LINEAR_ACCEL];
+    dx[ANGULAR_SPEED] = ctl[ANGULAR_ACCEL];
 }
 
 void SkidSteerControlBased::EstimateVelocities(const double *x,
-                                               const double *u_torque,
+                                               const double *u_accel,
                                                double *speeds)
 {
-    double w1[2], w2[2], w3[2], w4[2], wtemp[2], initial_state[2];
+    double w1[2], initial_state[2];
     int i;
     bzero(speeds, sizeof(double)*2);
     memcpy(initial_state, x, sizeof(double) * 2);
-    //Runge Kutta 4th
-    velocities_dflow(initial_state, u_torque, w1);
-//     cout << "k1_dv: " << w1[0] << " k1_dw: " << w1[1] << endl;
-    for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + 0.5 * DELTA_T * w1[i];
-
-    velocities_dflow(wtemp, u_torque, w2);
-//     cout << "k2_dv: " << w2[0] << " k2_dw: " << w2[1] << endl;
-    for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + 0.5 * DELTA_T * w2[i];
-
-    velocities_dflow(wtemp, u_torque, w3);
-//     cout << "k3_dv: " << w3[0] << " k3_w: " << w3[1] << endl;
-    for(i=0;i<2;i++)
-        wtemp[i] = initial_state[i] + DELTA_T * w3[i];
-
-    velocities_dflow(wtemp, u_torque, w4);
-//     cout << "k4_dv: " << w4[0] << " k4_dw: " << w4[1] << endl;
-    for(i=0; i<2; i++)
-        speeds[i] = initial_state[i] + (DELTA_T/6.0)*(w1[i] + 2.0 * w2[i] + 2.0 * w3[i] + w4[i]);
-
     //Newton-Euler
-/*    velocities_dflow(initial_state, u_torque, w1);
+    velocities_dflow(initial_state, u_accel, w1);
     for(i=0; i<2; i++)
-       speeds[i] = initial_state[i] + w1[i]*t;*/
+       speeds[i] = initial_state[i] + w1[i] * DELTA_T;
+}
+
+void SkidSteerControlBased::EstimateVelocitiesFromTorque(const double *x,
+                                                         const double *torque,
+                                                         double *speeds)
+{
+    double Rx, Fy, Mr, vl, vr, vf, vb, dtheta, dv[2];
+    dtheta = x[ANGULAR_SPEED];
+    vl = x[VX_SPEED] + c * x[ANGULAR_SPEED];
+    vr = x[VX_SPEED] - c * x[ANGULAR_SPEED];
+    vf = (-xcir + a) * x[ANGULAR_SPEED];
+    vb = (-xcir - b) * x[ANGULAR_SPEED];
+    Rx = (fr*mass*GRAVITY/2.0)*(sgn(vl)+sgn(vr));
+    Fy = mu*((mass*GRAVITY)/(a+b))*(b*sgn(vf)+a*sgn(vb));
+    Mr = mu*((a*b*mass*GRAVITY)/(a+b))*(sgn(vf)-sgn(vb))+(fr*c*mass*GRAVITY/2.0)*(sgn(vl)-sgn(vr));
+
+    dv[VX_SPEED] = xcir * dtheta * x[ANGULAR_SPEED] - Rx/mass + torque[TORQUE_L]/(mass*wheel_radius) + torque[TORQUE_R]/(mass*wheel_radius);
+    dv[ANGULAR_SPEED] = -(Mr+xcir*Fy)/(Inertia - mass*xcir*xcir)
+                        +(c*torque[TORQUE_L])/((Inertia - mass*xcir*xcir)*wheel_radius)
+                        -(c*torque[TORQUE_R])/((Inertia - mass*xcir*xcir)*wheel_radius);
+
+    speeds[VX_SPEED] = x[STATE_V] + dv[VX_SPEED] * DELTA_T;
+    speeds[ANGULAR_SPEED] = x[STATE_W] + dv[ANGULAR_SPEED] * DELTA_T;
 }
 
 double SkidSteerControlBased::GetXCIR(void)

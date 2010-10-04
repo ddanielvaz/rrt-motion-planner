@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 //     veh.GenerateInputs("../resources/carlike.accel");
     CarGeometry geom_car(width, height, body_length);
     World w(obstacles_file, &geom_car);
-    RRT plan(q, f, 10000, &veh, &w, logfile);
+    RRT plan(q, f, 30000, &veh, &w, logfile);
     plan.build();
     plan.close_logfile();
     plan.path_to_closest_goal(pathfile);

@@ -1,7 +1,8 @@
 .SUFFIXES: .cpp
 
 CC = g++
-CFLAGS  = -Wall
+INCLUDE_DIR = "../include"
+CFLAGS  = -Wall -I$(INCLUDE_DIR)
 LDLIBS  = -lm -lemon
 
 SRCS    = generate_valid_acc.cpp

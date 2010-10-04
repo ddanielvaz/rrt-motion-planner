@@ -60,4 +60,9 @@ enum
     DV_DESIRED=0, DW_DESIRED
 };
 
+enum
+{
+    u1=0, u2
+};
+
 #endif

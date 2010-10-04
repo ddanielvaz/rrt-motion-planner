@@ -19,23 +19,23 @@ void FierroControl::InitializeControllerWeights(double w1, double w2, double w3,
 @brief: A partir do estado atual, estado futuro (estado de referência) e entrada de controle, e utilizando uma lei de seguimento de trajetória encontra novos valores de torque que serão aplicados ao modelo dinâmico, gerando uma trajetória acompanhada por tal lei de controle.
 */
 void FierroControl::run(const double *curr_st, const double *ref_st,
-                        const double *ctl, double *tracked_st)
+                        const double *ctl, double *u)
 {
+    double control_inputs[2];
     Pioneer3ATState curr_state(curr_st);
     Pioneer3ATState ref_state(ref_st);
     ErrorState e, de;
-    VelocityState vc, dvc, control;
-    InitializeControllerWeights(0.5, 0.5, 0.5, 0.5);
+    VelocityState vc, dvc;
+    InitializeControllerWeights(10.0, 10.0, 1.0, 0.2);
     ComputeErrorState(curr_state, ref_state, &e);
     ComputeDerivativeErrorState(curr_state, ref_state, e, &de);
     ComputeAuxVelocity(ref_state, e, &vc);
     ComputeDerivativeAuxVelocity(ref_state, e, de, &dvc);
-    ComputeControlInput(vc, dvc, curr_state, &control);
-    cout << "curr_state.v: " << curr_state.v << " curr_state.w: " << curr_state.w << endl;
-    cout << "ref_state.v: " << ref_state.v << " ref_state.w: " << ref_state.w << endl;
-    cout << "linear accel: " << ctl[LINEAR_ACCEL]*DELTA_T << " angular accel: " << ctl[ANGULAR_ACCEL]*DELTA_T << endl;
-    cout << "v_control= " << control.v << " w_control= " << control.w << endl << endl;
-    memcpy(tracked_st, ref_st, sizeof(double) * 5);
+    ComputeControlInput(vc, dvc, curr_state, control_inputs);
+//     cout << "curr_state.v: " << curr_state.v << " curr_state.w: " << curr_state.w << endl;
+//     cout << "ref_state.v: " << ref_state.v << " ref_state.w: " << ref_state.w << endl;
+//     cout << "control_inputs[0]= " << control_inputs[0] << " control_inputs[1]= " << control_inputs[1] << endl;
+    memcpy(u, control_inputs, sizeof(double) * 2);
 }
 
 void FierroControl::ComputeErrorState(Pioneer3ATState ref, Pioneer3ATState curr,
@@ -76,8 +76,8 @@ void FierroControl::ComputeDerivativeAuxVelocity(Pioneer3ATState ref,
 }
 
 void FierroControl::ComputeControlInput(VelocityState vc, VelocityState dvc,
-                                        Pioneer3ATState curr, VelocityState *u)
+                                        Pioneer3ATState curr, double *u)
 {
-    u->v = dvc.v + k4 * (vc.v - curr.v);
-    u->w = dvc.w + k4 * (vc.w - curr.w);
+    u[0] = dvc.v + k4 * (vc.v - curr.v);
+    u[1] = dvc.w + k4 * (vc.w - curr.w);
 }

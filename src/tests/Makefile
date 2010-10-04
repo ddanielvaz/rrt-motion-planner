@@ -26,4 +26,4 @@ run: $(TARGET)
 	$(TARGET)
 
 clean:
-	/bin/rm -f $(CLEAN)
+	@rm $(CLEAN)

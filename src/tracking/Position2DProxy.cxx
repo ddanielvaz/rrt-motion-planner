@@ -38,3 +38,14 @@ player_pose2d_t ProxyPosition::GetPose(void)
     pos.pa = this->GetYaw();
     return pos;
 }
+
+Pioneer3ATState ProxyPosition::GetRobotState(void)
+{
+    Pioneer3ATState s;
+    s.x = this->GetXPos();
+    s.y = this->GetYPos();
+    s.psi = this->GetYaw();
+    s.v = this->GetXSpeed();
+    s.w = this->GetYawSpeed();
+    return s;
+}

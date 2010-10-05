@@ -3,19 +3,21 @@
 
 int main(int argc, char *argv[])
 {
-    double q[]={1.0, 1.5, 0.0, 0.4, 0.7};
-    double u[2]={-0.2, 0.0};
+    double q[]={1.0, 1.5, 0.0, 0.2, 0.3};
+    double u[2]={-0.2, -0.3};
 //     Dimensoes para o pioneer 3at
     double xcir = 0.1;
     double robot[] = {0.413, 30.6, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.11, 10.0};
     double speeds_limits[] = {MAX_LIN_SPEED, MAX_ROT_SPEED};
     char accel_file[]= "../resources/p3at.accel";
-    SkidSteerControlBased veh(robot, speeds_limits, 5);
-    veh.GenerateInputs(accel_file);
-    
     double curr_vel[2], new_vel[2], curr_pos[3], new_pos[3];
     double ideal_states[5], inputs[2], computed_torques[2];
     double new_vel_tracked[2], new_pos_tracked[3], tracked_states[5];
+
+    SkidSteerControlBased veh(robot, speeds_limits, 5);
+    veh.trajectory_control->InitializeControllerWeights(8, 50.0, 50.0, 0.01);
+    veh.GenerateInputs(accel_file);
+
     // Preenchendo variáveis auxiliares para obtenção do novo estado através de
     // entrada de controle e integração numérica.
     // Copiando as três primeiras posições do vetor do espaço de estados

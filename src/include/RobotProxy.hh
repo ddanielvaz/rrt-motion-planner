@@ -16,7 +16,7 @@ class Robot{
         PlayerClient *client;
         ProxyPosition *navigator;
         // Métodos
-        Robot (char*); //Construtor
+        Robot (const char*); //Construtor
         ~Robot(); //Destrutor
 };
 

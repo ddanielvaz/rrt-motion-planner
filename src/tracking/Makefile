@@ -9,14 +9,15 @@ SRCS    = tracking.cpp PlayerTracking.cxx RobotProxy.cxx Position2DProxy.cxx
 
 OBJECTS = Position2DProxy.o RobotProxy.o PlayerTracking.o tracking.o
 
-MY_LIBS = ../lib/MathFunctions.o
+MY_LIBS = ../lib/libMotionPlanner.a
 
 TARGET = tracking
 
 CLEAN   = $(OBJECTS) $(TARGET)
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(MY_LIBS) $(OBJECTS) -o $(TARGET) $(LDLIBS)
+$(TARGET): $(OBJECTS) $(MY_LIBS)
+	$(CC) $(OBJECTS) $(MY_LIBS) -o $(TARGET) $(LDLIBS)
+	@cp $(TARGET) ../tests/
 
 .cpp.o:
 	$(CC) ${CFLAGS} -c $<

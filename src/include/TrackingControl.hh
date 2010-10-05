@@ -9,7 +9,8 @@
 class TrackingControl
 {
     public:
-        virtual void run(const double *, const double *, const double *, double *);
+        virtual void run(const double *, const double *, double *);
+        virtual void InitializeControllerWeights(double, double, double, double);
 };
 
 #endif

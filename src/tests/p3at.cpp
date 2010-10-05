@@ -3,6 +3,7 @@
 #include "Geometry.hh"
 #include "RRT.hh"
 #include "SkidSteerControlBased.hh"
+#include "FierroControl.hh"
 #include "Utils.hh"
 #include "World.hh"
 
@@ -25,7 +26,7 @@ int main(int argc, char *argv[])
     double width = 0.51, height = 0.493, body_length = 0.0;
     char obstacles_file[]="../resources/lasi.map", logfile[]="results.log",
          pathfile[]="path.log",accel_file[]= "../resources/p3at.accel";
-    double xcir = 0.01;
+    double xcir = 0.1;
 //     double motor[] = {0.0230, 0.0230, 38.3, 0.71};
     double robot[] = {0.413, 30.6, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.11, 10.0};
     double speeds_limits[] = {MAX_LIN_SPEED, MAX_ROT_SPEED};
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
 //     veh.GenerateInputs("p3at.torques");
     SkidSteerControlBased veh(robot, speeds_limits, 5);
     veh.GenerateInputs(accel_file);
+    veh.trajectory_control->InitializeControllerWeights(8.0, 10.0, 10.0, 0.01);
 //     CarLikeModel veh(body_length, constraints, 5);
 //     veh.GenerateInputs("../resources/carlike.accel");
     CarGeometry geom_car(width, height, body_length);

@@ -1,6 +1,8 @@
 #ifndef __POSITION_2D_PROXY_HH__
 #define __POSITION_2D_PROXY_HH__
 
+#include "Pioneer3ATState.hh"
+
 #include <libplayerc++/playerc++.h>
 
 #include <iostream>
@@ -17,6 +19,7 @@ class ProxyPosition : public Position2dProxy
         void SetMotorStatus(bool st);
         void SetOdomPos(player_pose2d_t pos);
         player_pose2d_t GetPose(void);
+        Pioneer3ATState GetRobotState(void);
 };
 
 #endif

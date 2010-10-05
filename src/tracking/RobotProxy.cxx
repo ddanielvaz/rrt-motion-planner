@@ -1,6 +1,6 @@
 #include "RobotProxy.hh"
 
-Robot::Robot(char *ip){
+Robot::Robot(const char *ip){
     cout << "Criando instancia da classe Robot." << endl;
     if(ip)
         client = new PlayerClient(ip, 6665);

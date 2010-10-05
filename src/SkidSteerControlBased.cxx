@@ -39,8 +39,8 @@ void SkidSteerControlBased::GenerateInputs(char *filename)
             dv = strtok_r(acc, ",", &dw);
             temp.ctrl[LINEAR_ACCEL] = atof(dv);
             temp.ctrl[ANGULAR_ACCEL] = atof(dw);
-            cout << "Linear acceleration: " << temp.ctrl[LINEAR_ACCEL]
-                 << " Angular acceleration: " << temp.ctrl[ANGULAR_ACCEL] << endl;
+//             cout << "Linear acceleration: " << temp.ctrl[LINEAR_ACCEL]
+//                  << " Angular acceleration: " << temp.ctrl[ANGULAR_ACCEL] << endl;
             all_inputs.push_back(temp);
             pt = nxt;
         }
@@ -86,7 +86,7 @@ void SkidSteerControlBased::EstimateNewState(const double *x,
     // Copiando posição estimada para vetor de estados ideais
     memcpy(ideal_states, new_pos, sizeof(double) * 3);
     //XXX: talvez criar um método SimulateRobot para realizar as etapas acima.
-    trajectory_control->run(x, ideal_states, ctl, inputs);
+    trajectory_control->run(x, ideal_states, inputs);
     
     EstimateTorque(x, inputs, computed_torques);
     EstimateVelocitiesFromTorque(x, computed_torques, new_vel_tracked);
@@ -96,9 +96,9 @@ void SkidSteerControlBased::EstimateNewState(const double *x,
     // acompanhamento estimada anteriormente.
     EstimatePosition(curr_pos, new_vel_tracked, new_pos_tracked);
     memcpy(tracked_states, new_pos_tracked, sizeof(double) * 3);
-    cout << "Current Vx: " << curr_vel[0] << " Current W: " << curr_vel[1] << endl;
-    cout << "Ideal ref Vx: " << new_vel[0] << " Ideal ref W: " << new_vel[1] << endl;
-    cout << "Tracked Vx: " << new_vel_tracked[0] << " Tracked W: " << new_vel_tracked[1] << endl << endl;
+//     cout << "Current Vx: " << curr_vel[0] << " Current W: " << curr_vel[1] << endl;
+//     cout << "Ideal ref Vx: " << new_vel[0] << " Ideal ref W: " << new_vel[1] << endl;
+//     cout << "Tracked Vx: " << new_vel_tracked[0] << " Tracked W: " << new_vel_tracked[1] << endl << endl;
 //     cout << "x: " << new_pos_tracked[0] << " y: " << new_pos_tracked[1] << " psi: " << new_pos_tracked[2] << endl << endl;
 //     cout << "Torque_l: " << computed_torques[TORQUE_L] << " Torque_r: " << computed_torques[TORQUE_R] << endl;
     memcpy(dx, tracked_states, sizeof(double)*n_states);
@@ -186,19 +186,6 @@ bool SkidSteerControlBased::VerifyFeasibility(const double *x, const double *ctl
         memcpy(temp_state+3, new_vel, sizeof(double) * 2);
     }
     return status;
-// O trecho de código abaixo verifica apenas limites máximos de velocidade
-//     double temp_speeds[2], final_speeds[2], tempo;
-//     // Copiando as duas últimas posições do vetor do espaço de estados
-//     // referentes a: (v,w)
-//     memcpy(temp_speeds, x+3, sizeof(double) * 2);
-//     for(tempo=0.0; tempo<INTEGRATION_TIME; tempo+=DELTA_T)
-//     {
-//         EstimateVelocities(temp_speeds, ctl, final_speeds);
-//         memcpy(temp_speeds, final_speeds, sizeof(double) * 2);
-//     }
-//     if(fabs(final_speeds[0]) <= max_v && fabs(final_speeds[1]) <= max_w)
-//         return true;
-//     return false;
 }
 
 void SkidSteerControlBased::velocities_dflow(const double *x,

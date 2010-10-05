@@ -24,10 +24,10 @@ class FierroControl : public TrackingControl
 {
     public:
         FierroControl(SkidSteerControlBased *);
-        void run(const double *, const double *, const double *, double *);
+        void run(const double *, const double *, double *);
+        void InitializeControllerWeights(double, double, double, double);
     private:
         SkidSteerControlBased *p3at;
-        void InitializeControllerWeights(double, double, double, double);
         void ComputeErrorState(Pioneer3ATState, Pioneer3ATState, ErrorState *);
         void ComputeDerivativeErrorState(Pioneer3ATState, Pioneer3ATState,
                                          ErrorState, ErrorState *);

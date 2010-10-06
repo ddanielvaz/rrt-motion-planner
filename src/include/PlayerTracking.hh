@@ -27,7 +27,7 @@ class PlayerTracking
         void control(char *, char *);
         void control_01(char *, char *);
         void control_02(char *, char *);
-        void no_control(char *, char *);
+        void NoControl(const char *, const char *);
         void ControlByFierro(const char *, const char *);
         void ParseLog(const char *, Pioneer3ATState *);
         RobotModel* robot_model;

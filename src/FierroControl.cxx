@@ -26,9 +26,11 @@ void FierroControl::run(const double *curr_st, const double *ref_st, double *u)
     Pioneer3ATState ref_state(ref_st);
     ErrorState e, de;
     VelocityState vc, dvc;
+//     cout << "#### STARTS ####" << endl;
 //     cout << "curr_state.x: " << curr_state.x << " curr_state.y: " << curr_state.y << " curr_state.psi: " << curr_state.psi << endl;
-//     cout << "curr_state.v: " << curr_state.v << " curr_state.w: " << curr_state.w << endl;
 //     cout << "ref_state.x: " << ref_state.x << " ref_state.y: " << ref_state.y << " ref_state.psi: " << ref_state.psi << endl;
+    
+//     cout << "curr_state.v: " << curr_state.v << " curr_state.w: " << curr_state.w << endl;
 //     cout << "ref_state.v: " << ref_state.v << " ref_state.w: " << ref_state.w << endl;
 
     ComputeErrorState(curr_state, ref_state, &e);

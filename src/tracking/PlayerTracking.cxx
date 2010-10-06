@@ -536,88 +536,6 @@ void PlayerTracking::control_02(char *log, char *ip)
     r0.navigator->AdjustSpeed(0.0, 0.0);
 }
 
-
-void PlayerTracking::no_control(char *log, char *ip)
-{
-    double data[robot_model->n_states];
-    char temp[100], *nxt, *ps;
-    ifstream path_fp(log);
-    player_pose2d_t path_log_pos, odom_pos;
-    ofstream odom_fp("odom.log");
-    ofstream data_fp("data.log");
-    double vx_path, va_path;
-    Robot r0(ip);
-    
-    // Delay
-    struct timeval t_begin, t_end;
-    double t0, t1;
-    // End Delay
-    
-    // Mudando modo como os dados são lidos do servidor.
-    // Desse modo garante que as leituras serão sempre as mais novas.
-    try
-    {
-        r0.client->SetDataMode(PLAYER_DATAMODE_PULL);
-        r0.client->SetReplaceRule(true, -1, -1, -1);
-    }
-    catch (PlayerCc::PlayerError e)
-    {
-        cerr << e << endl;
-        return;
-    }
-    r0.client->Read();
-    path_fp.getline(temp, 100);
-    data[0] = strtod(temp, &ps);
-    nxt = ps;
-    for (int i=1; i<robot_model->n_states; i++)
-    {
-        data[i] = strtod(nxt, &ps);
-        nxt = ps;
-    }
-    path_log_pos.px = data[0];
-    path_log_pos.py = -data[1];
-    path_log_pos.pa = -data[2];
-    vx_path = data[3];
-    va_path = -data[4];
-    r0.navigator->SetOdomPos(path_log_pos);
-    r0.navigator->SetMotorStatus(true);
-    r0.client->Read();
-    while(path_fp.getline(temp, 100))
-    {
-        // Requisita dados dos sensores.
-        odom_pos = r0.navigator->GetPose();
-        gettimeofday(&t_begin, NULL);
-        t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
-        r0.client->Read();
-        data[0] = strtod(temp, &ps);
-        nxt = ps;
-        for (int i=1; i<robot_model->n_states; i++)
-        {
-            data[i] = strtod(nxt, &ps);
-            nxt = ps;
-        }
-        path_log_pos.px = data[0];
-        // Corrigindo sinais de y, angle e velocidade angular
-        path_log_pos.py = -data[1];
-        path_log_pos.pa = -data[2];
-        vx_path = data[3];
-        va_path = -data[4];
-        r0.navigator->AdjustSpeed(vx_path, va_path);
-        odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
-        gettimeofday(&t_end, NULL);
-        t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
-        if((t1-t0) < INTEGRATION_TIME)
-            usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
-    }
-    path_fp.close();
-    r0.navigator->AdjustSpeed(0.0, 0.0);
-    r0.client->Read();
-    data_fp.close();
-    r0.navigator->AdjustSpeed(0.0, 0.0);
-    odom_pos = r0.navigator->GetPose();
-    odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
-}
-
 void PlayerTracking::ParseLog(const char *log_str, Pioneer3ATState *state)
 {
     double data[robot_model->n_states];
@@ -634,6 +552,70 @@ void PlayerTracking::ParseLog(const char *log_str, Pioneer3ATState *state)
     state->psi = -data[STATE_THETA];
     state->v = data[STATE_V];
     state->w = -data[STATE_W];
+}
+
+void PlayerTracking::NoControl(const char *log, const char *ip)
+{
+    struct timeval t_begin, t_end;
+    double t0, t1;
+    char temp[100];
+    ifstream path_fp(log);
+    player_pose2d_t path_log_pos, odom_pos;
+    ofstream odom_fp(ODOM_LOG_FILE);
+    ofstream data_fp(DATA_LOG_FILE);
+    Robot r0(ip);
+
+    Pioneer3ATState curr_state, ref_state;
+
+    // Mudando modo como os dados são lidos do servidor.
+    // Desse modo garante que as leituras serão sempre as mais novas.
+    try
+    {
+        r0.client->SetDataMode(PLAYER_DATAMODE_PULL);
+        r0.client->SetReplaceRule(true, -1, -1, -1);
+    }
+    catch (PlayerCc::PlayerError e)
+    {
+        cerr << e << endl;
+        return;
+    }
+    r0.client->Read();
+
+    path_fp.getline(temp,100);
+    ParseLog(temp, &curr_state);
+    ref_state = curr_state;
+    // Preenchendo estrutura auxiliar para ajustar odometro para posição inicial
+    path_log_pos.px = curr_state.x;
+    path_log_pos.py = curr_state.y;
+    path_log_pos.pa = curr_state.psi;
+
+    r0.navigator->SetOdomPos(path_log_pos);
+    r0.navigator->SetMotorStatus(true);
+    while(path_fp.getline(temp, 100))
+    {
+        gettimeofday(&t_begin, NULL);
+        r0.client->Read();
+        // Requisita dados dos sensores.
+        curr_state = r0.navigator->GetRobotState();
+        odom_fp << curr_state.x << " " << -curr_state.y << " " << -curr_state.psi << endl;
+        ParseLog(temp, &ref_state);
+        r0.navigator->AdjustSpeed(ref_state.v, ref_state.w);
+        gettimeofday(&t_end, NULL);        
+        t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
+        t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
+        if((t1-t0) < INTEGRATION_TIME)
+        {
+            usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
+//             cout << (t1-t0) << " seconds." << endl;
+        }
+    }
+    path_fp.close();
+    r0.navigator->AdjustSpeed(0.0, 0.0);
+    r0.client->Read();
+    data_fp.close();
+    r0.navigator->AdjustSpeed(0.0, 0.0);
+    odom_pos = r0.navigator->GetPose();
+    odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
 }
 
 void PlayerTracking::ControlByFierro(const char *log, const char *ip)

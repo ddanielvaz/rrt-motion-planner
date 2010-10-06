@@ -4,7 +4,7 @@
 int main(int argc, char *argv[])
 {
     double q[]={1.0, 1.5, 0.0, 0.2, 0.3};
-    double u[2]={-0.2, -0.3};
+    double u[2]={0.0, 0.0};
 //     Dimensoes para o pioneer 3at
     double xcir = 0.1;
     double robot[] = {0.413, 30.6, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.11, 10.0};
@@ -15,7 +15,8 @@ int main(int argc, char *argv[])
     double new_vel_tracked[2], new_pos_tracked[3], tracked_states[5];
 
     SkidSteerControlBased veh(robot, speeds_limits, 5);
-    veh.trajectory_control->InitializeControllerWeights(8, 50.0, 50.0, 0.01);
+    double k = 4.0;
+    veh.trajectory_control->InitializeControllerWeights(k, k, k, 0.1);
     veh.GenerateInputs(accel_file);
 
     // Preenchendo variáveis auxiliares para obtenção do novo estado através de
@@ -37,7 +38,7 @@ int main(int argc, char *argv[])
     // Copiando posição estimada para vetor de estados ideais
     memcpy(ideal_states, new_pos, sizeof(double) * 3);
     //XXX: talvez criar um método SimulateRobot para realizar as etapas acima.
-    veh.trajectory_control->run(q, ideal_states, u, inputs);
+    veh.trajectory_control->run(q, ideal_states, inputs);
     veh.EstimateTorque(q, inputs, computed_torques);
     veh.EstimateVelocitiesFromTorque(q, computed_torques, new_vel_tracked);
     // Copiando velocidade estimada para vetor de estados acompanhados
@@ -48,8 +49,8 @@ int main(int argc, char *argv[])
     memcpy(tracked_states, new_pos_tracked, sizeof(double) * 3);
     cout << "Current Vx: " << curr_vel[0] << " Current W: " << curr_vel[1] << endl;
     cout << "Ideal ref Vx: " << new_vel[0] << " Ideal ref W: " << new_vel[1] << endl;
+    cout << "Torque_l: " << computed_torques[TORQUE_L] << " Torque_r: " << computed_torques[TORQUE_R] << endl;
     cout << "Tracked Vx: " << new_vel_tracked[0] << " Tracked W: " << new_vel_tracked[1] << endl << endl;
 //     cout << "x: " << new_pos_tracked[0] << " y: " << new_pos_tracked[1] << " psi: " << new_pos_tracked[2] << endl << endl;
-//     cout << "Torque_l: " << computed_torques[TORQUE_L] << " Torque_r: " << computed_torques[TORQUE_R] << endl;
     return 0;
 }

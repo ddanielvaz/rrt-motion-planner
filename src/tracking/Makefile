@@ -11,7 +11,7 @@ OBJECTS = Position2DProxy.o RobotProxy.o PlayerTracking.o tracking.o
 
 MY_LIBS = ../lib/libMotionPlanner.a
 
-TARGET = tracking
+TARGET = tracking.out
 
 CLEAN   = $(OBJECTS) $(TARGET)
 

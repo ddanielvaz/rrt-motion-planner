@@ -25,7 +25,7 @@ class PlayerTracking
         void control_kanayama(char *, char *);
         void control_kanayama_delay(char *, char *);
         void control(char *, char *);
-        void control_01(char *, char *);
+        void ProportionalController(const char *, const char *);
         void control_02(char *, char *);
         void NoControl(const char *, const char *);
         void ControlByFierro(const char *, const char *);

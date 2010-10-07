@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from extract_data import ExtractData
+parser = ExtractData()
+parser.ExtractError()
+
 def parse():
     error = open("errors.csv")
     X = []
@@ -16,5 +20,6 @@ import pylab
 t = [i*0.2 for i in range(0,len(x_error))]
 pylab.plot(t,x_error)
 pylab.plot(t,y_error)
-#pylab.plot(t,angle_error)
+fig = pylab.figure()
+pylab.plot(t,angle_error)
 pylab.show()

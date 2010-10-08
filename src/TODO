@@ -1,0 +1,4 @@
+Criar um arquivo de configuração. Provavelmente uma maneira fácil é criar um arquivo XML que armazene informações como, número máximo de nós na expansão da RRT, tipo do modelo de propagação de estados a ser utilizado, caminho para o arquivo que descreve a geometria do robô, caminho para o arquivo que descreve o ambiente (obstáculos).
+Adicionar classe RobotGeometry em geometry.h que permitirá desenhar qualquer geometria ao robô e não apenas geometria semelhantes a retângulos.
+Para isso creio que seja necessário modificar graphics.h e deixar função de draw() na propria classe que cuida da geometria e não mais na classe Carro dentro de draw.h
+Sendo assim a unificação das classes CarGeometry e Carro serão necessárias, elas disponibilizarão diferentes funções, uma em ambito apenas de geometria para fornecer posição que pode ser usada para calcular colisão e outras funções para visualizar a geometria do robô usando OpenCV.

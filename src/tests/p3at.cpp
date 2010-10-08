@@ -4,7 +4,6 @@
 #include "RRT.hh"
 #include "SkidSteerControlBased.hh"
 #include "FierroControl.hh"
-#include "Utils.hh"
 #include "World.hh"
 
 using namespace std;

@@ -1,7 +1,6 @@
 #include "RRT.hh"
 
-RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w,
-         char *fname)
+RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w, char *fname)
 {
     cout << "Criando instancia da classe RRT" << endl;
     goal_state = (double*) malloc(sizeof(double) * car->n_states);
@@ -16,8 +15,9 @@ RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w,
     trial_max = n;
     veh = car;
     world = w;
+    meter = new DistanceMeter();
+    sampler = new StateSampler();
     fp.open(fname);
-    initiate_rand_number_generator();
 }
 
 RRT::~RRT()
@@ -39,7 +39,7 @@ void RRT::build(void)
             collided=1;
             while(collided)
             {
-                biased_sampling(world->env->dim, random_state);
+                sampler->BiasedSampling(world->env->dim, random_state);
                 collided = world->IsVehicleInSafePosition(random_state[0], random_state[1], random_state[2]);
             }
         }
@@ -76,7 +76,7 @@ int RRT::extend(double *rand)
         not_collided = check_no_collision_path((*states)[near], (*it).ctrl, expanded);
         if (not_collided)
         {
-            aux = metric(expanded, rand);
+            aux = meter->DistanceWeight(expanded, rand);
             if(aux < d)
             {
                 d = aux;
@@ -110,7 +110,7 @@ int RRT::extend(double *rand)
         Graph::Arc arc = g.addArc(near, added);
         (*control_map)[arc] = arcmap_best_control;
         (*cost)[arc] = d;
-        if(goal_state_reached((*states)[added], goal_state))
+        if(meter->GoalStateAchieved((*states)[added], goal_state))
             return 2;
         else
             return 1;
@@ -125,7 +125,7 @@ Node RRT::select_nearest_node(double *rand)
     Node nearest;
     for(Graph::NodeIt n(g); n != INVALID; ++n)
     {
-        aux = metric((*states)[n], rand);
+        aux = meter->DistanceWeight((*states)[n], rand);
         if (aux < min_distance)
         {
             min_distance = aux;
@@ -165,7 +165,7 @@ int RRT::check_duplicate_node(double *adding)
     double aux;
     for(Graph::NodeIt n(g); n != INVALID; ++n)
     {
-        aux = metric((*states)[n], adding);
+        aux = meter->DistanceWeight((*states)[n], adding);
         if (aux < 1e-7)
         {
             return g.id(n);
@@ -195,7 +195,7 @@ void RRT::path_to_closest_goal(char *filename)
     ofstream pathfile(filename);
     closest_goal = select_nearest_node(goal_state);
     cout << (*states)[closest_goal][0] << " " << (*states)[closest_goal][1] << " " << (*states)[closest_goal][2] << endl;
-    distance = metric((*states)[closest_goal], goal_state);
+    distance = meter->DistanceWeight((*states)[closest_goal], goal_state);
     cout << "Distancia entre no mais proximo de goal: " << distance << endl;
     ss.run(initial_node);
     p = ss.path(closest_goal);

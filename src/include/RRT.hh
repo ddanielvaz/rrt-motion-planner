@@ -6,8 +6,9 @@
 #include <lemon/path.h>
 #include <lemon/random.h>
 
+#include "DistanceMeter.hh"
+#include "StateSampler.hh"
 #include "RobotModel.hh"
-#include "Utils.hh"
 #include "World.hh"
 
 #include <fstream>
@@ -44,6 +45,8 @@ class RRT
         int trial_max;
         RobotModel *veh;
         World *world;
+        DistanceMeter *meter;
+        StateSampler *sampler;
         ofstream fp;
         Graph g;
         ArcMapWeight *cost;

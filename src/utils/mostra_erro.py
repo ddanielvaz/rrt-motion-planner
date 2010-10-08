@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from extract_data import ExtractData
+from math import degrees
 parser = ExtractData()
 parser.ExtractError()
 
@@ -20,6 +21,8 @@ import pylab
 t = [i*0.2 for i in range(0,len(x_error))]
 pylab.plot(t,x_error)
 pylab.plot(t,y_error)
+pylab.grid(True)
 fig = pylab.figure()
-pylab.plot(t,angle_error)
+pylab.plot(t,map(degrees,angle_error))
+pylab.grid(True)
 pylab.show()

@@ -546,7 +546,7 @@ void PlayerTracking::NoControl(const char *log, const char *ip)
         curr_state = r0.navigator->GetRobotState();
         x_diff = ref_state.x - curr_state.x;
         y_diff = ref_state.y - curr_state.y;
-        psi_diff = ref_state.psi - curr_state.psi;
+        psi_diff = normalize_angle(ref_state.psi - curr_state.psi);
         odom_fp << curr_state.x << " " << -curr_state.y << " " << -curr_state.psi << endl;
         // Logando informações
         data_fp << "vx_path: " << ref_state.v << " va_path: " << ref_state.w << endl;
@@ -629,7 +629,7 @@ void PlayerTracking::ControlByFierro(const char *log, const char *ip)
         curr_st[4] = curr_state.w;
         x_diff = ref_state.x - curr_state.x;
         y_diff = ref_state.y - curr_state.y;
-        psi_diff = ref_state.psi - curr_state.psi;
+        psi_diff = normalize_angle(ref_state.psi - curr_state.psi);
         // Log de dados
         odom_fp << curr_state.x << " " << -curr_state.y << " " << -curr_state.psi << endl;
         data_fp << "v_diff: " << curr_state.v - ref_state.v << " w_diff_robot: " << curr_state.w - ref_state.w << endl;
@@ -646,7 +646,6 @@ void PlayerTracking::ControlByFierro(const char *log, const char *ip)
         ref_st[2] = ref_state.psi;
         ref_st[3] = ref_state.v;
         ref_st[4] = ref_state.w;
-        r0.navigator->AdjustSpeed(vel_tracking[0], vel_tracking[1]);
         gettimeofday(&t_end, NULL);        
         t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
@@ -655,6 +654,7 @@ void PlayerTracking::ControlByFierro(const char *log, const char *ip)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
 //             cout << (t1-t0) << " seconds." << endl;
         }
+        r0.navigator->AdjustSpeed(vel_tracking[0], vel_tracking[1]);
     }
     path_fp.close();
     r0.navigator->AdjustSpeed(0.0, 0.0);

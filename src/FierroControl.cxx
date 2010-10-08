@@ -59,7 +59,7 @@ void FierroControl::ComputeErrorState(Pioneer3ATState curr, Pioneer3ATState ref,
     y_diff = ref.y - curr.y;
     error->e1 = x_diff * cos(curr.psi) + y_diff * sin(curr.psi);
     error->e2 = -x_diff * sin(curr.psi) + y_diff * cos(curr.psi);
-    error->e3 = ref.psi - curr.psi;
+    error->e3 = normalize_angle(ref.psi - curr.psi);
 }
 
 void FierroControl::ComputeDerivativeErrorState(Pioneer3ATState curr,

@@ -396,7 +396,7 @@ define pioneer3at pioneer_base
   origin [-0.04465 0.0 0.0 0.0]
 
   # Estimated mass in KG
-  mass 40.0 
+  mass 30.6
 
   # Body shape:
   block( 

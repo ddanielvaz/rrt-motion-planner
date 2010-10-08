@@ -4,9 +4,6 @@
 #include "Constants.hh"
 #include "MathFunctions.hh"
 
-using namespace std;
-
-
 class DistanceMeter
 {
     public:

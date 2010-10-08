@@ -11,7 +11,7 @@
 //velocidade maxima - datasheet 0.75 m/s, 100 graus/s ou 1.745 rad/s
 //adotando velocidade menor para translação de 0.5 m/s e 1.2 rad/s
 #define MAX_LIN_SPEED 0.5
-#define MAX_ROT_SPEED 1.2
+#define MAX_ROT_SPEED 0.8
 
 #define DELTA_T 0.2
 #define INTEGRATION_TIME 0.2

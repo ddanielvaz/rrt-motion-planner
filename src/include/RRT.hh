@@ -29,7 +29,8 @@ typedef Path<Graph> MyPath;
 class RRT
 {
     public:
-        RRT(double *, double *, int, RobotModel*, World*, char*);
+        RRT(double*, double*, int, RobotModel*, World*, DistanceMeter*,
+            StateSampler*, char*);
         void build(void);
         int extend(double*);
         Node select_nearest_node(double*);

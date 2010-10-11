@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
 //     double motor[] = {0.0230, 0.0230, 38.3, 0.71};
     double robot[] = {0.413, 30.6, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.11, 10.0};
     double speeds_limits[] = {MAX_LIN_SPEED, MAX_ROT_SPEED};
+    StateSampler ss;
+    DistanceMeter dm;
 //     double constraints[] = {1.0, MAX_STEERING_ANGLE};
 //     SkidSteerDynamicModel veh(motor, robot, speeds_limits, 5);
 //     veh.GenerateInputs("p3at.torques");
@@ -39,7 +41,7 @@ int main(int argc, char *argv[])
 //     veh.GenerateInputs("../resources/carlike.accel");
     CarGeometry geom_car(width, height, body_length);
     World w(obstacles_file, &geom_car);
-    RRT plan(q, f, 30000, &veh, &w, logfile);
+    RRT plan(q, f, 30000, &veh, &w, &dm, &ss, logfile);
     plan.build();
     plan.close_logfile();
     plan.path_to_closest_goal(pathfile);

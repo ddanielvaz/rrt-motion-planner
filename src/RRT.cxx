@@ -1,6 +1,7 @@
 #include "RRT.hh"
 
-RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w, char *fname)
+RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w,
+         DistanceMeter *d_meter, StateSampler *s_sampler, char *fname)
 {
     cout << "Criando instancia da classe RRT" << endl;
     goal_state = (double*) malloc(sizeof(double) * car->n_states);
@@ -15,8 +16,8 @@ RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w, char *fna
     trial_max = n;
     veh = car;
     world = w;
-    meter = new DistanceMeter();
-    sampler = new StateSampler();
+    meter = d_meter;
+    sampler = s_sampler;
     fp.open(fname);
 }
 

@@ -178,7 +178,7 @@ void PlayerTracking::ProportionalController(const char *log, const char *ip)
     ofstream data_fp("data.log");
     double x_diff, y_diff, psi_diff;
     double vx_control, va_control;
-    double kp_trans=0.05, kp_rot=0.05;
+    double kp_trans=0.1, kp_rot=0.01;
     double p_trans_error, p_rot_error;
     struct timeval t_begin, t_end;
     double t0, t1;
@@ -198,11 +198,10 @@ void PlayerTracking::ProportionalController(const char *log, const char *ip)
     }
     r0.client->Read();
     path_fp.getline(temp, 100);
-    ParseLog(temp, &curr_state);
-    ref_state = curr_state;
-    aux.px = curr_state.x;
-    aux.py = curr_state.y;
-    aux.pa = curr_state.psi;
+    ParseLog(temp, &ref_state);
+    aux.px = ref_state.x;
+    aux.py = ref_state.y;
+    aux.pa = ref_state.psi;
     r0.navigator->SetOdomPos(aux);
     r0.navigator->SetMotorStatus(true);
     r0.client->Read();
@@ -244,10 +243,10 @@ void PlayerTracking::ProportionalController(const char *log, const char *ip)
         // Tempo de execução
         gettimeofday(&t_end, NULL);
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
-        r0.navigator->AdjustSpeed(vx_control, va_control);
         data_fp << "PROCESSING TIME: " << (t1-t0) << endl;
         if((t1-t0) < INTEGRATION_TIME)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0) * 1e6);
+        r0.navigator->AdjustSpeed(vx_control, va_control);
     }
     while(fabs(x_diff) > 0.05 || fabs(psi_diff) > 0.05)
     {
@@ -507,7 +506,7 @@ void PlayerTracking::NoControl(const char *log, const char *ip)
     double t0, t1;
     char temp[100];
     ifstream path_fp(log);
-    player_pose2d_t path_log_pos, odom_pos;
+    player_pose2d_t path_log_pos;
     ofstream odom_fp(ODOM_LOG_FILE);
     ofstream data_fp(DATA_LOG_FILE);
     Robot r0(ip);
@@ -554,7 +553,6 @@ void PlayerTracking::NoControl(const char *log, const char *ip)
         data_fp << "x_diff: " << x_diff << " y_diff: " << y_diff << " angle_diff:" << psi_diff << endl;
         // Fim do Log
         ParseLog(temp, &ref_state);
-        r0.navigator->AdjustSpeed(ref_state.v, ref_state.w);
         gettimeofday(&t_end, NULL);        
         t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
@@ -563,14 +561,13 @@ void PlayerTracking::NoControl(const char *log, const char *ip)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
 //             cout << (t1-t0) << " seconds." << endl;
         }
+        r0.navigator->AdjustSpeed(ref_state.v, ref_state.w);
     }
     path_fp.close();
-    r0.navigator->AdjustSpeed(0.0, 0.0);
-    r0.client->Read();
     data_fp.close();
+    odom_fp.close();
+    r0.client->Read();
     r0.navigator->AdjustSpeed(0.0, 0.0);
-    odom_pos = r0.navigator->GetPose();
-    odom_fp << odom_pos.px << " " << -odom_pos.py << " " << -odom_pos.pa << endl;
 }
 
 void PlayerTracking::ControlByFierro(const char *log, const char *ip)
@@ -602,17 +599,16 @@ void PlayerTracking::ControlByFierro(const char *log, const char *ip)
     r0.client->Read();
 
     path_fp.getline(temp,100);
-    ParseLog(temp, &curr_state);
-    ref_state = curr_state;
+    ParseLog(temp, &ref_state);
     ref_st[0] = ref_state.x;
     ref_st[1] = ref_state.y;
     ref_st[2] = ref_state.psi;
     ref_st[3] = ref_state.v;
     ref_st[4] = ref_state.w;
     // Preenchendo estrutura auxiliar para ajustar odometro para posição inicial
-    path_log_pos.px = curr_state.x;
-    path_log_pos.py = curr_state.y;
-    path_log_pos.pa = curr_state.psi;
+    path_log_pos.px = ref_state.x;
+    path_log_pos.py = ref_state.y;
+    path_log_pos.pa = ref_state.psi;
 
     r0.navigator->SetOdomPos(path_log_pos);
     r0.navigator->SetMotorStatus(true);
@@ -632,13 +628,14 @@ void PlayerTracking::ControlByFierro(const char *log, const char *ip)
         psi_diff = normalize_angle(ref_state.psi - curr_state.psi);
         // Log de dados
         odom_fp << curr_state.x << " " << -curr_state.y << " " << -curr_state.psi << endl;
-        data_fp << "v_diff: " << curr_state.v - ref_state.v << " w_diff_robot: " << curr_state.w - ref_state.w << endl;
+        data_fp << "v_diff: " << ref_state.v - curr_state.v << " w_diff: " << ref_state.w - curr_state.w << endl;
         data_fp << "vx_path: " << ref_state.v << " va_path: " << ref_state.w << endl;
         data_fp << "vx_robot: " << curr_state.v << " va_robot: " << curr_state.w << endl;
         data_fp << "x_diff: " << x_diff << " y_diff: " << y_diff << " angle_diff:" << psi_diff << endl;
         ((SkidSteerControlBased*)robot_model)->trajectory_control->run(curr_st, ref_st, u);
         ((SkidSteerControlBased*)robot_model)->EstimateTorque(curr_st, u, computed_torques);
         ((SkidSteerControlBased*)robot_model)->EstimateVelocitiesFromTorque(curr_st, computed_torques, vel_tracking);
+        data_fp << "v_track: " << vel_tracking[0] << " w_track: " << vel_tracking[1] << endl << endl;
         // Atualizando estado de referência a partir da leitura do log de planejamento
         ParseLog(temp, &ref_state);
         ref_st[0] = ref_state.x;
@@ -649,16 +646,16 @@ void PlayerTracking::ControlByFierro(const char *log, const char *ip)
         gettimeofday(&t_end, NULL);        
         t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
+//         cout << "Processing time: " << t1-t0 << endl;
         if((t1-t0) < INTEGRATION_TIME)
         {
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0)*1e6);
-//             cout << (t1-t0) << " seconds." << endl;
         }
         r0.navigator->AdjustSpeed(vel_tracking[0], vel_tracking[1]);
     }
+    odom_fp.close();
     path_fp.close();
-    r0.navigator->AdjustSpeed(0.0, 0.0);
-    r0.client->Read();
     data_fp.close();
+    r0.client->Read();
     r0.navigator->AdjustSpeed(0.0, 0.0);
 }

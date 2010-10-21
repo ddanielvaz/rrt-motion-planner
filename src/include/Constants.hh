@@ -6,6 +6,10 @@
 #define ROTATIONAL_TOLERANCE 0.087
 //10 graus
 #define MAX_ROTATIONAL_TOLERANCE 2 * ROTATIONAL_TOLERANCE
+
+#define MAX_LIN_SPEED_TOLERANCE 0.05
+#define MAX_ROT_SPEED_TOLERANCE 0.05
+
 //angulo maximo de estercamento em rad (30 graus)
 #define MAX_STEERING_ANGLE 0.523598
 //velocidade maxima - datasheet 0.75 m/s, 100 graus/s ou 1.745 rad/s
@@ -18,8 +22,8 @@
 
 #define GOAL_BIAS 0.15
 
-#define N_STATES 3
-#define N_CONTROLS 11
+#define P3AT_N_STATES 5
+#define DISTANCE_TOL 1.2
 
 #define COLLISION_TOLERANCE 0.15
 #define COLLIDED 1

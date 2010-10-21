@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     double robot[] = {0.413, 30.6, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.11, 10.0};
     double speeds_limits[] = {MAX_LIN_SPEED, MAX_ROT_SPEED};
     StateSampler ss;
-    SpecificMeterP3AT dm;
+    SpecificMeterP3AT dm(f);
 //     DistanceMeter dm;
 //     double constraints[] = {1.0, MAX_STEERING_ANGLE};
 //     SkidSteerDynamicModel veh(motor, robot, speeds_limits, 5);

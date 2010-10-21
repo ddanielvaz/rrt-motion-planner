@@ -22,11 +22,8 @@ class PlayerTracking
 {
     public:
         PlayerTracking(RobotModel*);
-        void control_kanayama(char *, char *);
-        void control_kanayama_delay(char *, char *);
-        void control(char *, char *);
+        void Kanayama(const char *, const char *);
         void ProportionalController(const char *, const char *);
-        void control_02(char *, char *);
         void NoControl(const char *, const char *);
         void ControlByFierro(const char *, const char *);
         void ParseLog(const char *, Pioneer3ATState *);

@@ -77,7 +77,7 @@ int RRT::extend(double *rand)
         not_collided = check_no_collision_path((*states)[near], (*it).ctrl, expanded);
         if (not_collided)
         {
-            aux = meter->DistanceWeight(rand, expanded);
+            aux = meter->DistanceWeight(expanded, rand);
             if(aux < d)
             {
                 d = aux;

@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
     }
     else
     {
-//         track.ProportionalController(pathfile, NULL);
+        track.ProportionalController(pathfile, NULL);
 //         track.ControlByFierro(pathfile, NULL);
-        track.NoControl(pathfile, NULL);
+//         track.NoControl(pathfile, NULL);
 //         track.Kanayama(pathfile, NULL);
     }
 }

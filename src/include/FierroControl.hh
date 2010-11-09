@@ -7,16 +7,6 @@
 #include <cstring>
 #include <cmath>
 
-typedef struct
-{
-    double e1, e2, e3;
-}ErrorState;
-
-typedef struct
-{
-    double v, w;
-}VelocityState;
-
 // Forward declaration
 class SkidSteerControlBased;
 

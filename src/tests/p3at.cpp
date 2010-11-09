@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 //     veh.GenerateInputs("p3at.torques");
     SkidSteerControlBased veh(robot, speeds_limits, 5);
     veh.GenerateInputs(accel_file);
-    veh.trajectory_control->InitializeControllerWeights(4.0, 10.0, 12.0, 0.05);
+    veh.trajectory_control->InitializeControllerWeights(2.0, 2, 2, 2);
 //     CarLikeModel veh(body_length, constraints, 5);
 //     veh.GenerateInputs("../resources/carlike.accel");
     CarGeometry geom_car(width, height, body_length);

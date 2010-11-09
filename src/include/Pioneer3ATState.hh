@@ -11,4 +11,14 @@ class Pioneer3ATState
         double x,y,psi,v,w;
 };
 
+typedef struct
+{
+    double e1, e2, e3;
+}ErrorState;
+
+typedef struct
+{
+    double v, w;
+}VelocityState;
+
 #endif

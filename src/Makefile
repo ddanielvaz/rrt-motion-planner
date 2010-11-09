@@ -2,7 +2,7 @@
 CC=g++
 INCLUDE_DIR = ./include/
 CFLAGS = -c -Wall -I$(INCLUDE_DIR)
-SOURCES = CarLikeModel.cxx TrackingControl.cxx CaraccioloControl.cxx FierroControl.cxx Geometry.cxx MathFunctions.cxx Pioneer3ATState.cxx RobotModel.cxx RRT.cxx SkidSteerControlBased.cxx SkidSteerDynamicModel.cxx SkidSteerModel.cxx World.cxx StateSampler.cxx DistanceMeter.cxx SpecificMeterP3AT.cxx
+SOURCES = CarLikeModel.cxx TrackingControl.cxx CaraccioloControl.cxx FierroControl.cxx PDControl.cxx Geometry.cxx MathFunctions.cxx Pioneer3ATState.cxx RobotModel.cxx RRT.cxx SkidSteerControlBased.cxx SkidSteerDynamicModel.cxx SkidSteerModel.cxx World.cxx StateSampler.cxx DistanceMeter.cxx SpecificMeterP3AT.cxx
 OBJDIR = ./lib
 MY_LIB = ./lib/libMotionPlanner.a
 OBJECTS = $(addprefix $(OBJDIR)/,$(SOURCES:.cxx=.o))

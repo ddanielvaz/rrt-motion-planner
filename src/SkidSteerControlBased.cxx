@@ -18,8 +18,17 @@ SkidSteerControlBased::SkidSteerControlBased(double *robot_params, double *speed
     max_v = speeds_limit[0];
     max_w = speeds_limit[1];
     n_states = n_st;
-//     trajectory_control = new FierroControl(this);
+    trajectory_control = NULL;
+}
+
+void SkidSteerControlBased::SetPDTrajectoryControl(void)
+{
     trajectory_control = new PDControl(this);
+}
+
+void SkidSteerControlBased::SetFierroTrajectoryControl(void)
+{
+    trajectory_control = new FierroControl(this);
 }
 
 void SkidSteerControlBased::GenerateInputs(char *filename)

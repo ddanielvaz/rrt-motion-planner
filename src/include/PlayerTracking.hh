@@ -25,7 +25,7 @@ class PlayerTracking
         void Kanayama(const char *, const char *);
         void ProportionalController(const char *, const char *);
         void NoControl(const char *, const char *);
-        void ControlByFierro(const char *, const char *);
+        void SkidSteerControlBasedController(const char *, const char *);
         void ParseLog(const char *, Pioneer3ATState *);
         RobotModel* robot_model;
 };

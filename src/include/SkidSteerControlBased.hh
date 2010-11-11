@@ -14,6 +14,8 @@ class SkidSteerControlBased : public RobotModel
 {
     public:
         SkidSteerControlBased(double *, double *, int);
+        void SetPDTrajectoryControl(void);
+        void SetFierroTrajectoryControl(void);
         void EstimateNewState(const double *, const double *, double *);
         void dflow(const double *, const double *, double *);
         void EstimatePosition(const double *, const double *, double *);

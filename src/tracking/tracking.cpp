@@ -11,6 +11,8 @@ int main(int argc, char *argv[])
     double robot[] = {0.413, 30.6, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.11, 10.0};
     double speeds_limits[] = {MAX_LIN_SPEED, MAX_ROT_SPEED};
     SkidSteerControlBased p3at(robot, speeds_limits, 5);
+    p3at.SetPDTrajectoryControl();
+//     p3at.SetFierroTrajectoryControl();
     PlayerTracking track(&p3at);
     p3at.trajectory_control->InitializeControllerWeights(3.0, 10.0, 12.0, 0.02);
     if(argc > 1)

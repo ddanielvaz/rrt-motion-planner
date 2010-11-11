@@ -41,7 +41,7 @@ void RRT::build(void)
             while(collided)
             {
                 sampler->BiasedSampling(world->env->dim, random_state);
-                collided = world->IsVehicleInSafePosition(random_state[0], random_state[1], random_state[2]);
+                collided = world->IsVehicleInCollision(random_state[0], random_state[1], random_state[2]);
             }
         }
         else
@@ -93,7 +93,7 @@ int RRT::extend(double *rand)
         arcmap_best_control = (double *) malloc(sizeof(double) * 2);
         memcpy(arcmap_best_control, best_control, sizeof(double) * 2);
         duplicated_node_id = check_duplicate_node(temp);
-        //cout << "ID: " << duplicated_node_id << " ";
+//         cout << "ID: " << duplicated_node_id << " ";
         if (duplicated_node_id >= 0)
         {
 //             cout << "Duplicated NODE detect ID: " << duplicated_node_id << endl;
@@ -148,7 +148,7 @@ bool RRT::check_no_collision_path(const double *near_node, const double *u, doub
         y = temp[STATE_Y];
         theta = normalize_angle(temp[STATE_THETA]);
         temp[STATE_THETA] = theta;
-        in_collision = world->IsVehicleInSafePosition(x, y, theta);
+        in_collision = world->IsVehicleInCollision(x, y, theta);
         if (in_collision)
         {
 //             cout << "COLLISION" << endl;

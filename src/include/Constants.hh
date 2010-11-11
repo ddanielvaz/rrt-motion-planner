@@ -20,7 +20,7 @@
 #define DELTA_T 0.2
 #define INTEGRATION_TIME 0.2
 
-#define GOAL_BIAS 0.15
+#define GOAL_BIAS 0.35
 
 #define P3AT_N_STATES 5
 #define DISTANCE_TOL 1.2

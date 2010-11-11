@@ -25,7 +25,7 @@ class World
     public:
         World(char *, CarGeometry *);
         ~World();
-        int IsVehicleInSafePosition(double, double, double);
+        int IsVehicleInCollision(double, double, double);
         CarGeometry *veh_geometry;
         EnvModel *env;
 };

@@ -135,7 +135,7 @@ void PlayerTracking::ProportionalController(const char *log, const char *ip)
     ofstream data_fp("data.log");
     double x_diff, y_diff, psi_diff;
     double vx_control, va_control;
-    double kp_trans=0.1, kp_rot=0.01;
+    double kp_trans=0.1, kp_rot=0.1;
     double p_trans_error, p_rot_error;
     struct timeval t_begin, t_end;
     double t0, t1;
@@ -341,7 +341,7 @@ void PlayerTracking::NoControl(const char *log, const char *ip)
     r0.navigator->AdjustSpeed(0.0, 0.0);
 }
 
-void PlayerTracking::ControlByFierro(const char *log, const char *ip)
+void PlayerTracking::SkidSteerControlBasedController(const char *log, const char *ip)
 {
     struct timeval t_begin, t_end;
     double t0, t1;

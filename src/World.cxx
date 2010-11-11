@@ -54,7 +54,7 @@ World::World(char *envfilename, CarGeometry* car_geom)
     veh_geometry = car_geom;
 }
 
-int World::IsVehicleInSafePosition(double x, double y, double theta)
+int World::IsVehicleInCollision(double x, double y, double theta)
 {
 //     PQP_CollideResult cres;
     PQP_DistanceResult dres;

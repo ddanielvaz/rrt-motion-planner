@@ -37,6 +37,7 @@ double SpecificMeterP3AT::DistanceWeight(const double *istate, const double *fst
     dv = fabs(fstate[STATE_V] - istate[STATE_V]);
     dw = fabs(fstate[STATE_W] - istate[STATE_W]);
     return d + fabs(angle)/M_PI_2l + dv + dw;
+//     return d + fabs(angle)/M_PI_2l;
 }
 
 bool SpecificMeterP3AT::GoalStateAchieved(const double *state, const double *goal)

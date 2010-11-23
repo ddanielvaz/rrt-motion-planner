@@ -107,7 +107,8 @@ void SkidSteerControlBased::EstimateNewState(const double *x,
     // acompanhamento estimada anteriormente.
     EstimatePosition(curr_pos, new_vel_tracked, new_pos_tracked);
     memcpy(tracked_states, new_pos_tracked, sizeof(double) * 3);
-//     cout << "Tracked Vx: " << new_vel_tracked[0] << " Tracked W: " << new_vel_tracked[1] << endl;
+//     cout << "ideal_v: " << ideal_states[3] << " ideal_w: " << ideal_states[4] << endl;
+//     cout << "Tracked Vx: " << new_vel_tracked[0] << " Tracked W: " << new_vel_tracked[1] << endl << endl;
 //     cout << "Torque_l: " << computed_torques[TORQUE_L] << " Torque_r: " << computed_torques[TORQUE_R] << endl;
 //     cout << "#### ENDS ####" << endl << endl;
 //     cout << "x: " << new_pos_tracked[0] << " y: " << new_pos_tracked[1] << " psi: " << new_pos_tracked[2] << endl << endl;

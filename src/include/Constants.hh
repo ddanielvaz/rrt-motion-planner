@@ -20,10 +20,10 @@
 #define DELTA_T 0.2
 #define INTEGRATION_TIME 0.2
 
-#define GOAL_BIAS 0.35
+#define GOAL_BIAS 0.15
 
 #define P3AT_N_STATES 5
-#define DISTANCE_TOL 1.2
+#define DISTANCE_TOL 2.0
 
 #define COLLISION_TOLERANCE 0.15
 #define COLLIDED 1

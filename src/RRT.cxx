@@ -40,8 +40,16 @@ void RRT::build(void)
             collided=1;
             while(collided)
             {
-                sampler->BiasedSampling(world->env->dim, random_state);
-                collided = world->IsVehicleInCollision(random_state[0], random_state[1], random_state[2]);
+                if(rnd() <= AVG_BIAS)
+                {
+                    sampler->AvgBiasedSampling(world->env->dim, random_state);
+                    collided = world->IsVehicleInCollision(random_state[0], random_state[1], random_state[2]);
+                }
+                else
+                {
+                    sampler->BiasedSampling(world->env->dim, random_state);
+                    collided = world->IsVehicleInCollision(random_state[0], random_state[1], random_state[2]);
+                }
             }
         }
         else
@@ -126,7 +134,7 @@ Node RRT::select_nearest_node(double *rand)
     Node nearest;
     for(Graph::NodeIt n(g); n != INVALID; ++n)
     {
-        aux = meter->DistanceWeight((*states)[n], rand);
+        aux = meter->NearestNodeMetric((*states)[n], rand);
         if (aux < min_distance)
         {
             min_distance = aux;

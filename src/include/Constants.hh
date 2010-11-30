@@ -15,15 +15,18 @@
 //velocidade maxima - datasheet 0.75 m/s, 100 graus/s ou 1.745 rad/s
 //adotando velocidade menor para translação de 0.5 m/s e 1.2 rad/s
 #define MAX_LIN_SPEED 0.5
+#define AVG_LIN_SPEED 0.3
+#define STD_DEVIATION_LIN_SPEED 0.2
 #define MAX_ROT_SPEED 0.8
 
 #define DELTA_T 0.2
 #define INTEGRATION_TIME 0.2
 
 #define GOAL_BIAS 0.15
+#define AVG_BIAS 0.50
 
 #define P3AT_N_STATES 5
-#define DISTANCE_TOL 2.0
+#define RADIUS_PROXIMITY 1.2
 
 #define COLLISION_TOLERANCE 0.15
 #define COLLIDED 1

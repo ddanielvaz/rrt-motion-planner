@@ -8,6 +8,7 @@ class DistanceMeter
 {
     public:
         virtual double DistanceWeight(const double *, const double *);
+        virtual double NearestNodeMetric(const double *, double *);
         virtual bool GoalStateAchieved(const double *, const double *);
         virtual double Euclidean(const double *, const double *);
     

@@ -6,6 +6,7 @@ class StateSampler
     public:
         StateSampler();
         virtual void BiasedSampling(const double *, double *);
+        virtual void AvgBiasedSampling(const double *, double *);
 };
 
 #endif

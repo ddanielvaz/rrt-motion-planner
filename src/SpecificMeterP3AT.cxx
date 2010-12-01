@@ -4,7 +4,10 @@
 #include <cstring>
 #include <iostream>
 
+#include <lemon/random.h>
+
 using namespace std;
+using namespace lemon;
 
 SpecificMeterP3AT::SpecificMeterP3AT(const double *gstate)
 {
@@ -32,10 +35,12 @@ double SpecificMeterP3AT::DistanceWeight(const double *istate, const double *fst
     dy = fstate[STATE_Y] - istate[STATE_Y];
     d = sqrt(dx*dx + dy*dy);
     angle = normalize_angle(fstate[STATE_THETA] - istate[STATE_THETA]);
-    if(radius_to_qgoal < RADIUS_PROXIMITY)
+//     dv = fabs(fstate[STATE_V] - istate[STATE_V]);
+//     dw = fabs(fstate[STATE_W] - istate[STATE_W]);
+    if(radius_to_qgoal < 0.7)
     {
-        dv = 0.9 * fabs(fstate[STATE_V] - istate[STATE_V]);
-        dw = 0.7 * fabs(fstate[STATE_W] - istate[STATE_W]);
+        dv = 0.8 * fabs(fstate[STATE_V] - istate[STATE_V]);
+        dw = 0.8 * fabs(fstate[STATE_W] - istate[STATE_W]);
     }
     else
     {
@@ -47,24 +52,26 @@ double SpecificMeterP3AT::DistanceWeight(const double *istate, const double *fst
 
 double SpecificMeterP3AT::NearestNodeMetric(const double *istate, double *fstate)
 {
-    double dx, dy, angle, d, radius_to_qgoal;
+    double dx, dy, angle, d, radius_to_qgoal, dv, dw;
     // Se nó da árvore que será utilizado como início da expansão estiver dentro
     // de um certo raio do objetivo, atualizar velocidades do estado aleatório,
     // fstate, para valores iguais ao do goal_state
     dx = goal_state[STATE_X] - istate[STATE_X];
     dy = goal_state[STATE_Y] - istate[STATE_Y];
-    radius_to_qgoal = sqrt(dx*dx + dy*dy);
-    if(radius_to_qgoal < 0.4)
+    angle = fabs(normalize_angle(fstate[STATE_THETA] - istate[STATE_THETA]));
+    radius_to_qgoal = sqrt(dx*dx + dy*dy) + angle/M_PI_2l;
+    if(radius_to_qgoal < 0.30 && rnd() > 0.50)
     {
-         fstate[STATE_V] = goal_state[STATE_V];
-         fstate[STATE_W] = goal_state[STATE_W];
+        fstate[STATE_V] = goal_state[STATE_V];
+        fstate[STATE_W] = goal_state[STATE_W];
     }
     //distancia translacional
     dx = fstate[STATE_X] - istate[STATE_X];
     dy = fstate[STATE_Y] - istate[STATE_Y];
     d = sqrt(dx*dx + dy*dy);
-    angle = normalize_angle(fstate[STATE_THETA] - istate[STATE_THETA]);
-    return d + fabs(angle)/M_PI_2l;
+    dv = 0.7 * fabs(fstate[STATE_V] - istate[STATE_V]);
+    dw = 0.7 * fabs(fstate[STATE_W] - istate[STATE_W]);
+    return d + angle/M_PI_2l + dv + dw;
 }
 
 bool SpecificMeterP3AT::GoalStateAchieved(const double *state, const double *goal)

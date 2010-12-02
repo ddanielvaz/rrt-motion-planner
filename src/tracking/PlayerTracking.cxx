@@ -413,9 +413,10 @@ void PlayerTracking::SkidSteerControlBasedController(const char *log, const char
         data_fp << "vx_path: " << ref_state.v << " va_path: " << ref_state.w << endl;
         data_fp << "vx_robot: " << curr_state.v << " va_robot: " << curr_state.w << endl;
         data_fp << "x_diff: " << x_diff << " y_diff: " << y_diff << " angle_diff:" << psi_diff << endl;
-        if(ref_state.v<0)
-            cout << "VEL NEG"<< endl;
-            cout << "x_diff: " << x_diff << " y_diff: " << y_diff << " angle_diff:" << psi_diff << endl;
+//         if(ref_state.v<0){
+//             cout << "VEL NEG"<< endl;
+//             cout << "x_diff: " << x_diff << " y_diff: " << y_diff << " angle_diff:" << psi_diff << endl;
+//         }
         ((SkidSteerControlBased*)robot_model)->trajectory_control->run(curr_st, ref_st, u);
         ((SkidSteerControlBased*)robot_model)->EstimateTorque(curr_st, u, computed_torques);
         ((SkidSteerControlBased*)robot_model)->EstimateVelocitiesFromTorque(curr_st, computed_torques, vel_tracking);

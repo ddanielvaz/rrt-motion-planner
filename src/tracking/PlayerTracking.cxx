@@ -355,6 +355,8 @@ void PlayerTracking::SkidSteerControlBasedController(const char *log, const char
     Robot r0(ip);
     Pioneer3ATState curr_state, ref_state;
     double x_diff, y_diff, psi_diff;
+    double tempo;
+    tempo = 0.0;
     // Mudando modo como os dados são lidos do servidor.
     // Desse modo garante que as leituras serão sempre as mais novas.
     try
@@ -384,6 +386,56 @@ void PlayerTracking::SkidSteerControlBasedController(const char *log, const char
     path_fp.seekg(0, ios::beg);
     r0.navigator->SetOdomPos(path_log_pos);
     r0.navigator->SetMotorStatus(true);
+
+    /*while(true)
+    {
+        if(!path_fp.getline(temp, 100))
+            break;
+        // Atualizando estado de referência a partir da leitura do log de planejamento
+        ParseLog(temp, &ref_state);
+        ref_st[0] = ref_state.x;
+        ref_st[1] = ref_state.y;
+        ref_st[2] = ref_state.psi;
+        ref_st[3] = ref_state.v;
+        ref_st[4] = ref_state.w;
+        for(tempo=0.0; tempo<INTEGRATION_TIME; tempo+=DELTA_T)
+        {
+            gettimeofday(&t_begin, NULL);
+            r0.client->Read();
+            // Requisita dados dos sensores.
+            curr_state = r0.navigator->GetRobotState();
+            curr_st[0] = curr_state.x;
+            curr_st[1] = curr_state.y;
+            curr_st[2] = curr_state.psi;
+            curr_st[3] = curr_state.v;
+            curr_st[4] = curr_state.w;
+            x_diff = ref_state.x - curr_state.x;
+            y_diff = ref_state.y - curr_state.y;
+            psi_diff = normalize_angle(ref_state.psi - curr_state.psi);
+            // Log de dados
+            odom_fp << curr_state.x << " " << -curr_state.y << " " << -curr_state.psi << endl;
+            data_fp << "v_diff: " << ref_state.v - curr_state.v << " w_diff: " << ref_state.w - curr_state.w << endl;
+            data_fp << "vx_path: " << ref_state.v << " va_path: " << ref_state.w << endl;
+            data_fp << "vx_robot: " << curr_state.v << " va_robot: " << curr_state.w << endl;
+            data_fp << "x_diff: " << x_diff << " y_diff: " << y_diff << " angle_diff:" << psi_diff << endl;
+//             if(ref_state.v<0){
+//                 cout << "VEL NEG"<< endl;
+//                 cout << "x_diff: " << x_diff << " y_diff: " << y_diff << " angle_diff:" << psi_diff << endl;
+//             }
+            ((SkidSteerControlBased*)robot_model)->trajectory_control->run(curr_st, ref_st, u);
+            ((SkidSteerControlBased*)robot_model)->EstimateTorque(curr_st, u, computed_torques);
+            ((SkidSteerControlBased*)robot_model)->EstimateVelocitiesFromTorque(curr_st, computed_torques, vel_tracking);
+            data_fp << "v_track: " << vel_tracking[0] << " w_track: " << vel_tracking[1] << endl << endl;
+            gettimeofday(&t_end, NULL);
+            t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
+            t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
+            r0.navigator->AdjustSpeed(vel_tracking[0], vel_tracking[1]);
+            if((t1-t0) < DELTA_T)
+            {
+                usleep(DELTA_T * 1e6 - (t1-t0)*1e6);
+            }
+        }
+    }*/
     while(true)
     {
         gettimeofday(&t_begin, NULL);

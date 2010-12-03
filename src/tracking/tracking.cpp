@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 //     p3at.SetFierroTrajectoryControl();
     PlayerTracking track(&p3at);
 //     p3at.trajectory_control->InitializeControllerWeights(3.0, 10.0, 12.0, 0.02);
-    p3at.trajectory_control->InitializeControllerWeights(5.0, 2.0, 5.0, 2.0);
+    p3at.trajectory_control->InitializeControllerWeights(8.5, 5.0, 10.0, 8.5);
     if(argc > 1)
     {
         strcpy(ip, argv[1]);

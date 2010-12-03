@@ -15,7 +15,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    double q[]={1.0, 1.5, 0.0, 0.0, 0.0};
+    double q[]={1.0, 1.45, 0.0, 0.0, 0.0};
 //     Baliza
 //     double f[]={4.40, 2.5, 0.1, 0.0, 0.0};
 //     Manobra 1
@@ -40,12 +40,13 @@ int main(int argc, char *argv[])
     veh.SetPDTrajectoryControl();
 //     veh.SetFierroTrajectoryControl();
     veh.GenerateInputs(accel_file);
-    veh.trajectory_control->InitializeControllerWeights(1.0, 3.0, 1.0, 4.0);
+    veh.trajectory_control->InitializeControllerWeights(1.0, 3.0, 1.0, 3.0);
+//     veh.trajectory_control->InitializeControllerWeights(1.0, 3.0, 1.0, 4.0);
 //     CarLikeModel veh(body_length, constraints, 5);
 //     veh.GenerateInputs("../resources/carlike.accel");
     CarGeometry geom_car(width, height, body_length);
     World w(obstacles_file, &geom_car);
-    RRT plan(q, f, 30000, &veh, &w, &dm, &ss, logfile);
+    RRT plan(q, f, 20000, &veh, &w, &dm, &ss, logfile);
     plan.build();
     plan.close_logfile();
     plan.path_to_closest_goal(pathfile);

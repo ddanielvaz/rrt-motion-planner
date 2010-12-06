@@ -13,6 +13,7 @@ all: $(SOURCES) $(OBJECTS)
 	$(MAKE) -C tests
 
 $(OBJDIR)/%.o: %.cxx
+	@mkdir -p lib
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:

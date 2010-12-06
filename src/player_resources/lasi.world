@@ -40,6 +40,6 @@ pioneer3at
 (		  
   # can refer to the robot by this name
   name "r0"
-  pose [ 1.0 -1.45 0 0 ]
+  pose [ 1.0 -1.5 0 0 ]
   sicklaser()
 )

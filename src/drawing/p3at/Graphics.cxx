@@ -36,9 +36,11 @@ void Graphics::draw_initial_and_goal(double *initial, double *goal)
     double x, y, r=3.0;
     x = SCALE_FACTOR * initial[0];
     y = SCALE_FACTOR * initial[1];
+    draw_trail(initial[0], initial[1], initial[2], c_black);
     cvCircle(img1, cvPoint(x,y), r, red, -1, 8, 0);
     x = SCALE_FACTOR * goal[0];
     y = SCALE_FACTOR * goal[1];
+    draw_trail(goal[0], goal[1], goal[2], c_black);
     cvCircle(img1, cvPoint(x,y), r, green, -1, 8, 0);
 }
 

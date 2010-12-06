@@ -26,7 +26,6 @@
 #define AVG_BIAS 0.50
 
 #define P3AT_N_STATES 5
-#define RADIUS_PROXIMITY 1.2
 
 #define COLLISION_TOLERANCE 0.15
 #define COLLIDED 1

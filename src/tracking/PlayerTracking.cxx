@@ -386,7 +386,8 @@ void PlayerTracking::SkidSteerControlBasedController(const char *log, const char
     path_fp.seekg(0, ios::beg);
     r0.navigator->SetOdomPos(path_log_pos);
     r0.navigator->SetMotorStatus(true);
-
+    for(int i=0; i<20; i++)
+        r0.client->Read();
     /*while(true)
     {
         if(!path_fp.getline(temp, 100))
@@ -448,7 +449,8 @@ void PlayerTracking::SkidSteerControlBasedController(const char *log, const char
         ref_st[2] = ref_state.psi;
         ref_st[3] = ref_state.v;
         ref_st[4] = ref_state.w;
-        r0.client->Read();
+        for(int i=0; i<2; i++)
+            r0.client->Read();
         // Requisita dados dos sensores.
         curr_state = r0.navigator->GetRobotState();
         curr_st[0] = curr_state.x;
@@ -476,6 +478,7 @@ void PlayerTracking::SkidSteerControlBasedController(const char *log, const char
         gettimeofday(&t_end, NULL);        
         t0 = t_begin.tv_sec + t_begin.tv_usec * 1e-6;
         t1 = t_end.tv_sec + t_end.tv_usec * 1e-6;
+        data_fp << "PROCESSING TIME: " << (t1-t0) << endl;
         r0.navigator->AdjustSpeed(vel_tracking[0], vel_tracking[1]);
         if((t1-t0) < INTEGRATION_TIME)
         {

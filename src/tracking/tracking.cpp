@@ -15,15 +15,17 @@ int main(int argc, char *argv[])
     PlayerTracking track(&p3at);
     p3at.SetPDTrajectoryControl();
 //     p3at.trajectory_control->InitializeControllerWeights(8.5, 5.0, 10.0, 8.5);
-    p3at.trajectory_control->InitializeControllerWeights(1.0, 1.0, 4.0, 1.0);
+//     p3at.trajectory_control->InitializeControllerWeights(0.92, 1.5, 0.92, 1.7);
+    p3at.trajectory_control->InitializeControllerWeights(1.2, 1.2, 1.1, 1.1);
 //     p3at.trajectory_control->InitializeControllerWeights(6.5, 5.0, 8.0, 8.5);
     if(argc > 1)
     {
         strcpy(ip, argv[1]);
-//         track.ProportionalController(pathfile, NULL);
-//         track.ControlByFierro(pathfile, NULL);
-//         track.NoControl(pathfile, NULL);
-//         track.Kanayama(pathfile, NULL);
+        track.SkidSteerControlBasedController(pathfile, ip);
+//         track.ProportionalController(pathfile, ip);
+//         track.ControlByFierro(pathfile, ip);
+//         track.NoControl(pathfile, ip);
+//         track.Kanayama(pathfile, ip)
 
     }
     else

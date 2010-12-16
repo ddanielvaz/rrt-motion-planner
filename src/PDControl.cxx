@@ -58,8 +58,8 @@ void PDControl::ComputeDerivativeErrorState(Pioneer3ATState curr,
                                             Pioneer3ATState ref,
                                             VelocityState *verror)
 {
-    verror->v = ref.v - curr.v;
-    verror->w = ref.w - curr.w;
+    verror->v = (ref.v - curr.v)/DELTA_T;
+    verror->w = (ref.w - curr.w)/DELTA_T;
 }
 
 void PDControl::ComputeControlInput(VelocityState prop_error, VelocityState deriv_error,

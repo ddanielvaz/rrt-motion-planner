@@ -39,7 +39,8 @@ int main(int argc, char *argv[])
     veh.SetPDTrajectoryControl();
 //     veh.SetFierroTrajectoryControl();
     veh.GenerateInputs(accel_file);
-    veh.trajectory_control->InitializeControllerWeights(1.0, 3.0, 1.0, 4.0);
+    veh.trajectory_control->InitializeControllerWeights(1.0, 1.0, 1.0, 1.0);
+//     veh.trajectory_control->InitializeControllerWeights(8.5, 5.0, 10.0, 8.5);
 //     veh.trajectory_control->InitializeControllerWeights(1.0, 3.0, 1.0, 4.0);
 //     CarLikeModel veh(body_length, constraints, 5);
 //     veh.GenerateInputs("../resources/carlike.accel");

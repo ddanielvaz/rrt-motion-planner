@@ -30,4 +30,5 @@ run: $(TARGET)
 
 clean:
 	/bin/rm -f $(CLEAN)
+	/bin/rm ../tests/tracking.out
 

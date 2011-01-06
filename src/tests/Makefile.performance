@@ -1,0 +1,28 @@
+.SUFFIXES: .cpp
+
+CC = g++
+INCLUDE_DIR = ../include/
+CFLAGS  = -Wall -I$(INCLUDE_DIR)
+LDLIBS  = -lm -lPQP -lemon
+
+SRCS    = performance.cpp
+
+MY_MOTION_PLANNER_LIB = ../lib/libMotionPlanner.a
+
+OBJECTS = performance.o
+
+TARGET = performance.out
+
+CLEAN   = $(OBJECTS) $(TARGET)
+
+$(TARGET): $(OBJECTS) $(MY_MOTION_PLANNER_LIB)
+	$(CC) $(OBJECTS) $(MY_MOTION_PLANNER_LIB) -o $(TARGET) $(LDLIBS)
+
+.cpp.o:
+	$(CC) $(CFLAGS) -c $<
+
+run: $(TARGET)
+	$(TARGET)
+
+clean:
+	@rm $(CLEAN)

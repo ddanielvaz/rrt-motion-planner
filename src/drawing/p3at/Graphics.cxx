@@ -216,7 +216,6 @@ for(double t=0.0; t<=integration_time; t+=DELTA_T)
         integration_time = strtod(nxt, &ps);
         nxt = ps;
         
-        cout << "integration time: " << integration_time << endl;
         
         for(double t=0.0; t<=integration_time; t+=DELTA_T)
         {
@@ -227,7 +226,7 @@ for(double t=0.0; t<=integration_time; t+=DELTA_T)
         i++;
     }
 //     draw_trail(x, y, theta, color);
-//     cout << i << " pontos lidos." << endl;
+    cout << i << " pontos lidos." << endl;
     fp.close();
 }
 

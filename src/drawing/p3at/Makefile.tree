@@ -5,18 +5,23 @@ INCLUDE_DIR = ../../include
 CFLAGS  = -Wall -I$(INCLUDE_DIR) `pkg-config --cflags opencv`
 LDLIBS  = -lm `pkg-config --libs opencv`
 
-SRCS    = draw_tree.cpp
+SRCS    = draw_tree.cpp Carro.cxx Graphics.cxx Obstacles.cxx
 
-OBJECTS = draw_tree.o
+OBJECTS = Carro.o Obstacles.o Graphics.o draw_tree.o
 
 TARGET = draw_tree
 
+PRE_COMPILED_OBJECTS = ../../lib/libMotionPlanner.a
+
 CLEAN   = $(OBJECTS) $(TARGET)
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(TARGET) $(LDLIBS)
+$(TARGET): $(OBJECTS) $(PRE_COMPILED_OBJECTS)
+	$(CC) $(OBJECTS) $(PRE_COMPILED_OBJECTS) -o $(TARGET) $(LDLIBS)
 
 .cpp.o:
+	$(CC) ${CFLAGS} -c $<
+
+.cxx.o:
 	$(CC) ${CFLAGS} -c $<
 
 run: $(TARGET)

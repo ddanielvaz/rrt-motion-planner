@@ -1,9 +1,13 @@
 #include <iostream>
 
-#include "draw.h"
-#include "geometry.h"
-#include "robots.h"
-#include "constants.h"
+#include "Geometry.hh"
+#include "RRT.hh"
+#include "SkidSteerControlBased.hh"
+#include "FierroControl.hh"
+#include "World.hh"
+#include "SpecificMeterP3AT.hh"
+
+#include "Graphics.hh"
 
 using namespace std;
 
@@ -15,12 +19,14 @@ int main(int argc, char *argv[])
     double motor[] = {0.0230, 0.0230, 38.3, 0.71};
     double robot[] = {0.413, 40, 0.043, 0.506, xcir, 0.138, 0.122, 0.1975, 0.4};
     double speeds_limits[] = {MAX_LIN_SPEED, MAX_ROT_SPEED};
-    /** Tipos de Robos */
-    SkidSteerControlBased veh(robot, speeds_limits, 5);
-//     SkidSteerDynamicModel veh(motor, robot, speeds_limits, 5);
-    char obstacles_file[]="../resources/lasi_map.txt", pathfile[32], resultsfile[32],
+    char accel_file[]= "../resources/p3at.accel";
+    char obstacles_file[]="../resources/lasi.map", pathfile[32], resultsfile[32],
     title[]="Drawing Tool";
     CarGeometry geom_car(width, height, body_length);
+   SkidSteerControlBased veh(robot, speeds_limits, 5);
+    veh.SetPDTrajectoryControl();
+    veh.GenerateInputs(accel_file);
+    veh.trajectory_control->InitializeControllerWeights(1.0, 1.0, 1.0, 1.0);
     cvInitSystem(argc, argv);
     setlocale(LC_NUMERIC, "C");
     Graphics fig(&geom_car, obstacles_file, title);
@@ -35,8 +41,8 @@ int main(int argc, char *argv[])
     }
     //draw rrt
     fig.plot_obstacles();
-    fig.plot_tree(resultsfile, c_blue, &veh);
-    fig.plot_line_states(pathfile, c_green);
+    fig.plot_tree(resultsfile, c_green, &veh);
+    fig.plot_line_states(pathfile, c_red);
     fig.show(title);
     return 0;
 }

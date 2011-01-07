@@ -19,6 +19,9 @@ RRT::RRT(double *init, double *goal, int n, RobotModel *car, World *w,
     meter = d_meter;
     sampler = s_sampler;
     fp.open(fname);
+    added_nodes = 0;
+    trials = 0;
+    is_goal_reached = false;
 }
 
 RRT::~RRT()
@@ -28,10 +31,10 @@ RRT::~RRT()
 
 void RRT::build(void)
 {
-    int finished=0, i=0, added_nodes=0;
+    int finished=0;
     double random_state[veh->n_states];
     int previleges_qgoal=0, collided;
-    for(i=0; i<trial_max; i++)
+    for(trials=0; trials<trial_max; trials++)
     {
         //Se amostra maior que GOAL_BIAS, ponto aleatorio eh escolhido para expandir
         //arvore. Caso contrario eh escolhido o destino para a expansao.
@@ -62,11 +65,12 @@ void RRT::build(void)
             added_nodes++;
         else if(finished == 2)
         {
-            cout << "[" << i << "] Objetivo alcancado." << endl;
+            cout << "[" << trials << "] Objetivo alcancado." << endl;
+            is_goal_reached = true;
             break;
         }
     }
-    cout << "Numero de tentativas: Maxima= " << trial_max << " Realizadas= " << i << endl;
+    cout << "Numero de tentativas: Maxima= " << trial_max << " Realizadas= " << trials << endl;
     cout << "Nos adicionados: " << added_nodes << endl;
     cout << "Previlegiou q_goal: " << previleges_qgoal << endl;
 }
@@ -205,7 +209,7 @@ void RRT::path_to_closest_goal(char *filename)
     closest_goal = select_nearest_node(goal_state);
     cout << (*states)[closest_goal][0] << " " << (*states)[closest_goal][1] << " " << (*states)[closest_goal][2] << endl;
     distance = meter->DistanceWeight((*states)[closest_goal], goal_state);
-    cout << "Distancia entre no mais proximo de goal: " << distance << endl;
+    cout << "Distancia entre no mais proximo de goal: " << distance << endl << endl;
     ss.run(initial_node);
     p = ss.path(closest_goal);
 //     for(int i=0; i<veh->n_states; i++)

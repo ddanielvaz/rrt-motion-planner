@@ -40,6 +40,8 @@ class RRT
         void close_logfile(void);
         void path_to_closest_goal(char*);
         ~RRT();
+        int added_nodes, trials;
+        bool is_goal_reached;
     private:
         Node initial_node, goal_node;
         double *goal_state, *initial_state;

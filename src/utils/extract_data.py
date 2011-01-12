@@ -53,7 +53,10 @@ class ExtractData(object):
                 a = line.replace("\n","").replace(":", " ").split(" ")
                 # pega apenas strings que contenham algum caracter
                 s = [x for x in a if x]
-                v, w = float(s[1]), float(s[3])
+                if len(s) > 4:
+                    v, w = float(s[1]), float(s[-1])
+                else:
+                    v, w = float(s[1]), float(s[3])
                 odom_speeds.write("%f,%f\n"%(v,w))
         odom_speeds.close()
         data.close()

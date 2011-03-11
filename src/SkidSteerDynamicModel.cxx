@@ -38,8 +38,8 @@ void SkidSteerDynamicModel::GenerateInputs(char *filename)
         {
             torques = strtok_r(pt, ";", &nxt);
             t_r = strtok_r(torques, ",", &t_l);
-            temp.ctrl[TORQUE_R] = atof(t_r)/2.0;
-            temp.ctrl[TORQUE_L] = atof(t_l)/2.0;
+            temp.ctrl[TORQUE_R] = atof(t_r)/4.0;
+            temp.ctrl[TORQUE_L] = atof(t_l)/4.0;
             cout << "Torque right: " << temp.ctrl[TORQUE_R] << " Torque left: " << temp.ctrl[TORQUE_L] << endl;
             all_inputs.push_back(temp);
             pt = nxt;
@@ -77,6 +77,8 @@ void SkidSteerDynamicModel::EstimateNewState(const double *x,
     memcpy(curr_vel, x+3, sizeof(double) * 2);
     EstimateVelocities(curr_vel, ctl, new_vel);
     // Atualizando vetor do espaço de estados - (v,w)
+    new_vel[0] = limit_speed(new_vel[0], max_v);
+    new_vel[1] = limit_speed(new_vel[1], max_w);
     memcpy(dx+3, new_vel, sizeof(double)*2);
 
     dflow(x, new_vel, k1);

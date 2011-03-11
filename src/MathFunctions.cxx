@@ -2,9 +2,9 @@
 
 double sgn(double x)
 {
-    if(x > 0.0)
+    if(x > THRESHOLD_MIN_DOUBLE_VALUE)
         return 1.0;
-    else if(x < 0.0)
+    else if(x < -THRESHOLD_MIN_DOUBLE_VALUE)
         return -1.0;
     return 0.0;
 }

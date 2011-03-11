@@ -139,6 +139,7 @@ void PlayerTracking::ProportionalController(const char *log, const char *ip)
     double p_trans_error, p_rot_error;
     struct timeval t_begin, t_end;
     double t0, t1;
+    int attempts;
     Pioneer3ATState curr_state, ref_state;
     Robot r0(ip);
     // Mudando modo como os dados são lidos do servidor.
@@ -205,8 +206,10 @@ void PlayerTracking::ProportionalController(const char *log, const char *ip)
             usleep(INTEGRATION_TIME * 1e6 - (t1-t0) * 1e6);
         r0.navigator->AdjustSpeed(vx_control, va_control);
     }
-    while(fabs(x_diff) > 0.05 || fabs(psi_diff) > 0.05)
+    attempts = 0;
+    while((fabs(x_diff) > 0.05 || fabs(psi_diff) > 0.05) && attempts < 10)
     {
+        attempts++;
         ref_state.v = 0.0;
         ref_state.w = 0.0;
         gettimeofday(&t_begin, NULL);

@@ -1,0 +1,1 @@
+Este projeto tem como objetivo desenvolver um planejador de movimentos baseado no algoritmo Rapidly exploring-Random Tree - RRT - implementado em C++
